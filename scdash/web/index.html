@@ -42,6 +42,7 @@
         <div class="loc-meta">
           <span id="loc-since"></span>
           <span id="loc-region"></span>
+          <span id="loc-server"></span>
           <span id="loc-shard" class="mono"></span>
           <span id="loc-version" class="mono"></span>
         </div>
@@ -49,6 +50,7 @@
           <span id="p-ship"></span>
           <span id="p-arm"></span>
           <span id="p-mon"></span>
+          <span id="p-crew"></span>
           <span id="p-jur"></span>
           <span id="p-restricted"></span>
           <span id="p-private"></span>
@@ -79,6 +81,7 @@
             <div class="n death"><b id="st-crime">0</b><small>CrimeStat</small></div>
           </div>
           <div class="small-stats">
+            <div><small>Zustand</small><b id="st-health">Unverletzt</b><em id="st-health-sub">keine offenen Verletzungen</em></div>
             <div><small>Längstes Überleben</small><b id="st-best-alive">–</b><em id="st-best-alive-sub">diese Session</em></div>
             <div><small>Med-Bed</small><b id="st-medbed">0</b><em id="st-collisions">0 Kollisionen</em></div>
             <div><small>Letzter Tod</small><b id="st-killer">–</b><em id="st-killer-sub"></em></div>
@@ -105,6 +108,7 @@
         <div class="contract">
           <div class="tag">Aktiver Auftrag <span id="c-count" class="count"></span></div>
           <h2 id="c-title">Kein aktiver Auftrag</h2>
+          <div id="c-next" class="next" hidden><small>Nächstes Ziel</small><b id="c-next-place"></b><em id="c-next-here" hidden>du bist hier</em></div>
           <ol id="c-objectives" class="objectives"></ol>
           <ul id="c-others" class="others"></ul>
           <div class="small-stats">
@@ -112,9 +116,10 @@
             <div><small>Gescheitert</small><b class="death" id="ms-failed">0</b><em id="ms-aband">0 abgebrochen</em></div>
             <div><small>Orte</small><b id="ms-places">0</b><em id="ms-jumps">besucht</em></div>
             <div class="earn">
-              <small>Einnahmen</small>
+              <small>Bilanz</small>
               <b><span id="ms-earn">0</span> <i>aUEC</i></b>
-              <form id="earn-form" autocomplete="off"><input id="earn-in" inputmode="numeric" placeholder="+ Betrag" title="Betrag eintragen, Enter. Negativ für Ausgaben."></form>
+              <em id="ms-earn-sub"></em>
+              <form id="earn-form" autocomplete="off"><input id="earn-in" inputmode="numeric" placeholder="+ Auftragslohn" title="Auftragslohn eintragen, Enter (z. B. 25k). Einkäufe, Strafen und Überweisungen rechnet SC-Dash selbst ein."></form>
             </div>
           </div>
         </div>
@@ -150,6 +155,7 @@
       <ul id="rsi"></ul>
     </div>
     <nav class="tools">
+      <button id="sound-toggle" title="Signaltöne bei Tod, K.O., fertigen Aufträgen und Timern (T)">Ton an</button>
       <button data-drawer="notes" title="Notizen (N)">Notizen</button>
       <button data-drawer="links" title="Links (L)">Links</button>
     </nav>

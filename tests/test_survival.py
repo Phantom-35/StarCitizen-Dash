@@ -154,6 +154,67 @@ class HudNotificationTests(unittest.TestCase):
         self.assertTrue(s["nav"]["restricted"])
 
 
+class UsefulnessTests(unittest.TestCase):
+    """Things that are shown because they help while playing."""
+
+    def feed(self, *lines):
+        st = DashboardState()
+        for line in (LOGIN, JOIN) + lines:
+            ev = parse_line(line)
+            if ev is not None:
+                st.apply(ev)
+        return st.snapshot()
+
+    def test_open_injuries_until_med_bed(self):
+        s = self.feed(notif("Minor Injury Detected - Left Arm - Tier 3 Treatment Required", ts(1)),
+                      notif("Severe Injury Detected - Head - Tier 1 Treatment Required", ts(2)))
+        self.assertEqual([(i["part"], i["tier"], i["severe"]) for i in s["health"]["injuries"]],
+                         [("linker Arm", 3, False), ("Kopf", 1, True)])
+        s = self.feed(notif("Minor Injury Detected - Left Arm - Tier 3 Treatment Required", ts(1)),
+                      notif("Severe Injury Detected - Head - Tier 1 Treatment Required", ts(2)), MEDBED)
+        # the med bed line lists torso + left arm: the head stays injured
+        self.assertEqual([i["part"] for i in s["health"]["injuries"]], ["Kopf"])
+        s = self.feed(notif("Minor Injury Detected - Left Arm - Tier 3 Treatment Required", ts(1)), dead(ME, ts(5)))
+        self.assertEqual(s["health"]["injuries"], [])
+
+    def test_crew_aboard(self):
+        s = self.feed(notif("You have joined channel 'Drake Cutlass Black : TestPilot'.", ts(1)),
+                      notif("New Member Joined Bob has joined channel 'Drake Cutlass Black : TestPilot'", ts(2)),
+                      notif("New Member Joined Alice has joined channel 'Drake Cutlass Black : TestPilot'", ts(3)),
+                      notif("Member Left Bob has left the channel 'Drake Cutlass Black : TestPilot'", ts(4)))
+        self.assertEqual(s["nav"]["crew"], ["Alice"])
+        self.assertEqual(s["nav"]["ship"], "Drake Cutlass Black")
+
+    def test_purchases_count_as_spending(self):
+        # reconstructed from the field names sc-log-tracker / csr parse (4.8+ SendShopBuyRequest)
+        item = (f"{ts(1)} [Notice] <CEntityComponentShopUIProvider::SendShopBuyRequest> Sending SShopBuyRequest - "
+                f"playerId[1] shopId[2] shopName[SCShop_CasabaOutlet_NewBabbage_123] kioskId[3] client_price[4500.000000] "
+                f"itemClassGUID[x] itemName[Flight_Suit_Blue_123456789] quantity[2] [Team_NAPU][Shops][UI]")
+        cargo = (f"{ts(2)} [Notice] <CEntityComponentCommodityUIProvider::SendCommodityBuyRequest> Sending "
+                 f"SShopCommodityBuyRequest - playerId[1] shopName[SCShop_TDD] price[12000.500000] resourceGUID[y] "
+                 f"quantity[800] [Team_NAPU][Shops][UI]")
+        s = self.feed(item, cargo)
+        self.assertEqual((s["stats"]["purchases"], s["stats"]["spend"]), (2, 16500))
+        self.assertEqual(s["feeds"]["mission"][1]["actor"], "2× Flight Suit Blue")
+
+    def test_connection_error(self):
+        line = (f'{ts(9)} [Notice] <Channel Disconnected> cause=30000 reason="Connection timed out" frame=1 '
+                f'map="megamap" gamerules="SC_Default" hostType="GameClient"')
+        s = self.feed(line, line.replace("18:09:00", "18:09:05"))  # reported twice within seconds
+        self.assertEqual(s["stats"]["disconnects"], 1)
+        ev = s["feeds"]["combat"][0]
+        self.assertEqual((ev["title"], ev["actor"], ev["banner"]), ("Verbindungsfehler 30000", "Zeitüberschreitung der Verbindung", True))
+
+    def test_next_target_of_contract(self):
+        s = self.feed(
+            f'{ts(1)} [Notice] <SHUDEvent_OnNotification> Added notification "Contract Accepted: Haul: " [1] to queue. MissionId: [h1], ObjectiveId: []',
+            f'{ts(1)} [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Deliver 0/24 SCU of Agricium to Seraphim Station: " [2] to queue. MissionId: [h1], ObjectiveId: [dropoff_1]',
+            f'{ts(1)} [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Collect Agricium From HDMS-Edmond on Hurston: " [3] to queue. MissionId: [h1], ObjectiveId: [pickup_1]',
+        )
+        m = s["missions"]["active"][0]
+        self.assertEqual(m["next"], "HDMS-Edmond")  # pick-up first
+
+
 class QuantumTargetTests(unittest.TestCase):
     def test_mission_marker_uses_objective(self):
         st = DashboardState()

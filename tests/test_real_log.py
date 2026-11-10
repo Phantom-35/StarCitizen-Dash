@@ -97,6 +97,21 @@ class RealLogTests(unittest.TestCase):
         self.assertEqual(places, ["New Babbage", "Clear View Emergency Shelter", "Covalex Distribution Centre S4DC05",
                                   "microTech Logistics Depot S4LD13", "New Babbage"])
 
+    def test_cargo_and_connection_from_real_lines(self):
+        s = self.read_all_at_once()
+        feed = list(reversed(s["feeds"]["mission"]))
+        # the medical supplies box: put into the ship, later handed in at the drop-off
+        self.assertEqual((s["stats"]["cargo_loaded"], s["stats"]["cargo_delivered"]), (1, 1))
+        self.assertIn(("Fracht verladen", "Medical Supplies"), [(e["title"], e["actor"]) for e in feed])
+        self.assertIn(("Fracht abgegeben", "Medical Supplies"), [(e["title"], e["actor"]) for e in feed])
+        # the log has four harmless "Nub destroyed" (30010) lines and one 30016 in the universe:
+        # no connection error may be reported, only one neutral note
+        self.assertEqual(s["stats"]["disconnects"], 0)
+        self.assertEqual([e["title"] for e in feed].count("Verbindung getrennt"), 1)
+        self.assertFalse(any(e["title"].startswith("Verbindungsfehler") for e in feed))
+        self.assertEqual(s["session"]["server"], "450")
+        self.assertEqual(s["health"]["injuries"], [])
+
     def test_multiline_notifications_are_joined(self):
         asm, texts = LineAssembler(), []
         for raw in self.raw.split(b"\n"):

@@ -67,7 +67,11 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
 - **Quantum-Ziel**, solange ein Sprung geplant ist – lesbar statt interner IDs: Städte, Raststationen
   (*CRU-L4*), *Markierter Navpunkt*, *Partymitglied* und bei Auftragsmarkern der Ort aus dem aktiven
   Auftragsziel (*Auftragsziel · Clear View Emergency Shelter*)
-- **Aktuelles Schiff**, sobald du im Pilotensitz sitzt
+- **Aktuelles Schiff** und **Crew an Bord** (wer zu dir ins Schiff gekommen ist)
+- **Server-Nummer** neben der Region – praktisch, um mit Freunden auf denselben Server zu kommen
+- **Signaltöne** (Taste `T` oder Knopf „Ton an/aus“): kurzer Ton bei Tod, K.O., erledigtem/gescheitertem
+  Auftrag, Verbindungsfehler und fertigem Timer – damit du es merkst, während du ins Spiel schaust
+- **Verbindungsfehler** (z. B. 30000 Zeitüberschreitung) mit Klartext-Bedeutung
 - **Timer** mit Fortschrittsbalken (Raffinerie, Miete, Cooldowns – laufen auch nach Neustart weiter)
 - **RSI-Serverstatus**, **Notizen & Links** (Tasten `N` / `L`)
 - **Lokal & privat:** Alles läuft auf deinem PC (`127.0.0.1`). Die einzige Internetanfrage ist der
@@ -77,11 +81,16 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
 
 - **Aktiver Auftrag** groß mit allen Zielen als Checkliste – offene oben, erledigte durchgestrichen.
   Im Fokus steht immer der Auftrag, an dem du zuletzt etwas gemacht hast.
+- **Nächstes Ziel:** der Ort aus dem ersten offenen Ziel (Abholen vor Abliefern) – mit Markierung
+  **„du bist hier“**, sobald du dort angekommen bist
+- **Fortschrittsbalken** bei Mengen-Zielen (*Deliver 8/24 SCU …*)
+- **Fracht verladen / abgegeben:** jede Kiste, die du ins Schiff stellst oder am Ziel abgibst
 - **Weitere laufende Aufträge** und die zuletzt erledigten / gescheiterten mit Dauer
 - **Ring „Im Auftrag“:** wie lange du schon am aktuellen Auftrag sitzt
-- **Session-Bilanz:** erledigt, gescheitert, Erfolgsquote, besuchte Orte
-- **Einnahmen:** Betrag eintippen und Enter (`25k`, `12.500`, `-3000` für Ausgaben). Wird pro
-  Spielsitzung automatisch auf 0 gesetzt. Manuell, weil das Spiel Belohnungen nicht zuverlässig ins Log schreibt.
+- **Session-Statistik:** erledigt, gescheitert, Erfolgsquote, durchschnittliche Dauer, besuchte Orte
+- **Bilanz:** Einkäufe (Shops, Fracht, Treibstoff), Strafen und Überweisungen rechnet SC-Dash
+  automatisch ein. Nur den Auftragslohn tippst du selbst ein (`25k` + Enter) – den schreibt das Spiel
+  nicht in die Log. Startet mit jeder Spielsitzung bei 0.
 - **Geld & Handel im Komm-Log:** erhaltene/gesendete aUEC, fertige Raffinerie-Aufträge, Belohnungen, Blueprints
 - **Komm-Log:** alle Spielmeldungen (Aufträge, Ziele, Zonen, Quantum-Routen …). Auch HUD-Meldungen,
   die SC-Dash nicht genauer einordnen kann, landen hier.
@@ -93,6 +102,8 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
 > zählen. SC-Dash zeigt deshalb, was das Spiel weiterhin protokolliert – und Kills nur dann, wenn
 > eine ältere Version sie liefert.
 
+- **Zustand:** offene Verletzungen mit Körperteil und nötiger Med-Bed-Stufe – verschwinden nach der
+  Behandlung im Med-Bed bzw. beim Tod. So siehst du auf einen Blick, ob du erst zum Arzt solltest.
 - **Am-Leben-Chronometer:** wie lange du seit deinem letzten Tod überlebst, plus längstes Überleben der Session
 - **Tode** – jeder Tod zählt genau einmal, auch wenn das Spiel mehrere Zeilen dazu schreibt
 - **K.O. (kampfunfähig)**, **Verletzungen** (mit Körperteil und Behandlungsstufe), **CrimeStat-Erhöhungen**
@@ -195,6 +206,10 @@ als Testfall in `tests/fixtures/`).
 | Spiel beendet | `<SystemQuit>` | ✅ |
 | Session-Start | Zeitstempel der ersten Log-Zeile | ✅ |
 | Hangar, Kanäle, Blueprints | HUD-Meldungen | ✅ |
+| Fracht verladen / abgegeben | `<[ActorState] Place> … DoPlace] '…' placed '…Commodity_…' in lootable container '…'` | ✅ |
+| Verbindungsabbrüche | `<Channel Disconnected> cause=N reason="…"` (30010/30016/30028 sind normale Abmeldungen) | ✅ / 📚 |
+| Einkäufe | `…BuyRequest> Sending … shopName[…] client_price[…] itemName[…] quantity[…]` bzw. `price[…]` bei Fracht | 📚 |
+| Crew an Bord | Meldung *New Member Joined X has joined channel '<Schiff> : <Pilot>'* / *Member Left …* | 📚 |
 | Spiel läuft | Prozess `StarCitizen.exe` (Pfad aus der Log: `…\LIVE\Bin64\StarCitizen.exe`) | ✅ |
 | Installationsordner | Log des RSI-Launchers (`%APPDATA%\rsilauncher\logs\log.log`) und übliche Ordner | 📚 |
 | Eigener Tod | `<[ActorState] Dead> … Actor '…' … ejected from zone '…' … to zone '…'`, `<[ActorState] Corpse>` | 📚 |
@@ -235,7 +250,7 @@ daraus ein ✅ mit echtem Testfall.
 Star Citizen hat keine Schnittstelle für Drittprogramme – die `Game.log` ist die einzige Quelle.
 SC-Dash liest sie deshalb so vorsichtig und robust wie möglich:
 
-- **Einmal pro Sekunde** wird nur der neu hinzugekommene Teil gelesen (bis zum echten Dateiende,
+- **Zweimal pro Sekunde** wird nur der neu hinzugekommene Teil gelesen (bis zum echten Dateiende,
   nicht nach der gemeldeten Dateigröße – die hinkt unter Windows manchmal hinterher).
 - Die Datei wird **nur kurz** und mit voller Freigabe geöffnet. Das Spiel kann sie jederzeit
   weiterschreiben, verschieben oder ersetzen.
@@ -244,8 +259,9 @@ SC-Dash liest sie deshalb so vorsichtig und robust wie möglich:
 - **Spiel-Neustart** wird an Datei-Identität, Größe und der ersten Zeile erkannt → neue Session.
 - Über 95 % der Zeilen sind uninteressant und werden mit einer einzigen Prüfung übersprungen:
   eine komplette 1-Stunden-Log (1 MB) ist in ca. 15 ms ausgewertet.
-- Das Dashboard fragt alle 2 s nach – der Server antwortet mit einem leeren „nichts Neues“,
-  solange sich nichts geändert hat.
+- Das Dashboard hält eine Anfrage offen, und der Server antwortet **sofort, wenn etwas passiert**
+  (Long-Polling). Ein Ereignis ist so nach höchstens einer halben Sekunde auf dem Bildschirm – ohne
+  dass im Leerlauf ständig abgefragt wird.
 - Bei sehr langen Logs (> 8 MB) wird nur das Ende ausgewertet; Pilot, Shard und Version holt
   SC-Dash trotzdem vom Anfang der Datei.
 - Läuft das Dashboard auf einem Tablet mit falsch gehender Uhr, werden alle Zeiten mit der Uhr des

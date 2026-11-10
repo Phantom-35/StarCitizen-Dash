@@ -5,6 +5,26 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+## [0.7.0] – 2026-11-10
+
+Schwerpunkt: Mehrwert beim Spielen – beide Modi zeigen mehr von dem, was man wirklich braucht.
+
+### Hinzugefügt
+- **Aufträge:** „Nächstes Ziel“ (Ort aus dem ersten offenen Ziel) mit „du bist hier“-Markierung,
+  Fortschrittsbalken bei Mengen-Zielen (`8/24 SCU`), Fracht verladen/abgegeben, Ø-Dauer erledigter Aufträge
+- **Bilanz statt Einnahmen:** Einkäufe, Strafen und Überweisungen werden automatisch eingerechnet;
+  nur der Auftragslohn wird noch von Hand eingetragen
+- **Kampf & Überleben:** „Zustand“ mit offenen Verletzungen und nötiger Med-Bed-Stufe (bis zur Behandlung)
+- **Crew an Bord** und **Server-Nummer** in beiden Modi
+- **Signaltöne** (abschaltbar, Taste `T`) bei Tod, K.O., Auftragsende, Verbindungsfehler und Timer;
+  fertige Timer werden zusätzlich groß eingeblendet
+- **Verbindungsfehler** mit Klartext (30000 Zeitüberschreitung, 30013 Serverabsturz …); normale
+  Abmeldungen (30010/30016/30028) lösen keinen Alarm aus
+
+### Geändert
+- **Schneller:** Long-Polling statt 2-s-Abfrage und Lesetakt 0,5 s – Ereignisse erscheinen nach
+  höchstens ~0,5 s statt nach bis zu 3 s; im Leerlauf weniger Anfragen als vorher
+
 ## [0.6.0] – 2026-11-10
 
 Gesamtprüfung: jede Erkennungsregel gegen die echte 4.10-Log und die Quellen abgeglichen, Live-Betrieb

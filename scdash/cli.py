@@ -54,6 +54,8 @@ def open_dashboard(url: str, gpu: bool = False) -> None:
         "--disable-extensions",
         "--no-first-run",
         "--no-default-browser-check",
+        # let the dashboard play its short signal tones without a click first
+        "--autoplay-policy=no-user-gesture-required",
         # Separate profile, otherwise the flags are ignored if the browser is already open.
         f"--user-data-dir={profile}",
         "--window-size=1600,900",

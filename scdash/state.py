@@ -21,6 +21,20 @@ BOTH = (COMBAT, MISSION)
 _RESULT_TEXT = {"completed": "Auftrag erledigt", "failed": "Auftrag gescheitert", "abandoned": "Auftrag abgebrochen"}
 _RESULT_CAT = {"completed": "success", "failed": "fail", "abandoned": "other"}
 
+# Connection error codes (meanings per sc-log-tracker). 30010/30016/30028 are normal goodbyes.
+NET_ERRORS = {
+    "30000": "Zeitüberschreitung der Verbindung",
+    "30013": "Server-Signal (Serverabsturz?)",
+    "30015": "Woanders angemeldet",
+    "30024": "Backend-Dienste antworten nicht",
+    "41045": "Zeitüberschreitung beim Laden der Spielregeln",
+    "41058": "Spielerabfrage fehlgeschlagen",
+    "41070": "Zeitüberschreitung beim Laden des Charakters",
+    "64004": "Server konnte deinen Standort nicht auflösen",
+    "64008": "Server konnte deinen Standort nicht auflösen",
+}
+BENIGN_NET = {"30010", "30016", "30028"}
+
 DEATH_DEDUP_SECONDS = 90   # Dead / Corpse / Actor Death lines of the same death
 INCAP_DEDUP_SECONDS = 60
 JURISDICTION_FLAP_SECONDS = 30
@@ -42,7 +56,8 @@ def _secs_between(a: Optional[str], b: Optional[str]) -> Optional[float]:
 
 class DashboardState:
     def __init__(self) -> None:
-        self._lock = threading.Lock()
+        # A Condition (it is also a lock): HTTP long-polls sleep on it until the state changes.
+        self._lock = threading.Condition()
         self._version = 0
         self._boot = os.urandom(4).hex()  # distinguishes server restarts for the frontend
         self._event_id = 0
@@ -86,6 +101,14 @@ class DashboardState:
         self._ended_missions: set = set()
         self.quantum_jumps = 0
         # survival / law / money
+        self.open_injuries: list = []   # untreated injuries since the last med bed / death
+        self.crew: list = []            # others aboard our ship
+        self.spend = 0.0
+        self.purchases = 0
+        self.cargo_loaded = 0
+        self.cargo_delivered = 0
+        self.disconnects = 0
+        self._last_disconnect_ts: Optional[str] = None
         self.incaps = 0
         self.injuries = 0
         self.medbed = 0
@@ -107,6 +130,12 @@ class DashboardState:
 
     def _touch(self) -> None:
         self._version += 1
+        self._lock.notify_all()
+
+    def wait_for_change(self, token: str, timeout: float) -> bool:
+        """Block until the state differs from ``token`` (True) or the timeout expires (False)."""
+        with self._lock:
+            return self._lock.wait_for(lambda: f"{self._boot}-{self._version}" != token, timeout)
 
     # ------------------------------------------------------------------ mutators
     def new_session(self) -> None:
@@ -196,6 +225,8 @@ class DashboardState:
         self.ship = None
         self._ship_from_channel = False
         self.quantum_target = self._qt_location = None
+        self.open_injuries = []
+        self.crew = []
         self.last_death = {"ts": ev.ts, "cause": cause, "who": who, "where": where}
         self._push(ev, "death", cause, who or (where or ""), where if who else "", feeds=BOTH, banner=True)
         return True
@@ -218,6 +249,7 @@ class DashboardState:
             self.shard = d["shard"]
             self.alive_since = ev.ts  # time in the menus should not count as "alive"
             self.armistice = self.monitored = self.jurisdiction = self.ship = None
+            self.crew = []
             self.quantum_target = self._qt_location = None
             self.restricted = self.private = None
             self._push(ev, "info", "Shard beigetreten", shard_region(self.shard) or "", self.shard, feeds=BOTH)
@@ -325,11 +357,43 @@ class DashboardState:
         elif ev.kind == "medbed":
             if (me is None or d["actor"] == me) and d["ok"]:
                 self.medbed += 1
+                healed = {_BODY_DE.get(p, p) for p in d["parts"]}
+                # a med bed visit without part list is a full treatment
+                self.open_injuries = [i for i in self.open_injuries if healed and i["part"] not in healed]
                 parts = ", ".join(_BODY_DE.get(p, p) for p in d["parts"]) or "Behandlung"
                 self._push(ev, "success", "Med-Bed", parts, d["vehicle"] or "Krankenhaus", feeds=BOTH)
         elif ev.kind == "collision":
             self.collisions += 1
             self._push(ev, "death", "Tödliche Kollision", d["vehicle"], d["where"] or "", feeds=BOTH, banner=True)
+        elif ev.kind == "cargo":
+            if me is None or d["actor"] == me:
+                if d["delivered"]:
+                    self.cargo_delivered += 1
+                    self._push(ev, "success", "Fracht abgegeben", d["item"], feeds=(MISSION,))
+                else:
+                    self.cargo_loaded += 1
+                    self._push(ev, "mission", "Fracht verladen", d["item"], self.ship or "", feeds=(MISSION,))
+        elif ev.kind == "purchase":
+            self.purchases += 1
+            self.spend += d["price"]
+            what = f"{d['qty']}× {d['item']}" if d["qty"] > 1 else d["item"]
+            self._push(ev, "info", "Gekauft", what,
+                       self._detail(f"{d['price']:,.0f} aUEC".replace(",", "."), d["shop"]), feeds=(MISSION,))
+        elif ev.kind == "disconnect":
+            code = d["code"]
+            if code == "30010" or (not d["in_pu"] and code in BENIGN_NET):
+                return
+            if self._within(self._last_disconnect_ts, ev.ts, 30):
+                return
+            self._last_disconnect_ts = ev.ts
+            self.quantum_target = self._qt_location = None
+            if code in BENIGN_NET:
+                text = "wegen Inaktivität" if code == "30028" else "Server verlassen oder gewechselt"
+                self._push(ev, "info", "Verbindung getrennt", text, feeds=BOTH)
+            else:
+                self.disconnects += 1
+                self._push(ev, "fail", f"Verbindungsfehler {code}", NET_ERRORS.get(code, d["reason"]),
+                           feeds=BOTH, banner=True)
         elif ev.kind == "notify":
             self._notify(ev)
         elif ev.kind == "mission_end":
@@ -466,6 +530,15 @@ class DashboardState:
             self._push(ev, "zone", "Zone", "Überwachter Raum" if self.monitored else "Unüberwachter Raum",
                        "Comm-Array aktiv" if self.monitored else "kein Comm-Array in Reichweite",
                        feeds=BOTH)
+        elif cat in ("crew_joined", "crew_left"):
+            who = subject
+            if cat == "crew_joined":
+                if who not in self.crew:
+                    self.crew.append(who)
+                self._push(ev, "nav", "An Bord gekommen", who, d.get("ship") or "", feeds=BOTH)
+            else:
+                self.crew = [c for c in self.crew if c != who]
+                self._push(ev, "nav", "Von Bord gegangen", who, d.get("ship") or "", feeds=BOTH)
         elif cat in ("channel_joined", "channel_left"):
             if not d.get("is_ship"):
                 self._push(ev, "comms", "Kanal", d["text"], feeds=(MISSION,))
@@ -474,6 +547,7 @@ class DashboardState:
                 self._push(ev, "nav", "Eingestiegen", subject, feeds=BOTH)
             elif self.ship == subject or not self._ship_from_channel:
                 self.ship, self._ship_from_channel = None, False
+                self.crew = []
                 self._push(ev, "nav", "Ausgestiegen", subject, feeds=(MISSION,))
         elif cat == "incapacitated":
             self._incapacitated(ev, subject if subject != d["text"] else "")
@@ -484,6 +558,9 @@ class DashboardState:
             sev = _INJURY_DE.get(d["sev"].lower(), d["sev"].capitalize())
             severe = d["sev"].lower() in ("major", "severe", "critical")
             part = d["part"].strip()
+            part_de = _PART_DE.get(part.lower(), part)
+            self.open_injuries = [i for i in self.open_injuries if i["part"] != part_de]
+            self.open_injuries.append({"part": part_de, "severity": sev, "tier": int(d["tier"]), "severe": severe})
             self._push(ev, "death" if severe else "warn", f"{sev} Verletzung", _PART_DE.get(part.lower(), part),
                        f"Tier-{d['tier']}-Behandlung nötig", feeds=BOTH)
         elif cat in ("crime_up", "crime"):
@@ -572,6 +649,7 @@ class DashboardState:
                     "handle": self.handle,
                     "shard": self.shard,
                     "region": shard_region(self.shard),
+                    "server": self.shard.rsplit("_", 1)[-1] if self.shard and "_" in self.shard else None,
                     "location": self.location,
                     "location_since": self.location_since,
                     "start": self.session_start,
@@ -603,13 +681,20 @@ class DashboardState:
                     "money_in": self.money_in,
                     "money_out": self.money_out,
                     "best_alive": self.best_alive,
+                    "spend": round(self.spend),
+                    "purchases": self.purchases,
+                    "cargo_loaded": self.cargo_loaded,
+                    "cargo_delivered": self.cargo_delivered,
+                    "disconnects": self.disconnects,
                 },
+                "health": {"injuries": list(self.open_injuries)},
                 "nav": {
                     "ship": self.ship,
                     "armistice": self.armistice,
                     "monitored": self.monitored,
                     "jurisdiction": self.jurisdiction,
                     "quantum_target": self.quantum_target,
+                    "crew": list(self.crew),
                     "restricted": self.restricted,
                     "private": self.private,
                 },
@@ -619,6 +704,9 @@ class DashboardState:
                         {
                             "id": m["id"], "title": m["title"], "accepted": m["accepted"],
                             "objectives": list(m["objectives"].values()),
+                            # where to go next: the place named in the first open objective
+                            "next": next((objective_place(o["text"]) for o in m["objectives"].values()
+                                          if o["state"] == "open" and objective_place(o["text"])), None),
                         }
                         for m in sorted(self.missions.values(), key=lambda m: m["seq"], reverse=True)
                     ],

@@ -50,6 +50,22 @@ _QT_FUEL = re.compile(r"<Player Requested Fuel to Quantum Target[^>]*>.*?destina
 _QT_ROUTE_START = re.compile(r"Projected Start Location is (?P<start>.+?) for route to destination")
 _QT_ARRIVED = re.compile(r"<Quantum Drive Arrived|Quantum Drive has arrived at final destination")
 
+# --- cargo, shopping, connection ---------------------------------------------------
+# Real 4.10 line: ... [CSCActorControlAdditiveStatePlace::DoPlace] 'Pilot' [id] placed
+#   'Carryable_2H_FL_05x05x05_Commodity_medical_supplies_a_<id>' [id] in lootable container '<container>' [id]
+_PLACE = re.compile(
+    r"StatePlace::DoPlace\] '(?P<actor>[^']+)' \[\d+\] placed '(?P<item>[^']+?)(?:_\d{6,})?' \[\d+\] "
+    r"in (?:lootable container|itemport \d+ on) '(?P<container>[^']+)'"
+)
+_COMMODITY = re.compile(r"Commodity_(?P<name>[A-Za-z_]+?)(?:_[a-z])?$")
+# Purchases (formats per sc-log-tracker / csr: SendStandardItemBuyRequest until 4.7,
+# SendShopBuyRequest / SendCommodityBuyRequest since 4.8)
+_BUY_ITEM = re.compile(r"client_price\[(?P<price>[\d.]+)\].*?itemName\[(?P<item>[^\]]+)\] quantity\[(?P<qty>\d+)\]")
+_BUY_COMMODITY = re.compile(r"\bprice\[(?P<price>[\d.]+)\]")
+_SHOP = re.compile(r"shopName\[(?P<shop>[^\]]+)\]")
+_DISCONNECT = re.compile(r'cause=(?P<code>\d+) reason="(?P<reason>[^"]*)"')
+_CREW = re.compile(r"^(?:New Member Joined|Member Left) (?P<who>\S+) has (?P<act>joined|left) (?:the )?channel '(?P<name>[^']*)'", re.I)
+
 # --- survival (4.x) ------------------------------------------------------------
 # Kill lines (<Actor Death>) are limited to the local player since 4.0.2 and gone since
 # about 4.4. The own death is still logged by the actor state machine:
@@ -74,6 +90,7 @@ _INTERESTING = re.compile(
     r"AccountLoginCharacterStatus_Character|SHUDEvent_OnNotification|<EndMission>|<MissionEnded>|"
     r"<ObjectiveUpserted>|Vehicle Control Flow|Quantum Target|Quantum Drive|Projected Start Location|"
     r"ActorState\] (?:Dead|Corpse)|<Corpse>|Logged an incap|MED BED HEAL|Fatal ?Collision|"
+    r"StatePlace::DoPlace|BuyRequest|cause=\d+ reason=\"|"
     r"SystemQuit|CSystem::Quit|ProductVersion"
 )
 _MISSION_ID = re.compile(r"MissionId:?\s*\[(?P<mid>[^\]]*)\]")
@@ -162,6 +179,11 @@ def _id(value: Optional[str]) -> Optional[str]:
 def classify_notification(text: str) -> dict:
     """Split a HUD notification into category + subject."""
     text = clean_notification_text(text)
+    m = _CREW.match(text)
+    if m:
+        name = m.group("name").replace("@vehicle_Name", "").strip()
+        return {"text": text.rstrip("."), "category": "crew_" + m.group("act").lower(), "subject": m.group("who"),
+                "ship": name.rsplit(" : ", 1)[0].strip() if " : " in name else None}
     m = _CHANNEL.match(text)
     if m:
         # "You have joined channel 'RSI Aurora Mk II : PilotName'." -> the ship you just boarded
@@ -334,6 +356,36 @@ def parse_line(line: str) -> Optional[LogEvent]:
             "vehicle": ship_name(m.group("vehicle")),
             "where": describe_location(zone.strip())["place"] if zone else None,
         })
+
+    m = _PLACE.search(line)
+    if m:
+        c = _COMMODITY.search(m.group("item"))
+        if not c:
+            return None  # only cargo boxes are interesting
+        return LogEvent("cargo", ts, {
+            "actor": m.group("actor"),
+            "item": c.group("name").replace("_", " ").title(),
+            "delivered": m.group("container").lower().startswith("mission_"),
+        })
+    if "BuyRequest" in line:
+        if "Sending" not in line:
+            return None
+        shop = _SHOP.search(line)
+        shop_name = re.sub(r"_\d+$", "", shop.group("shop")).replace("_", " ").strip() if shop else None
+        if "Commodity" in line:
+            m = _BUY_COMMODITY.search(line)
+            return LogEvent("purchase", ts, {"price": float(m.group("price")) if m else 0.0, "item": "Fracht",
+                                             "qty": 1, "shop": shop_name})
+        m = _BUY_ITEM.search(line)
+        if m:
+            item = re.sub(r"_\d{6,}$", "", m.group("item")).replace("_", " ")
+            return LogEvent("purchase", ts, {"price": float(m.group("price")), "item": item,
+                                             "qty": int(m.group("qty")), "shop": shop_name})
+        return None
+    m = _DISCONNECT.search(line)
+    if m:
+        return LogEvent("disconnect", ts, {"code": m.group("code"), "reason": m.group("reason"),
+                                           "in_pu": 'gamerules="SC_Default"' in line})
 
     m = _OBJECTIVE_UPSERT.search(line)
     if m:
