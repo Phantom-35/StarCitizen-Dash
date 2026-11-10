@@ -19,18 +19,39 @@ BODIES: Dict[str, Dict[str, str]] = {
     },
 }
 
-# Station / rest-stop abbreviations ("RR_HUR_LEO")
-_ABBR = {"HUR": "Hurston", "CRU": "Crusader", "ARC": "ArcCorp", "MIC": "microTech"}
+# Rest stops are logged as RR_<planet>_<point>. Names of the orbital stations were taken
+# from sc-log-tracker (MIT), which checked them against real game logs.
+_PLANET_CODES = {"hur": ("Hurston", "HUR"), "cru": ("Crusader", "CRU"), "arc": ("ArcCorp", "ARC"),
+                 "mic": ("microTech", "MIC")}
+_STATIONS = {
+    "hur_leo": "Everus Harbor", "cru_leo": "Seraphim Station", "arc_leo": "Baijini Point",
+    "mic_leo": "Port Tressler", "p2_l4": "Checkmate", "p3_leo": "Orbituary", "p3_l1": "Starlight Service Station",
+}
+_SYSTEMS = {"stanton": "Stanton", "stan": "Stanton", "pyro": "Pyro", "nyx": "Nyx",
+            "castra": "Castra", "magnus": "Magnus", "terra": "Terra"}
 
 _PLACE_NAMES = {
     "Lorville": "Lorville", "Orison": "Orison", "Area18": "Area 18", "NewBabbage": "New Babbage",
-    "GrimHex": "Grim HEX", "PortTressler": "Port Tressler", "Everus": "Everus Harbor",
-    "Baijini": "Baijini Point", "Seraphim": "Seraphim Station",
+    "GrimHex": "Grim HEX", "GrimHEX": "Grim HEX", "PortTressler": "Port Tressler", "Everus": "Everus Harbor",
+    "Baijini": "Baijini Point", "Seraphim": "Seraphim Station", "Levski": "Levski",
+}
+
+# readable place -> (system, planet); used when only a name is known (quantum targets)
+KNOWN_PLACES: Dict[str, tuple] = {
+    "Lorville": ("Stanton", "Hurston"), "Everus Harbor": ("Stanton", "Hurston"),
+    "Orison": ("Stanton", "Crusader"), "Seraphim Station": ("Stanton", "Crusader"), "Grim HEX": ("Stanton", "Crusader"),
+    "Area 18": ("Stanton", "ArcCorp"), "Baijini Point": ("Stanton", "ArcCorp"),
+    "New Babbage": ("Stanton", "microTech"), "Port Tressler": ("Stanton", "microTech"),
+    "Checkmate": ("Pyro", "Monox"), "Orbituary": ("Pyro", "Bloom"), "Starlight Service Station": ("Pyro", "Bloom"),
+    "Levski": ("Nyx", None),
 }
 
 _LOC = re.compile(r"^(?P<system>Stanton|Pyro|Nyx)_?(?P<body>\d+[a-z]?)?(?:_(?P<rest>.+))?$", re.I)
-_OOC = re.compile(r"^OOC_(?P<system>Stanton|Pyro|Nyx)_(?P<body>\d+[a-z]?)(?:_(?P<rest>.+))?$", re.I)
-_RR = re.compile(r"^RR_(?P<body>[A-Z]{3})_(?P<orbit>\w+)$")
+_OOC = re.compile(r"^(?:OOC_|ObjectContainer_)?(?P<system>Stanton|Pyro|Nyx)_(?P<body>\d+[a-z]?)(?:_(?P<rest>.+))?$", re.I)
+_RR = re.compile(r"(?i)^rr_(?P<planet>hur|cru|arc|mic|p\d)_(?P<point>leo|l\d)$")
+_RS_EXT = re.compile(r"(?i)^rs_ext_(?:pyro(?P<pyro>\d)|(?P<planet>hur|cru|arc|mic))[-_]?(?P<point>leo|l\d)\d?$")
+_GATEWAY = re.compile(r"(?i)^rr_jp_(?P<a>stanton|pyro|nyx|castra|magnus|terra)(?P<b>stanton|pyro|nyx|castra|magnus|terra)$")
+_OUTPOST = re.compile(r"(?i)^outpost_[a-z]{3}_(?P<system>stanton|pyro)(?P<body>\d[a-f]?)_(?P<name>[A-Za-z]+)(?:_\d+)?$")
 _CAMEL = re.compile(r"(?<=[a-z])(?=[A-Z])")
 
 
@@ -42,7 +63,7 @@ def _split_words(s: str) -> str:
     out = _CAMEL.sub(" ", s.replace("_", " ")).strip()
     for wrong, right in _KEEP.items():
         out = out.replace(wrong, right)
-    return out
+    return " ".join(out.split())
 
 
 def _place(rest: Optional[str]) -> Optional[str]:
@@ -62,35 +83,95 @@ def _place(rest: Optional[str]) -> Optional[str]:
         return _PLACE_NAMES[rest]
     if key in _PLACE_NAMES:
         return _PLACE_NAMES[key]
-    return _split_words(rest)
+    return _split_words(re.sub(r"_\d{1,3}$", "", rest))
+
+
+def _station(planet: str, point: str) -> Dict[str, Optional[str]]:
+    planet, point = planet.lower(), point.lower()
+    if planet.startswith("p") and planet[1:].isdigit():
+        system, body_name, abbr = "Pyro", BODIES["Pyro"].get(planet[1:], "Pyro"), f"PYR{planet[1:]}"
+    else:
+        system = "Stanton"
+        body_name, abbr = _PLANET_CODES.get(planet, (planet, planet.upper()))
+    name = _STATIONS.get(f"{planet}_{point}")
+    if not name:
+        name = f"Raststation {body_name} (Orbit)" if point == "leo" else f"{abbr}-{point.upper()}"
+    return {"system": system, "planet": body_name, "place": name}
+
+
+def _body(system: str, body_id: str):
+    bodies = BODIES.get(system, {})
+    body_id = body_id.lower()
+    return bodies.get(body_id), (bodies.get(body_id.rstrip("abcdefgh")) if body_id else None)
 
 
 def describe_location(raw: str) -> Dict[str, Optional[str]]:
-    """``Stanton2_Orison`` -> {system: Stanton, planet: Crusader, place: Orison}."""
-    raw = re.sub(r"_\d{5,}$", "", raw.strip())
-    m = _LOC.match(raw) or _OOC.match(raw)
-    if m:
-        system = m.group("system").capitalize()
-        body_id = (m.group("body") or "").lower()
-        bodies = BODIES.get(system, {})
-        body = bodies.get(body_id)
-        planet = bodies.get(body_id.rstrip("abcdefgh")) if body_id else None
-        place = _place(m.group("rest")) or body or system
-        return {"system": system, "planet": planet, "place": place}
+    """Internal location id -> ``{system, planet, place}``.
+
+    ``Stanton2_Orison`` -> Stanton / Crusader / Orison, ``RR_HUR_LEO`` -> Stanton / Hurston / Everus Harbor,
+    ``OOC_Stanton_2b_Daymar`` -> Stanton / Crusader / Daymar.
+    """
+    raw = re.sub(r"_?\{[0-9A-Fa-f-]{36}\}", "", raw.strip()).replace(".socpak", "")
+    raw = re.sub(r"(_\d{5,})+$", "", raw)
+
     m = _RR.match(raw)
     if m:
-        body = _ABBR.get(m.group("body"))
-        return {"system": "Stanton", "planet": body, "place": f"R&R {m.group('body')}-{m.group('orbit')}"}
+        return _station(m.group("planet"), m.group("point"))
+    m = _RS_EXT.match(raw)
+    if m:
+        return _station("p" + m.group("pyro") if m.group("pyro") else m.group("planet"), m.group("point"))
+    m = _GATEWAY.match(raw)
+    if m:
+        return {"system": _SYSTEMS[m.group("a").lower()], "planet": None,
+                "place": f"{_SYSTEMS[m.group('b').lower()]} Gateway"}
+    m = _OUTPOST.match(raw)
+    if m:
+        system = m.group("system").capitalize()
+        body, planet = _body(system, m.group("body"))
+        return {"system": system, "planet": planet, "place": f"{_split_words(m.group('name'))} ({body})" if body
+                else _split_words(m.group("name"))}
+    m = _OOC.match(raw) or _LOC.match(raw)
+    if m:
+        system = m.group("system").capitalize()
+        body, planet = _body(system, m.group("body") or "")
+        rest = m.group("rest")
+        if rest and re.fullmatch(r"(?i)outpost(_[a-z0-9]+)+", rest) and rest[7:] == rest[7:].lower():
+            place = f"{'Handelsposten' if 'trdpst' in rest else 'Außenposten'} ({body or system})"
+        else:
+            place = _place(rest) or body or system
+        return {"system": system, "planet": planet, "place": place}
+    m = re.match(r"(?i)^nyx_(.+)$", raw)
+    if m:
+        return {"system": "Nyx", "planet": None, "place": _place(m.group(1))}
     if raw.split("_")[0].upper() in MANUFACTURERS:
         return {"system": None, "planet": None, "place": ship_name(raw)}
-    return {"system": None, "planet": None, "place": _split_words(raw)}
+    place = _place(raw) or raw
+    system, planet = KNOWN_PLACES.get(place, (None, None))
+    return {"system": system, "planet": planet, "place": place}
 
 
+def locate_place(name: Optional[str]) -> Optional[Dict[str, Optional[str]]]:
+    """Readable name (e.g. from a quantum target or route start) -> location dict, or None if unknown."""
+    if not name:
+        return None
+    if name in KNOWN_PLACES:
+        system, planet = KNOWN_PLACES[name]
+        return {"system": system, "planet": planet, "place": name}
+    for system, bodies in BODIES.items():
+        for body_id, body in bodies.items():
+            if body.lower() == name.lower():
+                parent = bodies.get(body_id.rstrip("abcdefgh"))
+                return {"system": system, "planet": parent, "place": body}
+    return None
+
+
+# Region codes in shard names (pub_euw1b_...). Codes and their meaning cross-checked with
+# sc-log-tracker; apse = AWS ap-southeast-2 (Sydney).
 _REGIONS = {
-    "euw": "EU West", "eue": "EU East", "euc": "EU Central", "eun": "EU North",
+    "euw": "EU West", "euc": "EU Central", "eun": "EU North",
     "use": "US East", "usw": "US West", "usc": "US Central",
-    "apse": "Asien-Pazifik (SO)", "apne": "Asien-Pazifik (NO)", "aps": "Asien-Pazifik",
-    "sa": "Südamerika", "au": "Australien",
+    "apse": "Australien", "ape": "Asien", "apne": "Asien", "aps": "Asien",
+    "sae": "Südamerika",
 }
 
 
@@ -107,7 +188,7 @@ MANUFACTURERS = {
     "AEGS": "Aegis", "ANVL": "Anvil", "ARGO": "Argo", "BANU": "Banu", "CNOU": "C.O.", "CRUS": "Crusader",
     "DRAK": "Drake", "ESPR": "Esperia", "GAMA": "Gatac", "GRIN": "Greycat", "KRIG": "Kruger",
     "MISC": "MISC", "MRAI": "Mirai", "ORIG": "Origin", "RSI": "RSI", "TMBL": "Tumbril",
-    "VNCL": "Vanduul", "XIAN": "Aopoa", "XNAA": "Aopoa",
+    "VNCL": "Vanduul", "XIAN": "Aopoa", "XNAA": "Aopoa", "AOPOA": "Aopoa",
 }
 
 
@@ -122,10 +203,11 @@ def ship_name(raw: str) -> str:
     return " ".join(parts) or raw
 
 
-WEAPON_MAKERS = {
+WEAPON_MAKERS = {  # cross-checked with sc-log-tracker
     "behr": "Behring", "ksar": "Kastak Arms", "klwe": "Klaus & Werner", "gats": "Gallenson",
-    "apar": "Apocalypse Arms", "hrst": "Hurston", "gmni": "Gemini", "lbco": "Lightning Bolt",
-    "volt": "VOLT", "amrs": "Amon & Reese", "kbar": "KnightBridge", "nvy": "NorthStar",
+    "apar": "Apocalypse Arms", "hrst": "Hurston Dynamics", "gmni": "Gemini", "lbco": "Lightning Bolt",
+    "amrs": "Amon & Reese", "kbar": "Kroneg", "mxox": "MaxOx", "crlf": "CureLife", "sasu": "Sakura Sun",
+    "shin": "Shubin", "thcn": "Thermyte",
 }
 
 

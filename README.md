@@ -120,7 +120,8 @@ Erst mal ohne Spiel ausprobieren? → **`demo.bat`** starten, das simuliert Erei
 
 ### Wo liegt meine Game.log?
 
-SC-Dash sucht automatisch auf allen Laufwerken in den üblichen Ordnern, z. B.
+SC-Dash liest den Installationsordner aus der Log des RSI-Launchers und sucht zusätzlich auf allen
+Laufwerken in den üblichen Ordnern, z. B.
 
 ```
 C:\Program Files\Roberts Space Industries\StarCitizen\LIVE\Game.log
@@ -182,15 +183,20 @@ als Testfall in `tests/fixtures/`).
 | Login / Pilotenname | `User Login Success - Handle[…]` | ✅ |
 | Shard & Region | `<Join PU> … shard[…]` | ✅ |
 | Spielversion | `ProductVersion: …` | ✅ |
-| Ortswechsel | `<RequestLocationInventory> … Location[…]` | ✅ |
+| Ortswechsel | `<RequestLocationInventory> … Location[…]`; zusätzlich Quantum-Ankunft an einem bekannten Ort und `Projected Start Location is …` | ✅ |
+| Ortsnamen (Raststationen, Außenposten, Gateways) | interne IDs wie `RR_HUR_LEO`, `Outpost_…`, `RR_JP_…` | ✅ / 📚 |
 | Aufträge & Ziele | `<SHUDEvent_OnNotification> Added notification "Contract Accepted: …"`, `New Objective`, `Objective Complete`, `Contract Complete/Failed` | ✅ |
 | Ziel-Status | `<ObjectiveUpserted> … state MISSION_OBJECTIVE_STATE_COMPLETED` | ✅ |
 | Auftragsende | `<MissionEnded> … mission_state …`, `<EndMission> … CompletionType[…]` | ✅ |
 | Zonen | Meldungen *Armistice Zone*, *Monitored Space*, *… Jurisdiction* | ✅ |
 | Schiff (ein-/aussteigen) | Meldung `You have joined channel '<Schiff> : <Pilot>'` | ✅ |
-| Quantum-Sprünge | `<Player Selected Quantum Target …>`, `<Quantum Drive Arrived …>` | ✅ |
+| Quantum-Ziele & Sprünge | `<Player Selected Quantum Target …>`, `<Player Requested Fuel to Quantum Target …>`, `<Quantum Drive Arrived …>` | ✅ |
+| Quantum blockiert | Meldung *Quantum Travel: Your destination is obstructed …* | ✅ |
 | Spiel beendet | `<SystemQuit>` | ✅ |
+| Session-Start | Zeitstempel der ersten Log-Zeile | ✅ |
 | Hangar, Kanäle, Blueprints | HUD-Meldungen | ✅ |
+| Spiel läuft | Prozess `StarCitizen.exe` (Pfad aus der Log: `…\LIVE\Bin64\StarCitizen.exe`) | ✅ |
+| Installationsordner | Log des RSI-Launchers (`%APPDATA%\rsilauncher\logs\log.log`) und übliche Ordner | 📚 |
 | Eigener Tod | `<[ActorState] Dead> … Actor '…' … ejected from zone '…' … to zone '…'`, `<[ActorState] Corpse>` | 📚 |
 | Kampfunfähig (K.O.) | `Logged an incap.! nickname: …, causes: […]`, Meldung *Incapacitated* | 📚 |
 | Verletzungen | Meldung *Minor/Moderate/Severe Injury Detected - <Körperteil> - Tier N* | 📚 |
@@ -201,8 +207,11 @@ als Testfall in `tests/fixtures/`).
 | Sperrgebiet, Privatgelände, Überwachung aus | HUD-Meldungen | 📚 |
 | Kills & Schiffszerstörung | `<Actor Death> CActor::Kill`, `<Vehicle Destruction>` | 🕰 nur bis ~4.3 |
 
-✅ = mit deiner echten 4.10-Log geprüft · 📚 = laut Quellen unten in 4.x geloggt, in deiner Session
-nicht vorgekommen (Tests mit nachgebauten Zeilen) · 🕰 = in aktuellen Versionen nicht mehr in der Log
+✅ = mit einer echten 4.10-Log geprüft · 📚 = laut Quellen unten in 4.x so geloggt, in der geprüften
+Session nicht vorgekommen (Tests mit nachgebauten Zeilen) · 🕰 = in aktuellen Versionen nicht mehr in der Log
+
+Grundsatz: Jede Erkennungsregel ist entweder in einer echten Log gesehen oder in einem der Projekte
+unten belegt. Geratene Formulierungen gibt es nicht – lieber landet eine Meldung unerkannt im Komm-Log.
 
 ### Quellen
 
@@ -210,7 +219,9 @@ Es gibt keine offizielle Dokumentation der `Game.log`. Die Formate oben stammen 
 und wurden mit dem Quellcode quelloffener Projekte abgeglichen, die mit echten Logs arbeiten:
 
 - [sc-log-tracker](https://github.com/DefaultHahn/sc-log-tracker) (MIT) – getestet mit 238 Sessions
-  von 4.3 bis 4.10; Quelle für Tod, Verletzungen, Recht, Geld und die Einordnung der Quantum-Ziele
+  von 4.3 bis 4.10; Quelle für Tod, Verletzungen, Recht, Geld, Ortsnamen (Raststationen, Außenposten,
+  Gateways), Server-Regionen, Herstellerkürzel, die Einordnung der Quantum-Ziele und die Suche des
+  Installationsordners über die Launcher-Log
 - [csr](https://github.com/archelium/csr) – „tested on 4.1 → 4.10“; Tod, Med-Bed, Kollisionen
 - [all-slain](https://github.com/DimmaDont/all-slain) (MIT) – Formate für K.O., Leiche/Respawn, Med-Bed;
   dokumentiert, dass Kill-Zeilen seit 4.0.2 nur noch den eigenen Spieler betreffen
@@ -235,30 +246,22 @@ SC-Dash liest sie deshalb so vorsichtig und robust wie möglich:
   eine komplette 1-Stunden-Log (1 MB) ist in ca. 15 ms ausgewertet.
 - Das Dashboard fragt alle 2 s nach – der Server antwortet mit einem leeren „nichts Neues“,
   solange sich nichts geändert hat.
+- Bei sehr langen Logs (> 8 MB) wird nur das Ende ausgewertet; Pilot, Shard und Version holt
+  SC-Dash trotzdem vom Anfang der Datei.
+- Läuft das Dashboard auf einem Tablet mit falsch gehender Uhr, werden alle Zeiten mit der Uhr des
+  Gaming-PCs abgeglichen.
+
+**Getestet** (automatisch, unter Windows und Linux): Dashboard läuft vor dem Spiel; Spiel schreibt
+halbe Zeilen und umgebrochene Meldungen; Spiel-Neustart verschiebt die Log nach `logbackups`;
+Log wird überschrieben; deine komplette Log wird in zufälligen Häppchen „live“ nachgespielt und muss
+dasselbe ergeben wie am Stück gelesen. Ein Dauertest mit 50-facher Ereignisrate lief bei 0,2 % CPU
+und 22 MB RAM ohne Fehler im Browser.
 
 Ob das Spiel läuft, wird zusätzlich alle 15 s über die Prozessliste geprüft.
 
 > Das Log-Format ist nicht offiziell dokumentiert und ändert sich gelegentlich mit Patches. Wenn
 > etwas nicht (mehr) erkannt wird, bitte ein Issue mit der betreffenden Log-Zeile öffnen. Meldungen,
 > die SC-Dash nicht einordnen kann, erscheinen trotzdem im Komm-Log.
-
----|---|
-| Login / Pilotenname | `User Login Success - Handle[…]` |
-| Shard-Beitritt | `<Join PU> … shard[…]` |
-| Ortswechsel | `<RequestLocationInventory> … Location[…]` |
-| Kills & Tode | `<Actor Death> CActor::Kill: …` |
-| Schiffszerstörung | `<Vehicle Destruction> …` |
-| Aufträge & Ziele | `<SHUDEvent_OnNotification> Added notification "Contract Accepted: …"`, `New Objective`, `Objective Complete`, `Contract Complete/Failed` |
-| Auftragsende | `<EndMission> … CompletionType[…]` |
-| Zonen | Meldungen *Armistice Zone*, *Monitored Space*, *… Jurisdiction* |
-| Schiff | `<Vehicle Control Flow> … control token for '…'` |
-| Spiel beendet | `<SystemQuit>` |
-
-Startet das Spiel neu, legt es eine frische `Game.log` an – SC-Dash merkt das und beginnt eine neue
-Session. Ob das Spiel läuft, wird zusätzlich alle 15 s über die Prozessliste geprüft.
-
-> Das Log-Format ist nicht offiziell dokumentiert und ändert sich gelegentlich mit Patches. Wenn
-> etwas nicht mehr erkannt wird, bitte ein Issue mit der betreffenden Log-Zeile öffnen.
 
 ---
 
@@ -277,6 +280,7 @@ Optional als Befehl installieren: `pip install .` → danach einfach `scdash --o
 scdash/
 ├── cli.py        Kommandozeile, Start der Threads, Browserfenster
 ├── locations.py  Lesbare Namen für Orte, Server-Regionen, Schiffe und Waffen
+├── paths.py      Game.log finden (Launcher-Log, übliche Ordner), Browser für --open
 ├── parser.py     Erkennung der Log-Zeilen (reine Funktionen, gut testbar)
 ├── state.py      Thread-sicherer Zustand + Auswertung (Kills/Tode/…)
 ├── watcher.py    Game.log mitlesen, Spielprozess erkennen

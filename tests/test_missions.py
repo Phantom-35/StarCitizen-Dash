@@ -20,9 +20,9 @@ class ClassifyTests(unittest.TestCase):
             "Contract Failed: Covalex Delivery": ("failed", "Covalex Delivery"),
             "New Objective: Deliver 0/4 SCU": ("objective_new", "Deliver 0/4 SCU"),
             "Objective Complete: Deliver 4/4 SCU": ("objective_done", "Deliver 4/4 SCU"),
-            "Entered Armistice Zone - Combat Prohibited": ("armistice_on", "Entered Armistice Zone - Combat Prohibited"),
+            "Entering Armistice Zone - Combat Prohibited": ("armistice_on", "Entering Armistice Zone - Combat Prohibited"),
             "Leaving Armistice Zone": ("armistice_off", "Leaving Armistice Zone"),
-            "Entering Hurston Dynamics Jurisdiction": ("jurisdiction", "Hurston Dynamics"),
+            "Entered Hurston Dynamics Jurisdiction": ("jurisdiction", "Hurston Dynamics"),
             "Something new from CIG": ("comms", "Something new from CIG"),
         }
         for text, (cat, subject) in cases.items():
@@ -108,8 +108,8 @@ class MissionFlowTests(unittest.TestCase):
         st = DashboardState()
         self.feed(
             st,
-            notif("Entered Armistice Zone - Combat Prohibited"),
-            notif("Entering Crusader Industries Jurisdiction"),
+            notif("Entering Armistice Zone - Combat Prohibited"),
+            notif("Entered Crusader Industries Jurisdiction"),
             f"{T}<Vehicle Control Flow> CVehicleMovementBase::SetDriver: Local client node [1] requesting control "
             f"token for 'MISC_Prospector_1234567' [1234567] [Team_VehicleFeatures][Vehicle]",
         )
