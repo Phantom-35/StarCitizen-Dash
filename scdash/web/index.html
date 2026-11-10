@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>SC-Dash</title>
+  <link rel="preload" href="fonts/rajdhani-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-mode="combat">
+  <div class="bg" aria-hidden="true"></div>
+
+  <!-- ============================================================ header -->
+  <header class="top">
+    <div class="brand"><b>SC</b><i>//</i>DASH</div>
+    <div class="modes" role="tablist" title="Modus wechseln (M)">
+      <button role="tab" data-mode="combat">Kampf</button>
+      <button role="tab" data-mode="mission">Aufträge</button>
+    </div>
+    <ul class="sys">
+      <li id="ind-game"><span class="dot"></span><em>Spiel</em></li>
+      <li id="ind-log"><span class="dot"></span><em>Log</em></li>
+      <li id="ind-rsi"><span class="dot"></span><em>RSI</em></li>
+      <li id="ind-link"><span class="dot"></span><em>Link</em></li>
+    </ul>
+    <div class="clock">
+      <div class="clock-main"><span id="clock-local">--:--</span><small id="clock-sec">--</small></div>
+      <div class="clock-sub">UTC <span id="clock-utc">--:--</span> · <span id="date-local">–</span></div>
+    </div>
+  </header>
+
+  <!-- ============================================================ main -->
+  <main class="hud">
+    <section class="hero">
+      <div class="corner tl"></div><div class="corner br"></div>
+
+      <div class="loc">
+        <div class="tag">Aktueller Standort</div>
+        <div class="crumb" id="loc-crumb">–</div>
+        <h1 class="place" id="loc-place">Kein Signal</h1>
+        <div class="loc-meta">
+          <span id="loc-since"></span>
+          <span id="loc-region"></span>
+          <span id="loc-shard" class="mono"></span>
+        </div>
+        <div class="pills">
+          <span id="p-ship"></span>
+          <span id="p-arm"></span>
+          <span id="p-mon"></span>
+          <span id="p-jur"></span>
+        </div>
+      </div>
+
+      <div class="core" data-only="combat">
+        <div class="chrono">
+          <svg viewBox="0 0 200 200" aria-hidden="true">
+            <g class="ticks"></g>
+            <circle class="track" cx="100" cy="100" r="78"/>
+            <circle id="arc-min" class="arc-min" cx="100" cy="100" r="78" pathLength="1000"/>
+            <circle id="arc-sec" class="arc-sec" cx="100" cy="100" r="90" pathLength="1000"/>
+          </svg>
+          <div class="chrono-in">
+            <small>Am Leben</small>
+            <b id="alive">--:--</b>
+            <span>Session <em id="session">--:--:--</em></span>
+          </div>
+        </div>
+
+        <div class="readout">
+          <div class="big">
+            <div class="n kill"><b id="st-kills">0</b><small>Kills</small></div>
+            <div class="n kill"><b id="st-npc">0</b><small>NPC</small></div>
+            <div class="n death"><b id="st-deaths">0</b><small>Tode</small></div>
+            <div class="n kd"><b id="st-kd">–</b><small>K/D</small></div>
+          </div>
+          <div class="small-stats">
+            <div><small>Serie</small><b id="st-streak">0</b><em>best <span id="st-best">0</span></em></div>
+            <div><small>Schiffe</small><b><span class="kill" id="st-vdest">0</span><i>/</i><span class="death" id="st-vlost">0</span></b><em>zerstört / verloren</em></div>
+            <div><small>Letzter Tod</small><b id="st-killer">–</b><em id="st-killer-sub"></em></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="core" data-only="mission">
+        <div class="chrono">
+          <svg viewBox="0 0 200 200" aria-hidden="true">
+            <g class="ticks"></g>
+            <circle class="track" cx="100" cy="100" r="78"/>
+            <circle id="m-arc-min" class="arc-min" cx="100" cy="100" r="78" pathLength="1000"/>
+            <circle id="m-arc-sec" class="arc-sec" cx="100" cy="100" r="90" pathLength="1000"/>
+          </svg>
+          <div class="chrono-in">
+            <small id="m-ring-label">Session</small>
+            <b id="m-ring">--:--</b>
+            <span id="m-ring-sub-wrap">Session <em id="m-session">--:--:--</em></span>
+          </div>
+        </div>
+
+        <div class="contract">
+          <div class="tag">Aktiver Auftrag <span id="c-count" class="count"></span></div>
+          <h2 id="c-title">Kein aktiver Auftrag</h2>
+          <ol id="c-objectives" class="objectives"></ol>
+          <ul id="c-others" class="others"></ul>
+          <div class="small-stats">
+            <div><small>Erledigt</small><b class="kill" id="ms-done">0</b><em id="ms-rate">–</em></div>
+            <div><small>Gescheitert</small><b class="death" id="ms-failed">0</b><em id="ms-aband">0 abgebrochen</em></div>
+            <div><small>Orte</small><b id="ms-places">0</b><em>besucht</em></div>
+            <div class="earn">
+              <small>Einnahmen</small>
+              <b><span id="ms-earn">0</span> <i>aUEC</i></b>
+              <form id="earn-form" autocomplete="off"><input id="earn-in" inputmode="numeric" placeholder="+ Betrag" title="Betrag eintragen, Enter. Negativ für Ausgaben."></form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="banner" class="banner" hidden>
+        <small id="banner-title"></small>
+        <b id="banner-actor"></b>
+        <span id="banner-detail"></span>
+      </div>
+    </section>
+
+    <aside class="feed">
+      <div class="tag" id="feed-title">Ereignisse</div>
+      <ol id="feed"></ol>
+    </aside>
+  </main>
+
+  <!-- ============================================================ bottom -->
+  <footer class="dock">
+    <div class="timers">
+      <div class="tag">Timer</div>
+      <ul id="timers"></ul>
+      <form id="timer-form" autocomplete="off">
+        <input id="t-label" placeholder="Neuer Timer, z. B. Raffinerie" maxlength="40" required>
+        <input id="t-h" type="number" min="0" max="999" placeholder="h">
+        <input id="t-m" type="number" min="0" max="59" placeholder="min">
+        <button type="submit" title="Timer starten">+</button>
+      </form>
+    </div>
+    <div class="rsi">
+      <div class="tag">Server</div>
+      <ul id="rsi"></ul>
+    </div>
+    <nav class="tools">
+      <button data-drawer="notes" title="Notizen (N)">Notizen</button>
+      <button data-drawer="links" title="Links (L)">Links</button>
+    </nav>
+  </footer>
+
+  <!-- ============================================================ drawer -->
+  <div id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div class="tag" id="drawer-title">Notizen</div>
+      <button id="drawer-close" title="Schließen (Esc)">×</button>
+    </div>
+    <div data-pane="notes">
+      <textarea id="notes" spellcheck="false" placeholder="Handelsrouten, Missionen, Koordinaten …"></textarea>
+    </div>
+    <div data-pane="links" hidden>
+      <ul id="links" class="links"></ul>
+    </div>
+    <p class="fine" id="log-path"></p>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
