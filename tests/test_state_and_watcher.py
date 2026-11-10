@@ -16,7 +16,7 @@ KILL_PLAYER = (f"{TS} [Notice] <Actor Death> CActor::Kill: 'Bob' [2] in zone 'Z'
                f"using 'gun_1234567' [Class gun] with damage type 'Bullet' from direction\n")
 DEATH = (f"{TS} [Notice] <Actor Death> CActor::Kill: 'Me' [1] in zone 'Z' killed by 'Bob' [2] "
          f"using 'gun_1234567' [Class gun] with damage type 'Bullet' from direction\n")
-SUICIDE = (f"{TS} [Notice] <Actor Death> CActor::Kill: 'Me' [1] in zone 'Z' killed by 'Me' [1] "
+SUICIDE = (f"<2026-11-10T18:05:00.000Z> [Notice] <Actor Death> CActor::Kill: 'Me' [1] in zone 'Z' killed by 'Me' [1] "
            f"using 'unknown' [Class unknown] with damage type 'Crash' from direction\n")
 
 
@@ -29,8 +29,7 @@ class StateTests(unittest.TestCase):
         self.assertEqual(s["session"]["handle"], "Me")
         self.assertEqual(s["stats"]["npc_kills"], 1)
         self.assertEqual(s["stats"]["kills"], 1)
-        self.assertEqual(s["stats"]["deaths"], 1)
-        self.assertEqual(s["stats"]["suicides"], 1)
+        self.assertEqual(s["stats"]["deaths"], 2)  # killed by Bob + crash, five minutes apart
         self.assertEqual(s["feeds"]["combat"][0]["cat"], "death")  # newest first
         self.assertEqual(s["session"]["start"], "2026-11-10T18:00:00.000Z")
         self.assertEqual(s["session"]["last_killer"]["name"], "Bob")

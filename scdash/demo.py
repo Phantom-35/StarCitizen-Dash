@@ -17,25 +17,26 @@ _STATIC = [
     "<{ts}> [Notice] <RequestLocationInventory> Player[{me}] requested inventory for Location[Stanton1_Lorville] [Team_CoreGameplayFeatures][Inventory]",
 ]
 
-_KILL = "<{ts}> [Notice] <Actor Death> CActor::Kill: '%s_{n}' [{n}] in zone '%s' killed by '{me}' [1] using '%s_{n}' [Class x] with damage type '%s' from direction x: 0, y: 0, z: 0 [Team_ActorTech][Actor]"
-_DEATH = "<{ts}> [Notice] <Actor Death> CActor::Kill: '{me}' [1] in zone '%s' killed by '%s' [{n}] using '%s_{n}' [Class x] with damage type '%s' from direction x: 0, y: 0, z: 0 [Team_ActorTech][Actor]"
-_SHIP = "<{ts}> [Notice] <Vehicle Destruction> CVehicle::OnAdvanceDestroyLevel: Vehicle '%s_{n}' [{n}] in zone '%s' [pos x: 0, y: 0, z: 0 vel x: 0, y: 0, z: 0] driven by '%s' [{n}] advanced from destroy level 0 to 2 caused by '{me}' [1] with 'Combat' [Team_VehicleFeatures][Vehicle]"
 _LOC = "<{ts}> [Notice] <RequestLocationInventory> Player[{me}] requested inventory for Location[%s] [Team_CoreGameplayFeatures][Inventory]"
+_HUD = '<{ts}> [Notice] <SHUDEvent_OnNotification> Added notification "%s: " [7] to queue. New queue size: 1, MissionId: [00000000-0000-0000-0000-000000000000], ObjectiveId: [] [Team_CoreGameplayFeatures][Missions][Comms]'
 
+# Since ~4.4 the game no longer logs kills - only what happens to you. These lines follow
+# the formats used by the open-source parsers all-slain, csr and sc-log-tracker.
 _RANDOM = [
-    _KILL % ("PU_Human_Enemy_GroundCombat_NPC_Pirate", "OOC_Stanton_2b_Daymar", "behr_rifle_ballistic_01", "Bullet"),
-    _KILL % ("PU_Human_Enemy_GroundCombat_NPC_Outlaw", "OOC_Stanton_1b_Aberdeen", "ksar_smg_energy_01", "Energy"),
-    _KILL % ("PU_Human_Enemy_GroundCombat_NPC_Pirate", "OOC_Stanton_2b_Daymar", "gmni_lmg_ballistic_01", "Bullet"),
-    "<{ts}> [Notice] <Actor Death> CActor::Kill: 'xX_Nova_Reaper_Xx' [{n}] in zone 'ANVL_Arrow_{n}' killed by '{me}' [1] using 'KLWE_LaserRepeater_S3_{n}' [Class x] with damage type 'Energy' from direction x: 0, y: 0, z: 0 [Team_ActorTech][Actor]",
-    _DEATH % ("OOC_Stanton_2b_Daymar", "Outlaw_Joe", "ksar_sniper_ballistic_01", "Bullet"),
-    _SHIP % ("DRAK_Cutlass_Black", "OOC_Stanton_2b_Daymar", "Some_Rival"),
-    _SHIP % ("AEGS_Gladius", "Stanton2", "Red_Baron_77"),
+    "<{ts}> [Notice] <[ActorState] Dead> [ACTOR STATE][SSCActorStateCVars::LogDead] Actor '{me}' [1] ejected from zone 'DRAK_Cutlass_Black_{n}' (destroyed vehicle) to zone 'OOC_Stanton_2b_Daymar' [Team_ActorFeatures][Actor]",
+    "<{ts}> [Notice] <[ActorState] Dead> [ACTOR STATE][SSCActorStateCVars::LogDead] Actor '{me}' [1] to zone 'OOC_Stanton_1b_Aberdeen' [Team_ActorFeatures][Actor]",
+    "<{ts}> [Notice] <Incap> Logged an incap.! nickname: {me}, causes: [BulletDamage (61.2 damage)]",
+    _HUD % "Moderate Injury Detected - Right Leg - Tier 2 Treatment Required",
+    _HUD % "Minor Injury Detected - Left Arm - Tier 3 Treatment Required",
+    "<{ts}> [Notice] <MED BED HEAL> Actor: {me} (Non-Authoritative CLIENT: {me}) | [CEntityComponentMedBed::HandleComponentEvent:1] | -> Perform surgery event Success, med bed name: MedBed_T3, vehicle name: DRAK_Cutlass_Black_{n}, head: false torso: true leftArm: true rightArm: false leftLeg: false rightLeg: true [Team_ActorFeatures][Actor]",
+    _HUD % "CrimeStat Rating Increased",
+    _HUD % "Standby, Local Emergency Services are en route",
+    "<{ts}> [Notice] <FatalCollision> Fatal Collision occured for vehicle ANVL_Arrow_{n} [{n}] [Part: body, Zone: OOC_Stanton_2b_Daymar, PlayerPilot: 1] [Team_VehicleFeatures][Vehicle]",
+    _HUD % "Bob_the_Hauler has sent you: 15000 aUEC",
     _LOC % "Stanton2_Orison",
     _LOC % "Stanton4_NewBabbage",
     _LOC % "RR_HUR_LEO",
 ]
-
-
 _N = '<{ts}> [Notice] <SHUDEvent_OnNotification> Added notification "%s: " [11] to queue. New queue size: 1, MissionId: [%s], ObjectiveId: [%s] [Team_CoreGameplayFeatures][Missions][Comms]'
 _PILOT = "<{ts}> [Notice] <Vehicle Control Flow> CVehicleMovementBase::SetDriver: Local client node [1] requesting control token for '%s_{n}' [{n}] [Team_VehicleFeatures][Vehicle]"
 # Some notifications contain a line break in the real log - keep that quirk in the demo.
@@ -113,7 +114,7 @@ class DemoLogWriter(threading.Thread):
         loop, script = 0, mission_script(0)
         while not self._halt.wait(self.interval):
             # alternate between the mission story and random combat noise
-            if random.random() < 0.6:
+            if random.random() < 0.65:
                 if not script:
                     loop += 1
                     script = mission_script(loop)

@@ -152,18 +152,22 @@
     setText($("loc-version"), st.game_version ? "SC " + st.game_version : "");
 
     const k = st.stats;
-    const deaths = k.deaths + k.suicides;
-    const kills = k.kills + k.npc_kills;
+    bigNumber("st-deaths", k.deaths);
+    bigNumber("st-incaps", k.incaps);
+    bigNumber("st-injuries", k.injuries);
+    bigNumber("st-crime", k.crimestat);
+    setText($("st-medbed"), String(k.medbed));
+    setText($("st-collisions"), `${k.collisions} ${k.collisions === 1 ? "Kollision" : "Kollisionen"}`);
+    const ld = s.last_death;
+    setText($("st-killer"), ld ? (ld.who && ld.cause !== "Gestorben" ? ld.who : ld.cause) : "–");
+
+    // kill lines only exist in older game versions (until ~4.3) - show them only if present
+    const kills = k.kills + k.npc_kills + k.vehicles_destroyed;
+    $("legacy-kills").hidden = kills === 0;
     setText($("st-kills"), String(k.kills));
     setText($("st-npc"), String(k.npc_kills));
-    setText($("st-deaths"), String(deaths));
-    const kd = kills / Math.max(1, deaths);
-    setText($("st-kd"), kills || deaths ? kd.toFixed(kd >= 10 ? 0 : 1) : "–");
-    setText($("st-streak"), String(k.streak));
-    setText($("st-best"), String(k.best_streak));
-    setText($("st-vdest"), String(k.vehicles_destroyed));
-    setText($("st-vlost"), String(k.vehicles_lost));
-    setText($("st-killer"), s.last_killer ? s.last_killer.name : "–");
+    const kd = (k.kills + k.npc_kills) / Math.max(1, k.deaths);
+    setText($("st-kd"), kd.toFixed(kd >= 10 ? 0 : 1));
 
     renderPills(st.nav);
     renderMissions();
@@ -171,6 +175,12 @@
     renderRsi(st.rsi_status);
     setText($("log-path"), st.log.path ? "Log: " + st.log.path : "Keine Game.log gefunden – siehe README (--log)");
     tick();
+  }
+
+  function bigNumber(id, value) {
+    const e = $(id);
+    setText(e, String(value));
+    e.classList.toggle("zero", !value);
   }
 
   function renderCrumb(text) {
@@ -224,7 +234,10 @@
       nav.armistice ? "ok" : "warn");
     pill("p-mon", nav.monitored === true ? "Überwacht" : nav.monitored === false ? "Unüberwacht" : "",
       nav.monitored ? "ok" : "bad");
-    pill("p-jur", nav.jurisdiction || "", "");
+    pill("p-jur", nav.jurisdiction || "", nav.jurisdiction && nav.jurisdiction.toLowerCase() === "ungoverned" ? "bad" : "");
+    pill("p-restricted", nav.restricted ? "Sperrgebiet" : "", "bad");
+    pill("p-private", nav.private ? "Privatgelände" : "", "warn");
+    pill("p-qt", nav.quantum_target ? "⟶ " + nav.quantum_target : "", "qt");
   }
 
   // ---------------------------------------------------------------- missions
@@ -389,7 +402,14 @@
 
       const since = parseTs(s.location_since);
       setText($("loc-since"), isFinite(since) && s.location ? "Hier seit " + short(ref - since) : "");
-      setText($("st-killer-sub"), s.last_killer ? ago(now - parseTs(s.last_killer.ts)) : "noch keiner – weiter so");
+      const ld = s.last_death;
+      setText($("st-killer-sub"), ld
+        ? [ld.cause !== "Gestorben" && ld.who ? ld.cause : null, ld.where, ago(now - parseTs(ld.ts))].filter(Boolean).join(" · ")
+        : "noch keiner – weiter so");
+      const best = Math.max(st.stats.best_alive * 1000, isFinite(alive) ? alive : 0);
+      setText($("st-best-alive"), best > 0 ? short(best) : "–");
+      setText($("st-best-alive-sub"), isFinite(alive) && alive >= st.stats.best_alive * 1000 && st.stats.deaths
+        ? "neuer Rekord läuft" : "diese Session");
     }
     tickTimers(now);
   }

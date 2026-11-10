@@ -138,3 +138,59 @@ def weapon_name(raw: str) -> Optional[str]:
     rest = [p for p in parts[1:] if not re.fullmatch(r"\d{1,2}", p)] if maker else parts
     words = " ".join(w.capitalize() if w.islower() else w for w in rest)
     return f"{maker} {words}".strip() if maker else words
+
+
+# --------------------------------------------------------------------------- quantum targets
+# Quantum targets in the log are internal object names. Many are technical (mission
+# markers, nav points); those are classified instead of shown verbatim. Categories were
+# cross-checked with the open-source tools sc-log-tracker (MIT) and all-slain.
+_QT_NOISE = re.compile(r"_?\{[0-9A-Fa-f-]+\}|\.socpak$|_\d{6,}$")
+_QT_CITY = re.compile(r"(?i)^(levski|grimhex|lorville|area18|orison|newbabbage)(?:_[a-z]+)?(?:-\d+)?$")
+_QT_REST_STOP = re.compile(r"(?i)^LOC_RR_S([1-4])_L(\d)$")
+_QT_MISSION = re.compile(r"(?i)^MISSION_QT_(.+)$")
+_QT_ASTEROIDS = re.compile(r"(?i)^asteroidcluster_([a-z]+)_region([a-z])")
+_QT_MISSION_HINT = re.compile(r"(?i)final|^ab_|^orbtl_|^util_|_encounter|_dungeon|^em_shelter|_cluster_|^mission")
+_CITY_NAMES = {"grimhex": "Grim HEX", "newbabbage": "New Babbage", "area18": "Area 18"}
+
+
+def quantum_destination(raw: str) -> Dict[str, Optional[str]]:
+    """Classify a quantum target id.
+
+    Returns ``{"name": readable name or None, "kind": place|mission|navpoint|party|asteroids|unknown}``.
+    """
+    name = _QT_NOISE.sub("", _QT_NOISE.sub("", (raw or "").strip()))
+    low = name.lower()
+    if not name:
+        return {"name": None, "kind": "unknown"}
+    if low.startswith("partymembermarker"):
+        return {"name": "Partymitglied", "kind": "party"}
+    if low.startswith("navpoint"):
+        return {"name": "Markierter Navpunkt", "kind": "navpoint"}
+    m = _QT_REST_STOP.match(name)
+    if m:
+        return {"name": f"{['HUR', 'CRU', 'ARC', 'MIC'][int(m.group(1)) - 1]}-L{m.group(2)}", "kind": "place"}
+    m = _QT_MISSION.match(name)
+    if m:
+        return {"name": _split_words(m.group(1)), "kind": "mission"}
+    m = _QT_ASTEROIDS.match(name)
+    if m:
+        return {"name": f"Asteroidenfeld ({m.group(1).capitalize()})", "kind": "asteroids"}
+    name = re.sub(r"(?i)_LOC$", "", name)
+    m = _QT_CITY.match(name)
+    if m:
+        key = m.group(1).lower()
+        return {"name": _CITY_NAMES.get(key, m.group(1).capitalize()), "kind": "place"}
+    if _QT_MISSION_HINT.search(name):
+        return {"name": None, "kind": "mission"}
+    if name[0].isupper() and not re.search(r"(^|_)\d+(_|$)", name):
+        return {"name": describe_location(name)["place"], "kind": "place"}
+    return {"name": None, "kind": "unknown"}
+
+
+_OBJECTIVE_PLACE = re.compile(r"(?i)\b(?:from|to|at|near|in)\s+(?P<place>[A-Z][^:]*?)(?:\s+(?:on|above|in orbit of)\s+[\w ]+)?\s*$")
+
+
+def objective_place(text: str) -> Optional[str]:
+    """``Collect X From Clear View Emergency Shelter on microTech`` -> ``Clear View Emergency Shelter``."""
+    m = _OBJECTIVE_PLACE.search(text or "")
+    return m.group("place").strip() if m else None

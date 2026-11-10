@@ -417,3 +417,12 @@ body[data-mode="mission"] [data-only="combat"] { display: none !important; }
 /* long HUD messages (ATC hints etc.) must not flood the feed */
 .ev-actor { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
 #feed li.comms .ev-actor { font-size: 1.0625rem; font-weight: 500; color: var(--dim); }
+
+/* survival readout */
+.n.warn b { color: var(--amber); text-shadow: 0 0 28px var(--amber-glow); }
+.n b.zero { color: rgba(244, 234, 217, .22) !important; text-shadow: none !important; }
+[hidden] { display: none !important; }
+.pills .qt { --c: var(--amber); border-style: dashed; }
+#feed li.warn { --c: var(--amber); }
+#feed li.warn::before { background: var(--c); box-shadow: 0 0 10px var(--amber-glow); }
+.banner.warn { --c: var(--amber); --g: rgba(255, 140, 30, .18); }

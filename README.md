@@ -10,7 +10,8 @@
 SC-Dash liest die `Game.log` von Star Citizen live mit und zeigt dir auf dem zweiten Monitor
 in Cockpit-HUD-Optik, was gerade zählt. Zwei Modi, umschaltbar oben links oder mit der Taste `M`:
 
-**⚔ Kampf** – wo du bist, wie lange du schon überlebst, wer dich zuletzt erwischt hat, Kills, Tode, K/D.
+**⚔ Kampf & Überleben** – wo du bist, wie lange du schon überlebst, Tode, K.O., Verletzungen,
+CrimeStat, Med-Bed und wie du zuletzt gestorben bist.
 
 ![Kampf-Modus](docs/screenshot.png)
 
@@ -62,6 +63,10 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
 
 - **Standort groß im Blick:** System › Planet und der Ort in Riesenschrift, Server-Region und Shard
 - **Zonen-Status:** Armistice-Zone / Waffen frei, überwachter / unüberwachter Raum, Jurisdiktion
+  (gesetzloser Raum rot), Sperrgebiet, Privatgelände
+- **Quantum-Ziel**, solange ein Sprung geplant ist – lesbar statt interner IDs: Städte, Raststationen
+  (*CRU-L4*), *Markierter Navpunkt*, *Partymitglied* und bei Auftragsmarkern der Ort aus dem aktiven
+  Auftragsziel (*Auftragsziel · Clear View Emergency Shelter*)
 - **Aktuelles Schiff**, sobald du im Pilotensitz sitzt
 - **Timer** mit Fortschrittsbalken (Raffinerie, Miete, Cooldowns – laufen auch nach Neustart weiter)
 - **RSI-Serverstatus**, **Notizen & Links** (Tasten `N` / `L`)
@@ -77,17 +82,25 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
 - **Session-Bilanz:** erledigt, gescheitert, Erfolgsquote, besuchte Orte
 - **Einnahmen:** Betrag eintippen und Enter (`25k`, `12.500`, `-3000` für Ausgaben). Wird pro
   Spielsitzung automatisch auf 0 gesetzt. Manuell, weil das Spiel Belohnungen nicht zuverlässig ins Log schreibt.
+- **Geld & Handel im Komm-Log:** erhaltene/gesendete aUEC, fertige Raffinerie-Aufträge, Belohnungen, Blueprints
 - **Komm-Log:** alle Spielmeldungen (Aufträge, Ziele, Zonen, Quantum-Routen …). Auch HUD-Meldungen,
   die SC-Dash nicht genauer einordnen kann, landen hier.
 
-### Modus „Kampf“
+### Modus „Kampf & Überleben“
 
-- **Am-Leben-Chronometer:** Ring-Anzeige, wie lange du seit deinem letzten Tod überlebst, dazu die Session-Dauer
-- **Kampfstatistik:** Spieler-Kills, NPC-Kills, Tode, K/D, aktuelle Kill-Serie und Bestwert,
-  zerstörte/verlorene Schiffe, **wer dich zuletzt getötet hat**
-- **Kill-/Tod-Einblendung:** großer Hinweis für ein paar Sekunden bei jedem Kill oder Tod
-- **Ereignis-Zeitleiste:** Kills, Tode, Schiffszerstörungen, Ortswechsel – mit lesbaren Namen
-  (*Drake Cutlass Black* statt `DRAK_Cutlass_Black_8471923`, *Behring …* statt `behr_rifle_…`)
+> **Wichtig:** Seit etwa Version 4.4 schreibt Star Citizen **keine Abschüsse mehr** in die `Game.log`
+> (Kills und Wallet laufen jetzt serverseitig). Kein Log-Tool kann deine Kills in aktuellen Versionen
+> zählen. SC-Dash zeigt deshalb, was das Spiel weiterhin protokolliert – und Kills nur dann, wenn
+> eine ältere Version sie liefert.
+
+- **Am-Leben-Chronometer:** wie lange du seit deinem letzten Tod überlebst, plus längstes Überleben der Session
+- **Tode** – jeder Tod zählt genau einmal, auch wenn das Spiel mehrere Zeilen dazu schreibt
+- **K.O. (kampfunfähig)**, **Verletzungen** (mit Körperteil und Behandlungsstufe), **CrimeStat-Erhöhungen**
+- **Med-Bed-Behandlungen** und **tödliche Kollisionen** als Pilot
+- **Letzter Tod:** z. B. *„Drake Cutlass Black – Schiff zerstört · Daymar · vor 4 min“*
+- **Einblendung** bei Tod, K.O., CrimeStat, Beschlagnahmung und Sperrgebiet
+- **Ereignis-Zeitleiste** mit lesbaren Namen (*Drake Cutlass Black* statt `DRAK_Cutlass_Black_8471923`)
+- **Kills / K/D** erscheinen automatisch, falls die Log welche enthält (Versionen bis ~4.3)
 
 ---
 
@@ -177,8 +190,34 @@ als Testfall in `tests/fixtures/`).
 | Schiff (ein-/aussteigen) | Meldung `You have joined channel '<Schiff> : <Pilot>'` | ✅ |
 | Quantum-Sprünge | `<Player Selected Quantum Target …>`, `<Quantum Drive Arrived …>` | ✅ |
 | Spiel beendet | `<SystemQuit>` | ✅ |
-| Kills & Tode | `<Actor Death> CActor::Kill: …` | ⚠️ noch ohne echtes Beispiel |
-| Schiffszerstörung | `<Vehicle Destruction> …` | ⚠️ noch ohne echtes Beispiel |
+| Hangar, Kanäle, Blueprints | HUD-Meldungen | ✅ |
+| Eigener Tod | `<[ActorState] Dead> … Actor '…' … ejected from zone '…' … to zone '…'`, `<[ActorState] Corpse>` | 📚 |
+| Kampfunfähig (K.O.) | `Logged an incap.! nickname: …, causes: […]`, Meldung *Incapacitated* | 📚 |
+| Verletzungen | Meldung *Minor/Moderate/Severe Injury Detected - <Körperteil> - Tier N* | 📚 |
+| Med-Bed | `<MED BED HEAL> … Perform surgery event Success, med bed name: …, vehicle name: …` | 📚 |
+| Tödliche Kollision | `Fatal Collision occured for vehicle … PlayerPilot: 1` | 📚 |
+| CrimeStat, Straftaten, Strafen, Beschlagnahmung | HUD-Meldungen | 📚 |
+| Geld, Raffinerie, Belohnungen | HUD-Meldungen *… has sent you: N aUEC*, *A Refinery Work Order has been Completed at …* | 📚 |
+| Sperrgebiet, Privatgelände, Überwachung aus | HUD-Meldungen | 📚 |
+| Kills & Schiffszerstörung | `<Actor Death> CActor::Kill`, `<Vehicle Destruction>` | 🕰 nur bis ~4.3 |
+
+✅ = mit deiner echten 4.10-Log geprüft · 📚 = laut Quellen unten in 4.x geloggt, in deiner Session
+nicht vorgekommen (Tests mit nachgebauten Zeilen) · 🕰 = in aktuellen Versionen nicht mehr in der Log
+
+### Quellen
+
+Es gibt keine offizielle Dokumentation der `Game.log`. Die Formate oben stammen aus deiner echten Log
+und wurden mit dem Quellcode quelloffener Projekte abgeglichen, die mit echten Logs arbeiten:
+
+- [sc-log-tracker](https://github.com/DefaultHahn/sc-log-tracker) (MIT) – getestet mit 238 Sessions
+  von 4.3 bis 4.10; Quelle für Tod, Verletzungen, Recht, Geld und die Einordnung der Quantum-Ziele
+- [csr](https://github.com/archelium/csr) – „tested on 4.1 → 4.10“; Tod, Med-Bed, Kollisionen
+- [all-slain](https://github.com/DimmaDont/all-slain) (MIT) – Formate für K.O., Leiche/Respawn, Med-Bed;
+  dokumentiert, dass Kill-Zeilen seit 4.0.2 nur noch den eigenen Spieler betreffen
+- [StarLogs](https://github.com/Ozy311/StarLogs) – Kill- und Fahrzeug-Zeilen älterer Versionen
+
+Wenn dir eines der 📚-Ereignisse passiert, schick gern die Zeile aus deiner `Game.log` – dann wird
+daraus ein ✅ mit echtem Testfall.
 
 ### Wie das Live-Mitlesen funktioniert
 

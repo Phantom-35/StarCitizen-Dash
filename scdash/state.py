@@ -9,7 +9,7 @@ from collections import OrderedDict, deque
 from datetime import datetime
 from typing import Any, Dict, Iterable, Optional
 
-from scdash.locations import shard_region
+from scdash.locations import objective_place, shard_region
 from scdash.parser import LogEvent
 
 MAX_EVENTS = 60
@@ -20,6 +20,15 @@ BOTH = (COMBAT, MISSION)
 
 _RESULT_TEXT = {"completed": "Auftrag erledigt", "failed": "Auftrag gescheitert", "abandoned": "Auftrag abgebrochen"}
 _RESULT_CAT = {"completed": "success", "failed": "fail", "abandoned": "other"}
+
+DEATH_DEDUP_SECONDS = 90   # Dead / Corpse / Actor Death lines of the same death
+INCAP_DEDUP_SECONDS = 60
+JURISDICTION_FLAP_SECONDS = 30
+_BODY_DE = {"head": "Kopf", "torso": "Torso", "leftArm": "linker Arm", "rightArm": "rechter Arm",
+            "leftLeg": "linkes Bein", "rightLeg": "rechtes Bein"}
+_PART_DE = {"head": "Kopf", "torso": "Torso", "left arm": "linker Arm", "right arm": "rechter Arm",
+            "left leg": "linkes Bein", "right leg": "rechtes Bein"}
+_INJURY_DE = {"minor": "Leichte", "moderate": "Mittlere", "major": "Schwere", "severe": "Schwere", "critical": "Kritische"}
 
 
 def _secs_between(a: Optional[str], b: Optional[str]) -> Optional[float]:
@@ -56,7 +65,6 @@ class DashboardState:
         self.kills = 0
         self.npc_kills = 0
         self.deaths = 0
-        self.suicides = 0
         self.vehicles_lost = 0
         self.vehicles_destroyed = 0
         self.streak = 0
@@ -77,6 +85,22 @@ class DashboardState:
         self._ship_from_channel = False
         self._ended_missions: set = set()
         self.quantum_jumps = 0
+        # survival / law / money
+        self.incaps = 0
+        self.injuries = 0
+        self.medbed = 0
+        self.collisions = 0
+        self.crimestat = 0
+        self.fines = 0
+        self.money_in = 0
+        self.money_out = 0
+        self.best_alive = 0.0
+        self.last_death: Optional[Dict[str, Any]] = None
+        self._last_death_ts: Optional[str] = None
+        self._last_incap_ts: Optional[str] = None
+        self.restricted: Optional[bool] = None
+        self.private: Optional[bool] = None
+        self._jur_left: Dict[str, str] = {}
         self.quantum_target: Optional[str] = None
         self.game_version: Optional[str] = None
 
@@ -137,7 +161,31 @@ class DashboardState:
 
     def _died(self, ts: Optional[str]) -> None:
         self.streak = 0
+        alive = _secs_between(self.alive_since, ts)
+        if alive is not None:
+            self.best_alive = max(self.best_alive, alive)
         self.alive_since = ts
+
+    @staticmethod
+    def _within(a: Optional[str], b: Optional[str], seconds: float) -> bool:
+        gap = _secs_between(a, b)
+        return gap is not None and gap <= seconds
+
+    def _register_death(self, ev: LogEvent, cause: str, who: str = "", where: Optional[str] = None) -> bool:
+        """Count a death once, no matter how many lines the game writes about it."""
+        if self._within(self._last_death_ts, ev.ts, DEATH_DEDUP_SECONDS):
+            # same death - but keep the more detailed description
+            if self.last_death and who and not self.last_death.get("who"):
+                self.last_death.update({"cause": cause, "who": who, "where": where or self.last_death.get("where")})
+            return False
+        self._last_death_ts = ev.ts
+        self.deaths += 1
+        self._died(ev.ts)
+        self.ship = None
+        self._ship_from_channel = False
+        self.last_death = {"ts": ev.ts, "cause": cause, "who": who, "where": where}
+        self._push(ev, "death", cause, who or (where or ""), where if who else "", feeds=BOTH, banner=True)
+        return True
 
     def _apply(self, ev: LogEvent) -> None:
         if ev.ts:
@@ -170,15 +218,12 @@ class DashboardState:
             victim, killer = d["victim"], d["killer"]
             detail = self._detail(d["weapon"], d["zone"])
             if me and victim == me:
-                self._died(ev.ts)
                 if killer == me or killer.lower() == "unknown":
-                    self.suicides += 1
-                    self._push(ev, "death", "Gestorben", d["damage"] or "Unfall", d["zone"] or "", feeds=BOTH, banner=True)
+                    self._register_death(ev, "Gestorben", d["damage"] or "Unfall", d["zone"])
                 else:
-                    self.deaths += 1
                     who = "NPC" if d["killer_npc"] else killer
                     self.last_killer = {"name": who, "weapon": d["weapon"], "ts": ev.ts}
-                    self._push(ev, "death", "Getötet von", who, detail, feeds=BOTH, banner=True)
+                    self._register_death(ev, "Getötet von", who, detail or None)
             elif me and killer == me:
                 self.streak += 1
                 self.best_streak = max(self.best_streak, self.streak)
@@ -219,10 +264,14 @@ class DashboardState:
             elif not self._ship_from_channel and d["vehicle"] == self.ship:
                 self.ship = None
         elif ev.kind == "quantum":
-            if d["phase"] == "target":
-                self.quantum_target = d["target"]
-                if d["target"]:
-                    self._push(ev, "nav", "Quantum-Ziel", d["target"], feeds=(MISSION,))
+            if d["phase"] in ("target", "fuel"):
+                if d["phase"] == "fuel" and self.quantum_target:
+                    return  # fuel estimate for a target we already know
+                target = self._describe_qt(d)
+                if target != self.quantum_target:
+                    self.quantum_target = target
+                    if target:
+                        self._push(ev, "nav", "Quantum-Ziel", target, feeds=(MISSION,))
             else:
                 self.quantum_jumps += 1
                 self._push(ev, "nav", "Quantum-Sprung", "Ziel erreicht", self.quantum_target or "", feeds=(MISSION,))
@@ -238,6 +287,28 @@ class DashboardState:
                 self._push(ev, "success" if d["state"] == "done" else "fail",
                            "Ziel erledigt" if d["state"] == "done" else "Ziel gescheitert",
                            obj["text"], mission["title"], feeds=(MISSION,))
+        elif ev.kind == "dead":
+            if d["actor"] is None or me is None or d["actor"] == me:
+                if d["ship_destroyed"] and d["ship"]:
+                    self._register_death(ev, "Schiff zerstört", d["ship"], d["where"])
+                else:
+                    self._register_death(ev, "Gestorben", d["ship"] or "", d["where"])
+            else:
+                self._push(ev, "other", "Spieler gestorben", d["actor"], d["where"] or "")
+        elif ev.kind == "corpse":
+            if d["local"] and (me is None or d["player"] == me):
+                self._register_death(ev, "Gestorben")
+        elif ev.kind == "incap":
+            if me is None or d["player"] == me:
+                self._incapacitated(ev, ", ".join(d["causes"]))
+        elif ev.kind == "medbed":
+            if (me is None or d["actor"] == me) and d["ok"]:
+                self.medbed += 1
+                parts = ", ".join(_BODY_DE.get(p, p) for p in d["parts"]) or "Behandlung"
+                self._push(ev, "success", "Med-Bed", parts, d["vehicle"] or "Krankenhaus", feeds=BOTH)
+        elif ev.kind == "collision":
+            self.collisions += 1
+            self._push(ev, "death", "Tödliche Kollision", d["vehicle"], d["where"] or "", feeds=BOTH, banner=True)
         elif ev.kind == "notify":
             self._notify(ev)
         elif ev.kind == "mission_end":
@@ -246,6 +317,25 @@ class DashboardState:
                 self._end_mission(ev, mission, d["result"])
             elif d["mission_id"]:
                 self._ended_missions.add(d["mission_id"])
+
+    def _describe_qt(self, d: Dict[str, Any]) -> Optional[str]:
+        if d["kind"] != "mission":
+            return d["name"]
+        # mission markers have no readable name - borrow it from the active objective
+        for mission in sorted(self.missions.values(), key=lambda m: m["seq"], reverse=True):
+            for obj in mission["objectives"].values():
+                if obj["state"] == "open":
+                    place = objective_place(obj["text"])
+                    if place:
+                        return f"Auftragsziel · {place}"
+        return f"Auftragsziel · {d['name']}" if d["name"] else "Auftragsziel"
+
+    def _incapacitated(self, ev: LogEvent, causes: str) -> None:
+        if self._within(self._last_incap_ts, ev.ts, INCAP_DEDUP_SECONDS):
+            return
+        self._last_incap_ts = ev.ts
+        self.incaps += 1
+        self._push(ev, "death", "Kampfunfähig", causes or "K.O.", "Notfall-Beacon möglich", feeds=BOTH, banner=True)
 
     # ------------------------------------------------------------------ missions
     def _find_mission(self, mission_id: Optional[str], title: Optional[str] = None) -> Optional[Dict[str, Any]]:
@@ -355,11 +445,74 @@ class DashboardState:
             elif self.ship == subject or not self._ship_from_channel:
                 self.ship, self._ship_from_channel = None, False
                 self._push(ev, "nav", "Ausgestiegen", subject, feeds=(MISSION,))
+        elif cat == "incapacitated":
+            self._incapacitated(ev, subject if subject != d["text"] else "")
+        elif cat == "rescue":
+            self._push(ev, "warn", "Rettung", "Notfalldienste unterwegs", feeds=(COMBAT,))
+        elif cat == "injury":
+            self.injuries += 1
+            sev = _INJURY_DE.get(d["sev"].lower(), d["sev"].capitalize())
+            severe = d["sev"].lower() in ("major", "severe", "critical")
+            part = d["part"].strip()
+            self._push(ev, "death" if severe else "warn", f"{sev} Verletzung", _PART_DE.get(part.lower(), part),
+                       f"Tier-{d['tier']}-Behandlung nötig", feeds=BOTH)
+        elif cat in ("crime_up", "crime"):
+            self.crimestat += 1 if cat == "crime_up" else 0
+            self._push(ev, "fail", "CrimeStat erhöht" if cat == "crime_up" else "Straftat",
+                       "" if cat == "crime_up" else subject, feeds=BOTH, banner=cat == "crime_up")
+        elif cat == "crime_against":
+            self._push(ev, "warn", "Straftat gegen dich", d["who"], f"{d['what']} – vergeben oder melden", feeds=BOTH)
+        elif cat == "fined":
+            self.fines += d["amount"]
+            self._push(ev, "fail", "Strafe", f"{d['amount']:,} UEC".replace(",", "."), feeds=BOTH)
+        elif cat == "impounded":
+            self._push(ev, "fail", "Schiff beschlagnahmt", subject, feeds=BOTH, banner=True)
+        elif cat == "money_received":
+            self.money_in += d["amount"]
+            self._push(ev, "success", "Geld erhalten", f"{d['amount']:,} aUEC".replace(",", "."), f"von {d['who']}",
+                       feeds=(MISSION,))
+        elif cat == "money_sent":
+            self.money_out += d["amount"]
+            self._push(ev, "info", "Geld gesendet", f"{d['amount']:,} aUEC".replace(",", "."), f"an {d['who']}",
+                       feeds=(MISSION,))
+        elif cat == "refinery":
+            self._push(ev, "success", "Raffinerie fertig", d["where"].strip(), feeds=(MISSION,), banner=True)
+        elif cat == "rewards":
+            self._push(ev, "success", "Belohnungen", f"{d['amount']} erhalten", "im Heimatort abholen", feeds=(MISSION,))
+        elif cat == "blueprint":
+            self._push(ev, "success", "Blueprint erhalten", subject, feeds=(MISSION,))
+        elif cat == "low_fuel":
+            self._push(ev, "warn", "Treibstoff knapp", feeds=BOTH)
+        elif cat in ("restricted_on", "restricted_off"):
+            self.restricted = cat == "restricted_on"
+            if self.restricted:
+                self._push(ev, "warn", "Sperrgebiet", "Fahrzeuge werden beschlagnahmt", feeds=BOTH, banner=True)
+        elif cat in ("private_on", "private_off"):
+            self.private = cat == "private_on"
+            self._push(ev, "zone", "Zone", "Privatgelände betreten" if self.private else "Privatgelände verlassen",
+                       feeds=(MISSION,))
+        elif cat == "monitored_down":
+            self.monitored = False
+            self._push(ev, "zone", "Zone", "Überwachung ausgefallen", "Comm-Array offline", feeds=BOTH)
+        elif cat == "shared":
+            self._push(ev, "comms", "Auftrag geteilt", subject, feeds=(MISSION,))
+        elif cat == "hangar":
+            self._push(ev, "nav", "Hangar bereit", feeds=(MISSION,))
+        elif cat == "transaction":
+            self._push(ev, "comms", "Transaktion abgeschlossen", feeds=(MISSION,))
         elif cat == "available":
             self._push(ev, "comms", "Auftrag verfügbar", subject, feeds=(MISSION,))
         elif cat == "jurisdiction":
+            if subject == self.jurisdiction:
+                return
+            if self.jurisdiction and ev.ts:
+                self._jur_left[self.jurisdiction] = ev.ts
             self.jurisdiction = subject
-            self._push(ev, "zone", "Jurisdiktion", subject, feeds=(MISSION,))
+            if self._within(self._jur_left.get(subject), ev.ts, JURISDICTION_FLAP_SECONDS):
+                return  # ping-pong at a border
+            lawless = subject.lower() == "ungoverned"
+            self._push(ev, "warn" if lawless else "zone", "Jurisdiktion", subject,
+                       "gesetzloser Raum" if lawless else "", feeds=(MISSION,))
         else:
             self._push(ev, "comms", "Meldung", d["text"], feeds=(MISSION,))
 
@@ -393,13 +546,13 @@ class DashboardState:
                     "last_log": self.last_log_ts,
                     "alive_since": self.alive_since,
                     "last_killer": self.last_killer,
+                    "last_death": self.last_death,
                     "ended": self.ended,
                 },
                 "stats": {
                     "kills": self.kills,
                     "npc_kills": self.npc_kills,
                     "deaths": self.deaths,
-                    "suicides": self.suicides,
                     "vehicles_lost": self.vehicles_lost,
                     "vehicles_destroyed": self.vehicles_destroyed,
                     "streak": self.streak,
@@ -409,6 +562,15 @@ class DashboardState:
                     "missions_abandoned": self.missions_abandoned,
                     "places": len(self.places),
                     "quantum_jumps": self.quantum_jumps,
+                    "incaps": self.incaps,
+                    "injuries": self.injuries,
+                    "medbed": self.medbed,
+                    "collisions": self.collisions,
+                    "crimestat": self.crimestat,
+                    "fines": self.fines,
+                    "money_in": self.money_in,
+                    "money_out": self.money_out,
+                    "best_alive": self.best_alive,
                 },
                 "nav": {
                     "ship": self.ship,
@@ -416,6 +578,8 @@ class DashboardState:
                     "monitored": self.monitored,
                     "jurisdiction": self.jurisdiction,
                     "quantum_target": self.quantum_target,
+                    "restricted": self.restricted,
+                    "private": self.private,
                 },
                 "game_version": self.game_version,
                 "missions": {

@@ -50,6 +50,9 @@
           <span id="p-arm"></span>
           <span id="p-mon"></span>
           <span id="p-jur"></span>
+          <span id="p-restricted"></span>
+          <span id="p-private"></span>
+          <span id="p-qt"></span>
         </div>
       </div>
 
@@ -70,15 +73,16 @@
 
         <div class="readout">
           <div class="big">
-            <div class="n kill"><b id="st-kills">0</b><small>Kills</small></div>
-            <div class="n kill"><b id="st-npc">0</b><small>NPC</small></div>
             <div class="n death"><b id="st-deaths">0</b><small>Tode</small></div>
-            <div class="n kd"><b id="st-kd">–</b><small>K/D</small></div>
+            <div class="n warn"><b id="st-incaps">0</b><small>K.O.</small></div>
+            <div class="n warn"><b id="st-injuries">0</b><small>Verletzungen</small></div>
+            <div class="n death"><b id="st-crime">0</b><small>CrimeStat</small></div>
           </div>
           <div class="small-stats">
-            <div><small>Serie</small><b id="st-streak">0</b><em>best <span id="st-best">0</span></em></div>
-            <div><small>Schiffe</small><b><span class="kill" id="st-vdest">0</span><i>/</i><span class="death" id="st-vlost">0</span></b><em>zerstört / verloren</em></div>
+            <div><small>Längstes Überleben</small><b id="st-best-alive">–</b><em id="st-best-alive-sub">diese Session</em></div>
+            <div><small>Med-Bed</small><b id="st-medbed">0</b><em id="st-collisions">0 Kollisionen</em></div>
             <div><small>Letzter Tod</small><b id="st-killer">–</b><em id="st-killer-sub"></em></div>
+            <div id="legacy-kills" hidden><small>Kills</small><b><span class="kill" id="st-kills">0</span><i>/</i><span class="kill" id="st-npc">0</span></b><em>Spieler / NPC · K/D <span id="st-kd">–</span></em></div>
           </div>
         </div>
       </div>
