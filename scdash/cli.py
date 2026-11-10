@@ -31,6 +31,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--port", type=int, default=8777, help="Port für den Webserver (Standard: 8777)")
     p.add_argument("--open", action="store_true",
                    help="Dashboard als eigenes Fenster öffnen (Edge/Chrome im App-Modus, GPU deaktiviert)")
+    p.add_argument("--gpu", action="store_true",
+                   help="Dashboard-Fenster mit Hardwarebeschleunigung (flüssiger, belegt aber etwas VRAM)")
     p.add_argument("--no-status", action="store_true", help="RSI-Serverstatus nicht abrufen (keine Internetzugriffe)")
     p.add_argument("--demo", action="store_true", help="Demo-Modus mit simulierten Ereignissen (ohne Spiel)")
     p.add_argument("-v", "--verbose", action="store_true", help="Ausführliche Ausgabe")
@@ -38,7 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def open_dashboard(url: str) -> None:
+def open_dashboard(url: str, gpu: bool = False) -> None:
     exe = find_chromium_browser()
     if not exe:
         log.info("Kein Edge/Chrome gefunden – öffne Standardbrowser.")
@@ -49,17 +51,16 @@ def open_dashboard(url: str) -> None:
     args = [
         exe,
         f"--app={url}",
-        # Software rendering: the dashboard window uses no VRAM on the graphics card.
-        "--disable-gpu",
-        "--disable-gpu-compositing",
-        "--disable-software-rasterizer",
         "--disable-extensions",
         "--no-first-run",
         "--no-default-browser-check",
         # Separate profile, otherwise the flags are ignored if the browser is already open.
         f"--user-data-dir={profile}",
-        "--window-size=1280,800",
+        "--window-size=1600,900",
     ]
+    if not gpu:
+        # Software rendering: the dashboard window uses no VRAM on the graphics card.
+        args += ["--disable-gpu", "--disable-gpu-compositing", "--disable-software-rasterizer"]
     log.info("Öffne Dashboard-Fenster: %s", os.path.basename(exe))
     try:
         subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -127,7 +128,7 @@ def main(argv=None) -> int:
     url = f"http://{'127.0.0.1' if args.host in ('0.0.0.0', '') else args.host}:{args.port}/"
     log.info("SC-Dash %s läuft auf %s  (Beenden mit Strg+C)", __version__, url)
     if args.open:
-        threading.Timer(0.5, open_dashboard, args=(url,)).start()
+        threading.Timer(0.5, open_dashboard, args=(url, args.gpu)).start()
 
     try:
         httpd.serve_forever(poll_interval=1.0)

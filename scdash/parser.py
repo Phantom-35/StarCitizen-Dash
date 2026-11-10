@@ -11,6 +11,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Optional
 
+from scdash.locations import describe_location, ship_name, weapon_name
+
 _TS = re.compile(r"^<(?P<ts>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)>")
 
 _LOGIN = re.compile(r"User Login Success - Handle\[(?P<handle>[^\]]+)\]")
@@ -81,8 +83,8 @@ def parse_line(line: str) -> Optional[LogEvent]:
             {
                 "victim": clean_name(d["victim"]),
                 "killer": clean_name(d["killer"]),
-                "weapon": pretty_label(d["weapon"]),
-                "zone": pretty_label(d["zone"]),
+                "weapon": weapon_name(d["weapon"]),
+                "zone": describe_location(d["zone"])["place"] if d["zone"] else None,
                 "damage": d["dtype"],
                 "victim_npc": is_npc(d["victim"]),
                 "killer_npc": is_npc(d["killer"]),
@@ -96,9 +98,10 @@ def parse_line(line: str) -> Optional[LogEvent]:
             "vehicle",
             ts,
             {
-                "vehicle": pretty_label(d["vehicle"]),
-                "zone": pretty_label(d["zone"]),
+                "vehicle": ship_name(d["vehicle"]),
+                "zone": describe_location(d["zone"])["place"] if d["zone"] else None,
                 "driver": clean_name(d["driver"]),
+                "driver_npc": is_npc(d["driver"]),
                 "cause": clean_name(d["cause"]),
                 "from": int(d["from"]),
                 "to": int(d["to"]),
@@ -108,7 +111,7 @@ def parse_line(line: str) -> Optional[LogEvent]:
 
     m = _LOCATION.search(line)
     if m:
-        return LogEvent("location", ts, {"location": pretty_label(m.group("location"))})
+        return LogEvent("location", ts, {"location": describe_location(m.group("location"))})
 
     m = _JOIN_PU.search(line)
     if m:

@@ -7,10 +7,19 @@
 ![Abhängigkeiten](https://img.shields.io/badge/abh%C3%A4ngigkeiten-keine-brightgreen)
 ![Lizenz](https://img.shields.io/badge/lizenz-MIT-lightgrey)
 
-SC-Dash liest die `Game.log` von Star Citizen live mit und zeigt auf dem zweiten Monitor an,
-was in deiner Session passiert – Kills, Tode, Ort, Shard, Serverstatus – plus Timer und Notizen.
+SC-Dash liest die `Game.log` von Star Citizen live mit und zeigt dir auf dem zweiten Monitor
+in Cockpit-HUD-Optik, was gerade zählt: **wo du bist, wie lange du schon überlebst, wer dich zuletzt
+erwischt hat** – plus Kill-Statistik, Ereignis-Log, Timer für Raffinerie & Co. und den RSI-Serverstatus.
 
 ![Screenshot](docs/screenshot.png)
+
+<details>
+<summary>Kill-/Tod-Einblendung</summary>
+
+Bei jedem Kill oder Tod blendet SC-Dash für ein paar Sekunden einen großen Hinweis ein:
+
+![Kill-Einblendung](docs/screenshot-banner.png)
+</details>
 
 ---
 
@@ -22,9 +31,10 @@ SC-Dash ist darauf ausgelegt, das zu vermeiden:
 
 | Maßnahme | Effekt |
 |---|---|
-| Dashboard-Fenster startet mit `--disable-gpu` (Software-Rendering) | **Kein VRAM** für das Dashboard, die Grafikkarte gehört dem Spiel |
+| Dashboard-Fenster startet mit `--disable-gpu` (Software-Rendering) | **Kein VRAM** für das Dashboard, die Grafikkarte gehört dem Spiel (mit `--gpu` abschaltbar) |
 | Eigenes, schlankes Browser-Profil ohne Erweiterungen | wenig RAM, keine Hintergrund-Tabs |
-| Keine Animationen, Bilder, Web-Fonts, Canvas oder WebGL | winzige Neuzeichnungen, nur Text ändert sich |
+| Hintergrund, Glow und Raster sind statisch; Animationen nur für die Kill-Einblendung und kleine Statuspunkte | winzige Neuzeichnungen, kein Dauer-Rendering |
+| Keine Bilder, Videos, Canvas oder WebGL; Schriften lokal mitgeliefert (~60 KB) | lädt sofort, funktioniert offline |
 | Daten werden alle 2 s abgefragt, neu gezeichnet nur bei Änderungen | praktisch keine CPU-Last |
 | Polling pausiert, wenn das Fenster minimiert ist | 0 Aufwand, wenn du es nicht siehst |
 | Backend: reines Python, keine Abhängigkeiten | ~30 MB RAM, kein Node, kein Electron |
@@ -40,13 +50,17 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
 
 ## Funktionen
 
-- **Session:** Pilotenname, aktueller Ort, Shard, Spieldauer
-- **Kampfstatistik:** Spieler-Kills, NPC-Kills, Tode, K/D, zerstörte und verlorene Schiffe
-- **Ereignis-Feed:** die letzten 40 Ereignisse (Kills, Tode, Ortswechsel, Shard-Wechsel …)
-- **RSI-Serverstatus:** Platform / Persistent Universe / Arena Commander (alle 5 min)
-- **Timer:** z. B. für Raffinerie-Jobs, Schiffsmieten oder Cooldowns – laufen auch nach Neustart weiter
-- **Notizen:** Handelsrouten, Koordinaten, Missionsinfos – werden automatisch gespeichert
-- **Links:** Schnellzugriff auf Erkul, UEX, SC Trade Tools, Wiki & Co. (anpassbar)
+- **Standort groß im Blick:** System › Planet und der Ort in Riesenschrift (z. B. *Stanton › Crusader – ORISON*),
+  wie lange du schon dort bist, Server-Region (EU West, US East …) und Shard
+- **Am-Leben-Chronometer:** Ring-Anzeige, wie lange du seit deinem letzten Tod überlebst, dazu die Session-Dauer
+- **Kampfstatistik:** Spieler-Kills, NPC-Kills, Tode, K/D, aktuelle Kill-Serie und Bestwert,
+  zerstörte/verlorene Schiffe, **wer dich zuletzt getötet hat**
+- **Kill-/Tod-Einblendung:** großer Hinweis für ein paar Sekunden bei jedem Kill oder Tod
+- **Ereignis-Zeitleiste:** Kills, Tode, Schiffszerstörungen, Ortswechsel – mit lesbaren Namen
+  (*Drake Cutlass Black* statt `DRAK_Cutlass_Black_8471923`, *Behring …* statt `behr_rifle_…`)
+- **Timer** mit Fortschrittsbalken, z. B. für Raffinerie-Jobs, Schiffsmieten oder Cooldowns – laufen auch nach Neustart weiter
+- **RSI-Serverstatus:** Plattform / PU / Arena Commander (alle 5 min)
+- **Notizen & Links** in einer ausfahrbaren Seitenleiste (Tasten `N` und `L`, `Esc` schließt)
 - **Lokal & privat:** Alles läuft auf deinem PC (`127.0.0.1`). Die einzige Internetanfrage ist der
   RSI-Serverstatus – abschaltbar mit `--no-status`.
 
@@ -96,6 +110,7 @@ python -m scdash [Optionen]
   --port 8777    Port des lokalen Webservers
   --host ADRESSE Standard 127.0.0.1 (nur dieser PC). Mit 0.0.0.0 z. B. vom Tablet/Handy
                  im WLAN erreichbar – dann auf http://<PC-IP>:8777 öffnen.
+  --gpu          Dashboard-Fenster mit Hardwarebeschleunigung (etwas flüssiger, belegt aber VRAM)
   --no-status    RSI-Serverstatus nicht abrufen (keine Internetzugriffe)
   --demo         Demo-Modus mit simulierten Ereignissen
   -v             Ausführliche Ausgabe
@@ -110,6 +125,9 @@ keinen Grafikspeicher nutzt, in dessen Einstellungen die *Hardwarebeschleunigung
 oder lieber `--open` verwenden, das macht genau das, ohne deinen normalen Browser zu verändern.
 
 **Links anpassen:** `scdash/web/links.json` bearbeiten.
+
+**Monitorgrößen:** Das Layout skaliert von 1366×768 bis 4K mit. Auf Hochkant-Monitoren werden die
+Bereiche untereinander angeordnet. Vollbild mit `F11`.
 
 ---
 
@@ -146,13 +164,14 @@ Optional als Befehl installieren: `pip install .` → danach einfach `scdash --o
 ```
 scdash/
 ├── cli.py        Kommandozeile, Start der Threads, Browserfenster
+├── locations.py  Lesbare Namen für Orte, Server-Regionen, Schiffe und Waffen
 ├── parser.py     Erkennung der Log-Zeilen (reine Funktionen, gut testbar)
 ├── state.py      Thread-sicherer Zustand + Auswertung (Kills/Tode/…)
 ├── watcher.py    Game.log mitlesen, Spielprozess erkennen
 ├── status.py     RSI-Serverstatus (cState-JSON)
 ├── server.py     Mini-HTTP-Server: statische Dateien + /api/state
 ├── demo.py       Simulierte Game.log für den Demo-Modus
-└── web/          index.html, style.css, app.js, links.json
+└── web/          index.html, style.css, app.js, links.json, fonts/
 ```
 
 Beiträge sind willkommen – siehe [CONTRIBUTING.md](CONTRIBUTING.md). Änderungen stehen im
@@ -171,4 +190,6 @@ Beiträge sind willkommen – siehe [CONTRIBUTING.md](CONTRIBUTING.md). Änderun
 SC-Dash ist ein inoffizielles Fan-Projekt und steht in keiner Verbindung zu Cloud Imperium Games
 oder Roberts Space Industries. *Star Citizen®* ist eine eingetragene Marke von Cloud Imperium Rights LLC.
 
-Lizenz: [MIT](LICENSE)
+Lizenz: [MIT](LICENSE). Mitgelieferte Schriften: *Rajdhani* (Indian Type Foundry) und
+*Share Tech Mono* (Carrois Type Design), beide unter der
+[SIL Open Font License 1.1](scdash/web/fonts/).

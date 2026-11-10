@@ -32,6 +32,11 @@ class StateTests(unittest.TestCase):
         self.assertEqual(s["stats"]["suicides"], 1)
         self.assertEqual(s["events"][0]["cat"], "death")  # newest first
         self.assertEqual(s["session"]["start"], "2026-11-10T18:00:00.000Z")
+        self.assertEqual(s["session"]["last_killer"]["name"], "Bob")
+        self.assertEqual(s["stats"]["best_streak"], 2)
+        self.assertEqual(s["stats"]["streak"], 0)
+        ids = [e["id"] for e in s["events"]]
+        self.assertEqual(ids, sorted(ids, reverse=True))
 
     def test_version_changes(self):
         st = DashboardState()

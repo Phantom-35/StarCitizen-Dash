@@ -17,6 +17,7 @@ WEB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 
 mimetypes.add_type("text/javascript", ".js")
 mimetypes.add_type("text/css", ".css")
+mimetypes.add_type("font/woff2", ".woff2")
 
 
 def make_handler(state: DashboardState):

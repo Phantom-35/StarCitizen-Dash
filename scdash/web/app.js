@@ -1,154 +1,259 @@
 /*
- * SC-Dash frontend. Plain JS, no framework, no canvas, no animations.
- * - polls /api/state every 2 s and only re-renders when the version changed
+ * SC-Dash frontend. Vanilla JS, no framework.
+ * - polls /api/state every 2 s, re-renders only when the version changed
  * - pauses polling while the window is hidden/minimised
- * - the 1 s tick only updates a handful of text nodes (clocks, timers)
+ * - the 1 s tick only touches a few text nodes and two SVG attributes
  */
 (() => {
   "use strict";
 
   const POLL_MS = 2000;
+  const BANNER_MS = 7000;
   const $ = (id) => document.getElementById(id);
   const pad = (n) => String(n).padStart(2, "0");
 
+  let st = null;            // last state from the server
   let lastVersion = -1;
-  let sessionStart = null;
+  let lastEventId = null;   // null = first render, no banner for old events
   let pollTimer = null;
+  let bannerTimer = null;
 
   // ---------------------------------------------------------------- helpers
   function setText(el, text) {
     if (el.textContent !== text) el.textContent = text;
   }
-
-  function setChip(el, text, cls) {
-    setText(el, text);
-    el.className = "chip" + (cls ? " " + cls : "");
+  function setClass(el, cls) {
+    if (el.className !== cls) el.className = cls;
   }
-
-  function fmtDuration(ms) {
-    if (ms < 0 || !isFinite(ms)) return "–";
-    const s = Math.floor(ms / 1000);
-    const h = Math.floor(s / 3600);
-    return `${h}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
-  }
-
-  function fmtClock(d, utc) {
-    return utc
-      ? `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`
-      : `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-  }
-
   function el(tag, cls, text) {
     const e = document.createElement(tag);
     if (cls) e.className = cls;
     if (text !== undefined) e.textContent = text;
     return e;
   }
+  function hms(ms) {
+    if (!isFinite(ms) || ms < 0) ms = 0;
+    const s = Math.floor(ms / 1000);
+    return `${Math.floor(s / 3600)}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
+  }
+  function short(ms) {
+    if (!isFinite(ms) || ms < 0) ms = 0;
+    const s = Math.floor(ms / 1000);
+    return s < 3600 ? `${pad(Math.floor(s / 60))}:${pad(s % 60)}` : hms(ms);
+  }
+  function ago(ms) {
+    const m = Math.floor(ms / 60000);
+    if (m < 1) return "gerade eben";
+    if (m < 60) return `vor ${m} min`;
+    return `vor ${Math.floor(m / 60)} h ${m % 60} min`;
+  }
+  const parseTs = (ts) => (ts ? Date.parse(ts) : NaN);
+
+  /** Reference "now" for durations: frozen at the last log line when the game is closed. */
+  function sessionNow(now) {
+    if (!st) return now;
+    const s = st.session;
+    if (st.game_running === false || s.ended) {
+      const last = parseTs(s.last_log);
+      return isFinite(last) ? last : now;
+    }
+    return now;
+  }
+
+  // ---------------------------------------------------------------- chrono ticks (static)
+  (function buildTicks() {
+    const g = $("ticks");
+    const NS = "http://www.w3.org/2000/svg";
+    for (let i = 0; i < 60; i++) {
+      const a = (i / 60) * Math.PI * 2;
+      const major = i % 5 === 0;
+      const r1 = major ? 84 : 86, r2 = 94;
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", 100 + r1 * Math.cos(a));
+      l.setAttribute("y1", 100 + r1 * Math.sin(a));
+      l.setAttribute("x2", 100 + r2 * Math.cos(a));
+      l.setAttribute("y2", 100 + r2 * Math.sin(a));
+      if (major) l.setAttribute("class", "major");
+      g.appendChild(l);
+    }
+  })();
 
   // ---------------------------------------------------------------- polling
   async function poll() {
     try {
       const res = await fetch("/api/state", { cache: "no-store" });
       if (!res.ok) throw new Error(res.status);
-      const st = await res.json();
-      setChip($("chip-link"), "VERBUNDEN", "on");
-      if (st.version !== lastVersion) {
-        lastVersion = st.version;
-        render(st);
+      const data = await res.json();
+      setClass($("ind-link"), "on");
+      if (data.version !== lastVersion) {
+        lastVersion = data.version;
+        st = data;
+        render();
       }
     } catch (e) {
-      setChip($("chip-link"), "KEIN SERVER", "off");
+      setClass($("ind-link"), "off");
       lastVersion = -1;
     }
   }
-
   function startPolling() {
     if (pollTimer) return;
     poll();
     pollTimer = setInterval(poll, POLL_MS);
   }
-
   function stopPolling() {
     clearInterval(pollTimer);
     pollTimer = null;
   }
+  document.addEventListener("visibilitychange", () => (document.hidden ? stopPolling() : startPolling()));
 
-  document.addEventListener("visibilitychange", () => {
-    document.hidden ? stopPolling() : startPolling();
-  });
-
-  // ---------------------------------------------------------------- render
-  function render(st) {
+  // ---------------------------------------------------------------- render (on change only)
+  function render() {
     const gr = st.game_running;
-    setChip($("chip-game"), gr === true ? "SPIEL LÄUFT" : gr === false ? "SPIEL AUS" : "SPIEL ?",
-      gr === true ? "on" : gr === false ? "off" : "");
-    setChip($("chip-log"), st.log.found ? "LOG OK" : "KEINE GAME.LOG", st.log.found ? "on" : "warn");
-    setText($("log-path"), st.log.path || "Game.log nicht gefunden – siehe README (--log)");
+    setClass($("ind-game"), gr === true ? "on live" : gr === false ? "off" : "");
+    setClass($("ind-log"), st.log.found ? "on" : "warn");
+    document.body.classList.toggle("offline", gr === false);
 
     const s = st.session;
-    setText($("s-handle"), s.handle || "–");
-    setText($("s-location"), s.location || "–");
-    setText($("s-shard"), s.shard || "–");
-    sessionStart = s.start ? Date.parse(s.start) : null;
+    const loc = s.location;
+    let crumb, place;
+    if (!st.log.found) {
+      crumb = "Game.log nicht gefunden";
+      place = "Kein Log";
+    } else if (loc) {
+      crumb = [loc.system, loc.planet !== loc.place ? loc.planet : null].filter(Boolean).join(" › ");
+      place = loc.place;
+    } else {
+      crumb = s.handle ? "Standort wird ermittelt" : "Warte auf Spiel";
+      place = s.handle ? "Im Verse" : "Kein Signal";
+    }
+    if (gr === false && s.handle) crumb = "Letzte Session" + (crumb ? " · " + crumb : "");
+    renderCrumb(crumb || "–");
+    setText($("loc-place"), place);
+    $("loc-place").classList.toggle("long", place.length > 11);
+    setText($("loc-region"), s.region || "");
+    setText($("loc-shard"), s.shard || "");
 
     const k = st.stats;
-    setText($("st-kills"), String(k.kills));
-    setText($("st-npc"), String(k.npc_kills));
-    setText($("st-deaths"), String(k.deaths + k.suicides));
     const deaths = k.deaths + k.suicides;
     const kills = k.kills + k.npc_kills;
-    setText($("st-kd"), deaths ? (kills / deaths).toFixed(2) : kills ? "∞" : "–");
+    setText($("st-kills"), String(k.kills));
+    setText($("st-npc"), String(k.npc_kills));
+    setText($("st-deaths"), String(deaths));
+    const kd = kills / Math.max(1, deaths);
+    setText($("st-kd"), kills || deaths ? kd.toFixed(kd >= 10 ? 0 : 1) : "–");
+    setText($("st-streak"), String(k.streak));
+    setText($("st-best"), String(k.best_streak));
     setText($("st-vdest"), String(k.vehicles_destroyed));
     setText($("st-vlost"), String(k.vehicles_lost));
+    setText($("st-killer"), s.last_killer ? s.last_killer.name : "–");
 
     renderFeed(st.events);
-    renderStatus(st.rsi_status);
+    renderRsi(st.rsi_status);
+    setText($("log-path"), st.log.path ? "Log: " + st.log.path : "Keine Game.log gefunden – siehe README (--log)");
+    tick();
+  }
+
+  function renderCrumb(text) {
+    const c = $("loc-crumb");
+    if (c.dataset.v === text) return;
+    c.dataset.v = text;
+    c.replaceChildren();
+    text.split(" › ").forEach((part, i) => {
+      if (i) c.appendChild(el("i", "", "›"));
+      c.appendChild(document.createTextNode(part));
+    });
   }
 
   function renderFeed(events) {
-    const feed = $("feed");
+    const now = Date.now();
     const frag = document.createDocumentFragment();
-    if (!events.length) {
-      frag.appendChild(el("li", "muted", "Noch keine Ereignisse."));
-    }
+    if (!events.length) frag.appendChild(el("li", "empty", "Noch keine Ereignisse in dieser Session."));
     for (const ev of events) {
-      const li = el("li");
-      const d = ev.ts ? new Date(ev.ts) : null;
-      li.appendChild(el("time", "", d ? `${pad(d.getHours())}:${pad(d.getMinutes())}` : "--:--"));
-      li.appendChild(el("span", ev.cat, ev.text));
+      const li = el("li", ev.cat);
+      const fresh = lastEventId !== null && ev.id > lastEventId;
+      if (fresh || (now - parseTs(ev.ts) < 20000)) li.classList.add("fresh");
+      const head = el("div", "ev-head");
+      const d = parseTs(ev.ts);
+      head.appendChild(el("time", "", isFinite(d) ? `${pad(new Date(d).getHours())}:${pad(new Date(d).getMinutes())}` : "--:--"));
+      head.appendChild(el("span", "", ev.title));
+      li.appendChild(head);
+      if (ev.actor) li.appendChild(el("div", "ev-actor", ev.actor));
+      if (ev.detail) li.appendChild(el("div", "ev-detail", ev.detail));
       frag.appendChild(li);
     }
-    feed.replaceChildren(frag);
+    $("feed").replaceChildren(frag);
+
+    // banner for brand-new kills / deaths
+    const newest = events.find((e) => (e.cat === "kill" || e.cat === "death") && lastEventId !== null && e.id > lastEventId);
+    if (newest && now - parseTs(newest.ts) < 60000) showBanner(newest);
+    if (events.length) lastEventId = Math.max(lastEventId ?? 0, events[0].id);
+    else if (lastEventId === null) lastEventId = 0;
   }
 
-  const STATUS_DE = {
-    operational: "OK",
-    disrupted: "GESTÖRT",
-    down: "AUSFALL",
-    notice: "HINWEIS",
-    unknown: "?",
-  };
+  function showBanner(ev) {
+    const b = $("banner");
+    setText($("banner-title"), ev.title);
+    setText($("banner-actor"), ev.actor || (ev.cat === "kill" ? "Ziel neutralisiert" : "K.O."));
+    setText($("banner-detail"), ev.detail || "");
+    b.className = "banner " + ev.cat;
+    b.hidden = false;
+    void b.offsetWidth; // restart animation
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(() => {
+      b.classList.add("out");
+      bannerTimer = setTimeout(() => (b.hidden = true), 650);
+    }, BANNER_MS);
+  }
 
-  function renderStatus(rs) {
+  const RSI_CLASS = { operational: "on", disrupted: "warn", notice: "warn", down: "off" };
+  const RSI_SHORT = { "Persistent Universe": "PU", "Arena Commander": "AC", Platform: "Plattform" };
+
+  function renderRsi(rs) {
     const ul = $("rsi");
-    if (!rs) {
-      ul.replaceChildren(el("li", "muted", "Deaktiviert oder noch nicht geladen."));
-      setText($("rsi-meta"), "");
-      return;
-    }
     const frag = document.createDocumentFragment();
-    for (const sys of rs.systems || []) {
-      const li = el("li");
-      li.appendChild(el("span", "", sys.name));
-      const label = (STATUS_DE[sys.status] || sys.status) + (sys.issues ? ` (${sys.issues})` : "");
-      li.appendChild(el("b", "st-" + (STATUS_DE[sys.status] ? sys.status : "unknown"), label));
-      frag.appendChild(li);
+    if (!rs || !(rs.systems || []).length) {
+      frag.appendChild(el("li", "", rs && rs.error ? "nicht erreichbar" : "–"));
+    } else {
+      for (const sys of rs.systems) {
+        const li = el("li", RSI_CLASS[sys.status] || "");
+        li.title = `${sys.name}: ${sys.status}`;
+        li.appendChild(el("span", "dot"));
+        li.appendChild(document.createTextNode(RSI_SHORT[sys.name] || sys.name));
+        frag.appendChild(li);
+      }
     }
-    if (!frag.childNodes.length) frag.appendChild(el("li", "muted", "Keine Daten."));
     ul.replaceChildren(frag);
-    const when = rs.checked ? new Date(rs.checked * 1000) : null;
-    setText($("rsi-meta"),
-      (rs.error ? rs.error + " · " : "") + (when ? `Stand ${pad(when.getHours())}:${pad(when.getMinutes())}` : ""));
+    setClass($("ind-rsi"), rs ? RSI_CLASS[rs.summary] || "" : "");
+  }
+
+  // ---------------------------------------------------------------- 1 s tick
+  const arcMin = $("arc-min"), arcSec = $("arc-sec");
+  const dateFmt = new Intl.DateTimeFormat("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" });
+
+  function tick() {
+    const now = Date.now();
+    const d = new Date(now);
+    setText($("clock-local"), `${pad(d.getHours())}:${pad(d.getMinutes())}`);
+    setText($("clock-sec"), pad(d.getSeconds()));
+    setText($("clock-utc"), `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`);
+    setText($("date-local"), dateFmt.format(d));
+
+    if (st) {
+      const s = st.session;
+      const ref = sessionNow(now);
+      const alive = ref - parseTs(s.alive_since);
+      setText($("alive"), isFinite(alive) ? short(alive) : "--:--");
+      setText($("session"), isFinite(parseTs(s.start)) ? hms(ref - parseTs(s.start)) : "--:--:--");
+      if (isFinite(alive)) {
+        const sec = Math.floor(alive / 1000);
+        arcMin.style.strokeDasharray = `${(((sec / 60) % 60) / 60) * 1000} 1000`;
+        arcSec.style.strokeDasharray = `${((sec % 60) / 60) * 1000} 1000`;
+      }
+      const since = parseTs(s.location_since);
+      setText($("loc-since"), isFinite(since) && s.location ? "Hier seit " + short(ref - since) : "");
+      setText($("st-killer-sub"), s.last_killer ? ago(now - parseTs(s.last_killer.ts)) : "noch keiner – weiter so");
+    }
+    tickTimers(now);
   }
 
   // ---------------------------------------------------------------- timers
@@ -159,10 +264,7 @@
   function load(key, fallback) {
     try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
   }
-
-  function saveTimers() {
-    localStorage.setItem(TIMER_KEY, JSON.stringify(timers));
-  }
+  function saveTimers() { localStorage.setItem(TIMER_KEY, JSON.stringify(timers)); }
 
   function renderTimers() {
     const ul = $("timers");
@@ -171,11 +273,15 @@
     timers.sort((a, b) => a.end - b.end);
     for (const t of timers) {
       const li = el("li");
-      li.appendChild(el("span", "label", t.label));
-      const left = el("span", "left", "");
+      li.appendChild(el("span", "t-label", t.label));
+      const left = el("span", "t-left", "");
       li.appendChild(left);
-      const del = el("button", "", "×");
-      del.title = "Entfernen";
+      const bar = el("span", "t-bar");
+      const fill = el("i");
+      bar.appendChild(fill);
+      li.appendChild(bar);
+      const del = el("button", "t-del", "×");
+      del.title = "Timer entfernen";
       del.addEventListener("click", () => {
         timers = timers.filter((x) => x.id !== t.id);
         saveTimers();
@@ -183,9 +289,8 @@
       });
       li.appendChild(del);
       ul.appendChild(li);
-      timerNodes.set(t.id, { li, left });
+      timerNodes.set(t.id, { li, left, fill });
     }
-    if (!timers.length) ul.appendChild(el("li", "muted", "Keine Timer."));
     tickTimers(Date.now());
   }
 
@@ -195,12 +300,15 @@
       const n = timerNodes.get(t.id);
       if (!n) continue;
       const left = t.end - now;
+      const total = t.end - (t.start || t.end - 1);
+      const pct = Math.min(100, Math.max(0, 100 - (left / total) * 100));
+      n.fill.style.width = pct.toFixed(1) + "%";
       if (left <= 0) {
         done++;
         setText(n.left, "FERTIG");
-        if (n.li.className !== "done") n.li.className = "done";
+        setClass(n.li, "done");
       } else {
-        setText(n.left, fmtDuration(left));
+        setText(n.left, short(left));
       }
     }
     const title = done ? `(${done}) ⏰ SC-Dash` : "SC-Dash";
@@ -214,13 +322,40 @@
     const mins = h * 60 + m;
     const label = $("t-label").value.trim();
     if (!label || mins <= 0) return;
-    timers.push({ id: Date.now() + Math.random(), label, end: Date.now() + mins * 60000 });
+    const now = Date.now();
+    timers.push({ id: now + Math.random(), label, start: now, end: now + mins * 60000 });
     saveTimers();
     renderTimers();
     e.target.reset();
   });
 
-  // ---------------------------------------------------------------- notes
+  // ---------------------------------------------------------------- drawer (notes / links)
+  const drawer = $("drawer");
+  function openDrawer(name) {
+    const isOpen = drawer.classList.contains("open") && drawer.dataset.pane === name;
+    if (isOpen) return closeDrawer();
+    drawer.dataset.pane = name;
+    drawer.querySelectorAll("[data-pane]").forEach((p) => (p.hidden = p.dataset.pane !== name));
+    setText($("drawer-title"), name === "notes" ? "Notizen" : "Links");
+    drawer.classList.add("open");
+    drawer.setAttribute("aria-hidden", "false");
+    document.querySelectorAll(".tools button").forEach((b) => b.classList.toggle("active", b.dataset.drawer === name));
+    if (name === "notes") setTimeout(() => $("notes").focus(), 260);
+  }
+  function closeDrawer() {
+    drawer.classList.remove("open");
+    drawer.setAttribute("aria-hidden", "true");
+    document.querySelectorAll(".tools button").forEach((b) => b.classList.remove("active"));
+  }
+  document.querySelectorAll(".tools button").forEach((b) => b.addEventListener("click", () => openDrawer(b.dataset.drawer)));
+  $("drawer-close").addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") return closeDrawer();
+    if (/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName) || e.ctrlKey || e.altKey || e.metaKey) return;
+    if (e.key === "n" || e.key === "N") { e.preventDefault(); openDrawer("notes"); }
+    if (e.key === "l" || e.key === "L") { e.preventDefault(); openDrawer("links"); }
+  });
+
   const NOTES_KEY = "scdash.notes";
   const notes = $("notes");
   notes.value = localStorage.getItem(NOTES_KEY) || "";
@@ -230,7 +365,6 @@
     notesTimer = setTimeout(() => localStorage.setItem(NOTES_KEY, notes.value), 400);
   });
 
-  // ---------------------------------------------------------------- links
   fetch("links.json")
     .then((r) => r.json())
     .then((links) => {
@@ -248,18 +382,9 @@
     })
     .catch(() => {});
 
-  // ---------------------------------------------------------------- 1 s tick
-  function tick() {
-    const now = new Date();
-    setText($("clock-local"), fmtClock(now, false));
-    setText($("clock-utc"), fmtClock(now, true));
-    setText($("s-duration"), sessionStart ? fmtDuration(now - sessionStart) : "–");
-    tickTimers(now.getTime());
-  }
-
+  // ---------------------------------------------------------------- start
   renderTimers();
   tick();
-  // Align to full seconds so the clock does not drift visibly.
   setTimeout(() => { tick(); setInterval(tick, 1000); }, 1000 - (Date.now() % 1000));
   startPolling();
 })();

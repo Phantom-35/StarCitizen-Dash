@@ -40,7 +40,7 @@ class ServerTests(unittest.TestCase):
         self.assertIn("events", data)
 
     def test_static_assets(self):
-        for p in ("/app.js", "/style.css", "/links.json"):
+        for p in ("/app.js", "/style.css", "/links.json", "/fonts/rajdhani-700.woff2"):
             self.assertEqual(self.get(p)[0], 200, p)
 
     def test_path_traversal_blocked(self):

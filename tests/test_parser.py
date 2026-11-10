@@ -25,7 +25,7 @@ class ParserTests(unittest.TestCase):
     def test_location(self):
         ev = parse_line(f"{TS} [Notice] <RequestLocationInventory> Player[Space_Ben] requested inventory for Location[Stanton1_Lorville]")
         self.assertEqual(ev.kind, "location")
-        self.assertEqual(ev.data["location"], "Stanton1 Lorville")
+        self.assertEqual(ev.data["location"], {"system": "Stanton", "planet": "Hurston", "place": "Lorville"})
 
     def test_actor_death(self):
         line = (f"{TS} [Notice] <Actor Death> CActor::Kill: 'PU_Human_Enemy_Pirate_123456789' [200] in zone "
@@ -37,7 +37,8 @@ class ParserTests(unittest.TestCase):
         self.assertTrue(ev.data["victim_npc"])
         self.assertEqual(ev.data["killer"], "Space_Ben")
         self.assertFalse(ev.data["killer_npc"])
-        self.assertEqual(ev.data["weapon"], "behr rifle ballistic 01")
+        self.assertEqual(ev.data["weapon"], "Behring Rifle Ballistic")
+        self.assertEqual(ev.data["zone"], "Daymar")
         self.assertEqual(ev.data["damage"], "Bullet")
 
     def test_vehicle_destruction(self):
@@ -46,7 +47,7 @@ class ParserTests(unittest.TestCase):
                 f"'Some_Rival' [5] advanced from destroy level 0 to 2 caused by 'Space_Ben' [100] with 'Combat' [Team_VehicleFeatures][Vehicle]")
         ev = parse_line(line)
         self.assertEqual(ev.kind, "vehicle")
-        self.assertEqual(ev.data["vehicle"], "DRAK Cutlass Black")
+        self.assertEqual(ev.data["vehicle"], "Drake Cutlass Black")
         self.assertEqual(ev.data["driver"], "Some_Rival")
         self.assertEqual(ev.data["cause"], "Space_Ben")
         self.assertEqual((ev.data["from"], ev.data["to"]), (0, 2))
