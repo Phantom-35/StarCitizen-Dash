@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>SC-Dash</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">SC<span>·</span>DASH</div>
+    <div class="chips">
+      <span id="chip-game" class="chip">SPIEL ?</span>
+      <span id="chip-log" class="chip">LOG ?</span>
+      <span id="chip-link" class="chip">VERBINDUNG ?</span>
+    </div>
+    <div class="clocks">
+      <div><small>LOKAL</small><b id="clock-local">--:--:--</b></div>
+      <div><small>UTC</small><b id="clock-utc">--:--:--</b></div>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="panel" id="panel-session">
+      <h2>Session</h2>
+      <dl class="kv">
+        <dt>Pilot</dt><dd id="s-handle">–</dd>
+        <dt>Ort</dt><dd id="s-location">–</dd>
+        <dt>Shard</dt><dd id="s-shard">–</dd>
+        <dt>Dauer</dt><dd id="s-duration">–</dd>
+      </dl>
+      <div class="stats">
+        <div class="stat good"><b id="st-kills">0</b><small>Spieler-Kills</small></div>
+        <div class="stat good"><b id="st-npc">0</b><small>NPC-Kills</small></div>
+        <div class="stat bad"><b id="st-deaths">0</b><small>Tode</small></div>
+        <div class="stat"><b id="st-kd">–</b><small>K/D</small></div>
+        <div class="stat good"><b id="st-vdest">0</b><small>Schiffe zerstört</small></div>
+        <div class="stat bad"><b id="st-vlost">0</b><small>Schiffe verloren</small></div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-feed">
+      <h2>Ereignisse</h2>
+      <ol id="feed" class="feed"><li class="muted">Noch keine Ereignisse.</li></ol>
+    </section>
+
+    <section class="panel" id="panel-timers">
+      <h2>Timer <small>(Raffinerie, Miete, Cooldowns …)</small></h2>
+      <form id="timer-form" class="row" autocomplete="off">
+        <input id="t-label" placeholder="Bezeichnung" maxlength="40" required>
+        <input id="t-h" type="number" min="0" max="999" placeholder="h" title="Stunden">
+        <input id="t-m" type="number" min="0" max="59" placeholder="min" title="Minuten">
+        <button type="submit">+</button>
+      </form>
+      <ul id="timers" class="timers"></ul>
+    </section>
+
+    <section class="panel" id="panel-status">
+      <h2>RSI-Serverstatus</h2>
+      <ul id="rsi" class="rsi"><li class="muted">Wird geladen …</li></ul>
+      <p class="muted small" id="rsi-meta"></p>
+    </section>
+
+    <section class="panel" id="panel-notes">
+      <h2>Notizen</h2>
+      <textarea id="notes" spellcheck="false" placeholder="Handelsrouten, Missionen, Koordinaten …"></textarea>
+    </section>
+
+    <section class="panel" id="panel-links">
+      <h2>Links</h2>
+      <ul id="links" class="links"></ul>
+    </section>
+  </main>
+
+  <footer class="foot muted small">
+    <span id="log-path">–</span>
+    <span>SC-Dash · inoffizielles Fan-Tool · nicht mit Cloud Imperium Games verbunden</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
