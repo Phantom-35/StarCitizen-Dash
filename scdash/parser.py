@@ -11,7 +11,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Optional
 
-from scdash.locations import describe_location, ship_name, weapon_name
+from scdash.locations import describe_location, quantum_destination, ship_name, weapon_name
 
 _TS = re.compile(r"^<(?P<ts>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)>")
 
@@ -40,7 +40,41 @@ _QUIT = re.compile(r"<SystemQuit>|CSystem::Quit")
 # Every HUD notification (contracts, objectives, zones, ...) ends up in the log as
 #   <SHUDEvent_OnNotification> Added notification "Contract Accepted: Foo: " [12] to queue. ...
 #   MissionId: [uuid], ObjectiveId: [id] ...
-_NOTIFICATION = re.compile(r"<SHUDEvent_OnNotification>.*?Added notification \"(?P<text>[^\"]*)\"")
+_NOTIFICATION = re.compile(r"<SHUDEvent_OnNotification>.*?Added notification \"(?P<text>[^\"]*)\"?")
+_CHANNEL = re.compile(r"^You have (?P<act>joined|left)(?: the)? channel '(?P<name>[^']*)'", re.I)
+_OBJECTIVE_UPSERT = re.compile(
+    r"<ObjectiveUpserted>.*?mission_id (?P<mid>[\w-]+) - objective_id (?P<oid>\S+) - state (?P<st>\w+)"
+)
+_QT_TARGET = re.compile(r"<Player Selected Quantum Target[^>]*>.*?selected point (?P<target>\S+) as their destination")
+_QT_FUEL = re.compile(r"<Player Requested Fuel to Quantum Target[^>]*>.*?destination (?P<target>\S+)")
+_QT_ARRIVED = re.compile(r"<Quantum Drive Arrived|Quantum Drive has arrived at final destination")
+
+# --- survival (4.x) ------------------------------------------------------------
+# Kill lines (<Actor Death>) are limited to the local player since 4.0.2 and gone since
+# about 4.4. The own death is still logged by the actor state machine:
+_DEAD = re.compile(r"\[ActorState\] Dead")
+_DEAD_ACTOR = re.compile(r"Actor '(?P<actor>[^']+)'")
+_DEAD_FROM = re.compile(r"ejected from zone '(?P<zone>[^']+)'")
+_DEAD_TO = re.compile(r"to zone '(?P<zone>[^']+)'")
+_CORPSE = re.compile(r"\[ActorState\] Corpse>.*?Player '(?P<player>[^']+)' <(?P<who>local|remote) client>")
+_OLD_CORPSE = re.compile(r"<Corpse> Player '(?P<player>[^']+)' <(?P<who>local|remote) client>")
+_INCAP = re.compile(r"Logged an incap\.?!? nickname: (?P<player>[\w-]+), causes: \[(?P<causes>[^\]]*)\]")
+_INCAP_CAUSE = re.compile(r"(?P<kind>\w+) \((?P<dmg>[\d.]+) damage\)")
+_MEDBED = re.compile(
+    r"<MED BED HEAL> Actor: (?P<actor>\S+) .*?Perform surgery event (?P<result>\w+), med bed name: (?P<bed>[^,]+), "
+    r"vehicle name: (?P<vehicle>[^,]+), (?P<parts>.*?)(?: \[Team_|$)"
+)
+_COLLISION = re.compile(r"Fatal ?Collision occured for vehicle (?P<vehicle>\S+)(?:.*?Zone:\s*(?P<zone>[^,\]]+))?")
+_VERSION = re.compile(r"ProductVersion: (?P<v>\d+\.\d+(?:\.\d+)?)")
+
+# Cheap pre-filter: >95 % of all log lines are irrelevant, skip them with one search.
+_INTERESTING = re.compile(
+    r"Actor Death|Vehicle Destruction|RequestLocationInventory|<Join PU>|Login Success|"
+    r"AccountLoginCharacterStatus_Character|SHUDEvent_OnNotification|<EndMission>|<MissionEnded>|"
+    r"<ObjectiveUpserted>|Vehicle Control Flow|Quantum Target|Quantum Drive|"
+    r"ActorState\] (?:Dead|Corpse)|<Corpse>|Logged an incap|MED BED HEAL|Fatal ?Collision|"
+    r"SystemQuit|CSystem::Quit|ProductVersion"
+)
 _MISSION_ID = re.compile(r"MissionId:?\s*\[(?P<mid>[^\]]*)\]")
 _OBJECTIVE_ID = re.compile(r"ObjectiveId:?\s*\[(?P<oid>[^\]]*)\]")
 _END_MISSION = re.compile(r"<EndMission>.*?MissionId\[(?P<mid>[^\]]+)\].*?CompletionType\[(?P<ct>[^\]]+)\]")
@@ -52,11 +86,13 @@ _JURISDICTION = re.compile(r"(?:Entering|Entered)\s+(?P<name>.+?)\s+Jurisdiction
 
 # (prefix, category) – first match wins, compared case-insensitively
 NOTIFICATION_KINDS = (
+    ("contract available", "available"),
     ("contract accepted", "accepted"),
     ("contract complete", "completed"),
     ("contract failed", "failed"),
     ("contract abandoned", "abandoned"),
     ("contract withdrawn", "abandoned"),
+    ("contract shared", "shared"),
     ("contract cancel", "abandoned"),
     ("contract expired", "abandoned"),
     ("new objective", "objective_new"),
@@ -73,9 +109,50 @@ NOTIFICATION_KINDS = (
     ("entering monitored", "monitored_on"),
     ("leaving monitored", "monitored_off"),
     ("left monitored", "monitored_off"),
+    ("exited monitored", "monitored_off"),
+    ("exiting monitored", "monitored_off"),
     ("entered unmonitored", "monitored_off"),
     ("entering unmonitored", "monitored_off"),
+    ("monitored space down", "monitored_down"),
+    ("monitored space restored", "monitored_on"),
+    ("entering private property", "private_on"),
+    ("leaving private property", "private_off"),
+    ("leaving restricted area", "restricted_off"),
+    ("restricted area", "restricted_on"),
+    ("incapacitated", "incapacitated"),
+    ("standby, local emergency services", "rescue"),
+    ("crimestat rating increased", "crime_up"),
+    ("crime committed", "crime"),
+    ("vehicle impounded", "impounded"),
+    ("low fuel", "low_fuel"),
+    ("transaction complete", "transaction"),
+    ("hangar request completed", "hangar"),
+    ("received blueprint", "blueprint"),
 )
+
+# notifications that need a regex (checked when no prefix above matched)
+_NOTIFICATION_PATTERNS = (
+    (re.compile(r"^(?P<sev>minor|moderate|major|severe|critical) injury detected - (?P<part>.+?) - tier (?P<tier>\d)", re.I), "injury"),
+    (re.compile(r"^fined (?P<amount>[\d.,]+) a?uec", re.I), "fined"),
+    (re.compile(r"^(?P<who>\S+) committed (?P<what>.+?) against you", re.I), "crime_against"),
+    (re.compile(r"^you sent (?P<who>.+?):\s*(?P<amount>[\d.,]+)\s*a?uec", re.I), "money_sent"),
+    (re.compile(r"^(?P<who>\S+) has sent you:\s*(?P<amount>[\d.,]+)\s*a?uec", re.I), "money_received"),
+    (re.compile(r"^a refinery work order has been completed at (?P<where>[^:]+)", re.I), "refinery"),
+    (re.compile(r"^you've earned:\s*(?P<amount>\d+)\s+rewards", re.I), "rewards"),
+    (re.compile(r"^journal entry added: jurisdiction: (?P<name>.+)$", re.I), "jurisdiction"),
+)
+
+
+def _amount(raw: str) -> int:
+    return int(re.sub(r"[^\d]", "", raw) or 0)
+
+
+def clean_notification_text(text: str) -> str:
+    """HUD text as the player saw it: no markup, language-pack tags or line breaks."""
+    text = re.sub(r"</?EM\d>", "", text).replace("\xa0", " ")
+    text = re.sub(r"\[[^\]]*\bRep\]\*?", "", text)
+    text = re.sub(r"\[BP\]\*?", "", text)
+    return " ".join(text.split()).rstrip(":").strip()
 
 _END_RESULTS = {
     "complete": "completed", "completed": "completed", "succeeded": "completed", "success": "completed",
@@ -92,7 +169,14 @@ def _id(value: Optional[str]) -> Optional[str]:
 
 def classify_notification(text: str) -> dict:
     """Split a HUD notification into category + subject."""
-    text = text.strip().rstrip(":").strip()
+    text = clean_notification_text(text)
+    m = _CHANNEL.match(text)
+    if m:
+        # "You have joined channel 'RSI Aurora Mk II : PilotName'." -> the ship you just boarded
+        name = m.group("name").replace("@vehicle_Name", "").strip()
+        ship = name.rsplit(" : ", 1)[0].strip() if " : " in name else None
+        return {"text": text.rstrip("."), "category": "channel_" + m.group("act").lower(), "subject": ship or name,
+                "is_ship": ship is not None}
     low = text.lower()
     category = "comms"
     for prefix, cat in NOTIFICATION_KINDS:
@@ -100,11 +184,22 @@ def classify_notification(text: str) -> dict:
             category = cat
             break
     subject = text.split(":", 1)[1].strip().rstrip(":").strip() if ":" in text else text
+    extra: dict = {}
     if category == "comms":
         m = _JURISDICTION.search(text)
         if m:
             category, subject = "jurisdiction", m.group("name").strip()
-    return {"text": text, "category": category, "subject": subject}
+    if category == "comms":
+        for rx, cat in _NOTIFICATION_PATTERNS:
+            m = rx.search(text)
+            if m:
+                category, extra = cat, m.groupdict()
+                if "amount" in extra:
+                    extra["amount"] = _amount(extra["amount"])
+                if cat == "jurisdiction":
+                    subject = extra["name"].strip()
+                break
+    return {"text": text, "category": category, "subject": subject, **extra}
 
 
 def _end_result(raw: str) -> str:
@@ -121,7 +216,9 @@ _NPC_HINTS = ("PU_", "NPC", "AIModule", "Kopion", "Marok", "Quasigrazer", "Vlk_"
 class LogEvent:
     """A single interesting thing that happened in the log."""
 
-    kind: str  # login | join | death | vehicle | location | notify | mission_end | ship | quit
+    # login | join | death | vehicle | location | notify | mission_end | objective_state | ship | quantum |
+    # dead | corpse | incap | medbed | collision | version | quit
+    kind: str
     ts: Optional[str] = None
     data: dict = field(default_factory=dict)
 
@@ -143,7 +240,7 @@ def pretty_label(raw: str) -> str:
 
 def parse_line(line: str) -> Optional[LogEvent]:
     """Parse one log line. Returns ``None`` for lines we do not care about."""
-    if "<" not in line:
+    if not _INTERESTING.search(line):
         return None
 
     m = _TS.match(line)
@@ -211,6 +308,57 @@ def parse_line(line: str) -> Optional[LogEvent]:
     if m:
         return LogEvent("mission_end", ts, {"mission_id": _id(m.group("mid")), "result": _end_result(m.group("st"))})
 
+    if _DEAD.search(line):
+        actor = _DEAD_ACTOR.search(line)
+        src, dst = _DEAD_FROM.search(line), _DEAD_TO.search(line)
+        return LogEvent("dead", ts, {
+            "actor": actor.group("actor") if actor else None,
+            "ship": ship_name(src.group("zone")) if src else None,
+            "ship_destroyed": "destroyed vehicle" in line,
+            "where": describe_location(dst.group("zone"))["place"] if dst else None,
+        })
+    m = _CORPSE.search(line) or _OLD_CORPSE.search(line)
+    if m:
+        return LogEvent("corpse", ts, {"player": m.group("player"), "local": m.group("who") == "local"})
+    m = _INCAP.search(line)
+    if m:
+        causes = [c.group("kind").replace("Damage", "") for c in _INCAP_CAUSE.finditer(m.group("causes"))]
+        return LogEvent("incap", ts, {"player": m.group("player"), "causes": causes})
+    m = _MEDBED.search(line)
+    if m:
+        parts = [k for k, v in re.findall(r"(\w+): (true|false)", m.group("parts")) if v == "true"]
+        vehicle = m.group("vehicle").strip()
+        return LogEvent("medbed", ts, {
+            "actor": m.group("actor"), "ok": m.group("result").lower() == "success",
+            "vehicle": None if vehicle.lower() in ("none", "null", "") else ship_name(vehicle.lstrip("@")),
+            "parts": parts,
+        })
+    m = _COLLISION.search(line)
+    if m:
+        if "PlayerPilot: 1" not in line:
+            return None  # someone else's crash
+        zone = m.group("zone")
+        return LogEvent("collision", ts, {
+            "vehicle": ship_name(m.group("vehicle")),
+            "where": describe_location(zone.strip())["place"] if zone else None,
+        })
+
+    m = _OBJECTIVE_UPSERT.search(line)
+    if m:
+        state = {"completed": "done", "failed": "failed"}.get(m.group("st").lower().replace("mission_objective_state_", ""))
+        if state is None:
+            return None
+        return LogEvent("objective_state", ts, {"mission_id": _id(m.group("mid")), "objective_id": m.group("oid"), "state": state})
+
+    m = _QT_TARGET.search(line)
+    if m:
+        return LogEvent("quantum", ts, {"phase": "target", **quantum_destination(m.group("target"))})
+    m = _QT_FUEL.search(line)
+    if m:
+        return LogEvent("quantum", ts, {"phase": "fuel", **quantum_destination(m.group("target"))})
+    if _QT_ARRIVED.search(line):
+        return LogEvent("quantum", ts, {"phase": "arrived", "name": None, "kind": None})
+
     m = _VEHICLE_CONTROL.search(line)
     if m:
         entering = m.group("act") in ("requesting", "granted")
@@ -219,4 +367,53 @@ def parse_line(line: str) -> Optional[LogEvent]:
     if _QUIT.search(line):
         return LogEvent("quit", ts, {})
 
+    m = _VERSION.search(line)
+    if m:
+        return LogEvent("version", ts, {"version": m.group("v")})
+
     return None
+
+
+_TS_PREFIX = re.compile(r"^<\d{4}-\d{2}-\d{2}T[\d:.]+Z>\s?")
+_OPEN_NOTIFICATION = re.compile(r"<SHUDEvent_OnNotification>.*Added notification \"[^\"]*$")
+_NEW_ENTRY = re.compile(r"^<[^>]+> \[\w+\] <")
+
+
+class LineAssembler:
+    """Re-joins log entries that the game splits over several lines.
+
+    Notification texts may contain a line break, e.g.::
+
+        <ts> [Notice] <SHUDEvent_OnNotification> Added notification "Objective Complete: Foo
+        <ts> : " [16] to queue. ... MissionId: [..], ObjectiveId: [..]
+
+    ``feed`` returns the complete logical lines that are ready to be parsed.
+    """
+
+    MAX_PARTS = 4
+
+    def __init__(self) -> None:
+        self._pending: Optional[str] = None
+        self._parts = 0
+
+    def feed(self, line: str) -> list:
+        out = []
+        if self._pending is not None:
+            if _NEW_ENTRY.match(line) or self._parts >= self.MAX_PARTS:
+                out.append(self._pending)  # continuation never came - use what we have
+                self._pending = None
+            else:
+                self._pending += _TS_PREFIX.sub("", line)
+                self._parts += 1
+                if self._pending.count('"') % 2 == 0:  # closing quote arrived
+                    out.append(self._pending)
+                    self._pending = None
+                return out
+        if _OPEN_NOTIFICATION.search(line):
+            self._pending, self._parts = line, 1
+        else:
+            out.append(line)
+        return out
+
+    def reset(self) -> None:
+        self._pending = None

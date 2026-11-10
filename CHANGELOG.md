@@ -5,6 +5,57 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+## [0.5.0] – 2026-11-10
+
+Recherche in quelloffenen Log-Parsern (sc-log-tracker, csr, all-slain, StarLogs), siehe README → Quellen.
+
+### Geändert
+- **Kampf-Modus wird „Kampf & Überleben“:** Star Citizen schreibt seit ~4.4 keine Kills mehr in die
+  Log. Statt dauerhaft leerer Kill-Zähler zeigt der Modus jetzt Tode, K.O., Verletzungen, CrimeStat,
+  Med-Bed, Kollisionen, längstes Überleben und den letzten Tod. Kills/K/D erscheinen nur noch, wenn
+  die Log welche enthält.
+- Quantum-Ziele werden eingeordnet statt intern angezeigt: Städte, Raststationen (`CRU-L4`),
+  markierte Navpunkte, Partymitglieder, Asteroidenfelder; Auftragsmarker bekommen den Ort aus dem
+  aktiven Auftragsziel.
+- Tode werden über alle Quellen (`[ActorState] Dead`, `Corpse`, alte `Actor Death`) nur einmal gezählt.
+
+### Hinzugefügt
+- Eigener Tod über `[ActorState] Dead` / `Corpse` (aktuelle Versionen), inkl. „Schiff zerstört“ und Ort
+- Kampfunfähigkeit, Verletzungen (mit Körperteil und Tier), Med-Bed, tödliche Kollisionen
+- CrimeStat, Straftaten, Strafen, Beschlagnahmung, Sperrgebiet, Privatgelände, Ausfall der Überwachung
+- Geld erhalten/gesendet, fertige Raffinerie-Aufträge, Belohnungen, Blueprints, Hangar bereit
+- Quantum-Ziel als Anzeige unter dem Standort
+- Bereinigung von Sprachpaket-Markup in Meldungen (`<EM4>`, `[500 Rep]`, `[BP]`)
+- Grenz-Pingpong bei Jurisdiktionen erzeugt keine Meldungsflut mehr
+- Demo-Modus mit realistischen Ereignissen aktueller Versionen
+
+## [0.4.0] – 2026-11-10
+
+Abgleich mit einer echten `Game.log` (Star Citizen 4.10).
+
+### Behoben
+- Mehrzeilige HUD-Meldungen (z. B. „Objective Complete“, Schiffs-Kanal) wurden übersehen
+- Erledigte Aufträge wurden doppelt gezählt (das Spiel meldet das Ende bis zu dreimal)
+- „Exited Monitored Space“ wurde nicht erkannt
+- „Contract Available“ (Angebot) wird nicht mehr mit angenommenen Aufträgen verwechselt
+- „Am Leben“ zählt erst ab dem Betreten des Universums, nicht schon im Hauptmenü
+
+### Hinzugefügt
+- Aktuelles Schiff über die Kanal-Meldung beim Ein-/Aussteigen (mit dem echten Schiffsnamen)
+- Ziel-Status direkt aus den Server-Meldungen (`ObjectiveUpserted`)
+- Quantum-Sprünge (Ziel gesetzt / angekommen) samt Zähler
+- Spielversion in der Standort-Zeile
+- Lesbare Namen für Notunterkünfte und Verteilzentren
+- Regressionstest mit anonymisiertem Auszug einer echten Log-Datei, inklusive Live-Simulation
+
+### Geändert
+- Live-Mitlesen robuster: Lesen bis zum echten Dateiende, Öffnen mit voller Freigabe unter Windows,
+  Neustart-Erkennung auch über die erste Zeile, fehlerhafte Zeilen kosten nie den Rest
+- Schneller: irrelevante Zeilen werden mit einer Prüfung übersprungen
+- Dashboard erhält nur noch Daten, wenn sich etwas geändert hat (HTTP 204), Verbindung bleibt offen
+- Abhol-Ziele stehen in der Checkliste vor Abliefer-Zielen
+- Demo-Modus verwendet die echten Formulierungen und Zeilenformate des Spiels
+
 ## [0.3.0] – 2026-11-10
 
 ### Hinzugefügt
