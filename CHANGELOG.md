@@ -5,6 +5,33 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+## [0.4.0] – 2026-11-10
+
+Abgleich mit einer echten `Game.log` (Star Citizen 4.10).
+
+### Behoben
+- Mehrzeilige HUD-Meldungen (z. B. „Objective Complete“, Schiffs-Kanal) wurden übersehen
+- Erledigte Aufträge wurden doppelt gezählt (das Spiel meldet das Ende bis zu dreimal)
+- „Exited Monitored Space“ wurde nicht erkannt
+- „Contract Available“ (Angebot) wird nicht mehr mit angenommenen Aufträgen verwechselt
+- „Am Leben“ zählt erst ab dem Betreten des Universums, nicht schon im Hauptmenü
+
+### Hinzugefügt
+- Aktuelles Schiff über die Kanal-Meldung beim Ein-/Aussteigen (mit dem echten Schiffsnamen)
+- Ziel-Status direkt aus den Server-Meldungen (`ObjectiveUpserted`)
+- Quantum-Sprünge (Ziel gesetzt / angekommen) samt Zähler
+- Spielversion in der Standort-Zeile
+- Lesbare Namen für Notunterkünfte und Verteilzentren
+- Regressionstest mit anonymisiertem Auszug einer echten Log-Datei, inklusive Live-Simulation
+
+### Geändert
+- Live-Mitlesen robuster: Lesen bis zum echten Dateiende, Öffnen mit voller Freigabe unter Windows,
+  Neustart-Erkennung auch über die erste Zeile, fehlerhafte Zeilen kosten nie den Rest
+- Schneller: irrelevante Zeilen werden mit einer Prüfung übersprungen
+- Dashboard erhält nur noch Daten, wenn sich etwas geändert hat (HTTP 204), Verbindung bleibt offen
+- Abhol-Ziele stehen in der Checkliste vor Abliefer-Zielen
+- Demo-Modus verwendet die echten Formulierungen und Zeilenformate des Spiels
+
 ## [0.3.0] – 2026-11-10
 
 ### Hinzugefügt

@@ -16,13 +16,64 @@ import sys
 import threading
 from typing import Callable, Optional
 
-from scdash.parser import parse_line
+from scdash.parser import LineAssembler, parse_line
 from scdash.state import DashboardState
 
 log = logging.getLogger(__name__)
 
 # Do not parse more than this on startup if the log is huge.
 INITIAL_READ_LIMIT = 8 * 1024 * 1024
+
+
+def open_log(path: str):
+    """Open the log for reading without getting in the game's way.
+
+    On Windows a normal ``open()`` forbids other processes to rename or delete the file while
+    we hold it. The game moves the old Game.log into ``logbackups`` on every launch, so we open
+    it with full sharing (read/write/delete) instead. Falls back to ``open()`` everywhere else.
+    """
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            import msvcrt
+            from ctypes import wintypes
+
+            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            kernel32.CreateFileW.argtypes = [
+                wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, wintypes.LPVOID,
+                wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE,
+            ]
+            kernel32.CreateFileW.restype = wintypes.HANDLE
+            GENERIC_READ, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL = 0x80000000, 3, 0x80
+            SHARE_ALL = 0x1 | 0x2 | 0x4  # read | write | delete
+            handle = kernel32.CreateFileW(path, GENERIC_READ, SHARE_ALL, None, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, None)
+            if handle in (None, wintypes.HANDLE(-1).value):
+                err = ctypes.get_last_error()
+                if err in (2, 3):  # file / path not found
+                    raise FileNotFoundError(path)
+                raise OSError(err, ctypes.FormatError(err), path)
+            try:
+                fd = msvcrt.open_osfhandle(handle, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+            except Exception:
+                kernel32.CloseHandle(wintypes.HANDLE(handle))
+                raise
+            return os.fdopen(fd, "rb")
+        except FileNotFoundError:
+            raise
+        except (ImportError, AttributeError):
+            pass  # unusual Python build - use the plain variant
+    return open(path, "rb")
+
+
+HEAD_BYTES = 96  # the first log line contains the start timestamp -> unique per game launch
+
+
+def _decode(raw: bytes) -> str:
+    # The log is mostly ASCII; player names etc. can be UTF-8 or a legacy code page.
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return raw.decode("latin-1")
 
 
 class LogWatcher(threading.Thread):
@@ -37,10 +88,11 @@ class LogWatcher(threading.Thread):
         self.state = state
         self.interval = interval
         self._halt = threading.Event()
-        self._path: Optional[str] = None
         self._identity = None
+        self._head = b""
         self._offset = 0
-        self._remainder = b""
+        self._remainder: Optional[bytes] = b""
+        self._assembler = LineAssembler()
 
     def stop(self) -> None:
         self._halt.set()
@@ -56,44 +108,68 @@ class LogWatcher(threading.Thread):
     # Separate method so tests can drive it synchronously.
     def poll(self) -> None:
         path = self._resolve()
-        if not path or not os.path.isfile(path):
+        if not path:
+            self.state.set_log(None, False)
+            return
+        try:
+            fh = open_log(path)
+        except FileNotFoundError:
             self.state.set_log(path, False)
+            return
+        except OSError as exc:
+            # e.g. the game is just moving the old log away - simply try again next time
+            log.debug("Game.log gerade nicht lesbar: %s", exc)
             return
         self.state.set_log(path, True)
 
-        st = os.stat(path)
-        identity = (path, st.st_dev, st.st_ino)
-        if identity != self._identity or st.st_size < self._offset:
-            # New file (game restarted) or log was truncated -> new session.
-            if self._identity is not None:
-                log.info("Neue Game.log erkannt – Session wird zurückgesetzt")
-            self.state.new_session()
-            self._identity = identity
-            self._remainder = b""
-            self._offset = max(0, st.st_size - INITIAL_READ_LIMIT)
-            if self._offset:
-                self._remainder = None  # type: ignore[assignment]  # drop first partial line
+        with fh:
+            st = os.fstat(fh.fileno())
+            # Ask the open handle for the real end of file. Directory metadata (os.stat) can lag
+            # behind on Windows while the game still has the file open for writing.
+            size = fh.seek(0, os.SEEK_END)
+            fh.seek(0)
+            head = fh.read(HEAD_BYTES)
 
-        if st.st_size == self._offset:
-            return
+            identity = (path, st.st_dev, st.st_ino)
+            head_changed = len(self._head) == HEAD_BYTES and head[: len(self._head)] != self._head
+            if identity != self._identity or size < self._offset or head_changed:
+                # New file (game restarted) or log was truncated -> new session.
+                if self._identity is not None:
+                    log.info("Neue Game.log erkannt – Session wird zurückgesetzt")
+                self.state.new_session()
+                self._assembler.reset()
+                self._identity = identity
+                self._head = b""
+                self._remainder = b""
+                self._offset = max(0, size - INITIAL_READ_LIMIT)
+                if self._offset:
+                    self._remainder = None  # drop the first, partial line
+            if len(self._head) < HEAD_BYTES:
+                self._head = head
 
-        with open(path, "rb") as fh:
+            if size == self._offset:
+                return
             fh.seek(self._offset)
-            chunk = fh.read(st.st_size - self._offset)
+            chunk = fh.read()  # everything up to the real end of file
         self._offset += len(chunk)
 
         if self._remainder is None:
             nl = chunk.find(b"\n")
-            chunk = chunk[nl + 1 :] if nl >= 0 else b""
+            if nl < 0:
+                return
+            chunk = chunk[nl + 1 :]
             self._remainder = b""
 
-        data = self._remainder + chunk
-        lines = data.split(b"\n")
+        lines = (self._remainder + chunk).split(b"\n")
         self._remainder = lines.pop()  # possibly incomplete last line
         for raw in lines:
-            ev = parse_line(raw.decode("utf-8", errors="replace").rstrip("\r"))
-            if ev is not None:
-                self.state.apply(ev)
+            try:
+                for full in self._assembler.feed(_decode(raw).rstrip("\r")):
+                    ev = parse_line(full)
+                    if ev is not None:
+                        self.state.apply(ev)
+            except Exception:  # one odd line must never cost us the rest of the log
+                log.debug("Zeile übersprungen: %r", raw[:200], exc_info=True)
 
 
 def _is_game_running() -> Optional[bool]:

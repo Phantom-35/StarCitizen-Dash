@@ -1,11 +1,12 @@
 import os
 import shutil
+import sys
 import tempfile
 import unittest
 
 from scdash.parser import parse_line
 from scdash.state import DashboardState
-from scdash.watcher import LogWatcher
+from scdash.watcher import LogWatcher, open_log
 
 TS = "<2026-11-10T18:00:00.000Z>"
 LOGIN = f"{TS} [Notice] User Login Success - Handle[Me] - Time[1]\n"
@@ -83,6 +84,19 @@ class WatcherTests(unittest.TestCase):
         self.write(LOGIN.replace("\n", "\r\n") + KILL_PLAYER.replace("\n", "\r\n"))
         self.watcher.poll()
         self.assertEqual(self.state.snapshot()["stats"]["kills"], 1)
+
+    def test_missing_file_raises(self):
+        with self.assertRaises(FileNotFoundError):
+            open_log(self.path)
+
+    @unittest.skipUnless(sys.platform == "win32", "Windows file sharing semantics")
+    def test_game_can_move_log_while_we_read_it(self):
+        self.write(LOGIN)
+        with open_log(self.path) as fh:
+            self.assertTrue(fh.read().startswith(b"<2026"))
+            # the game moves Game.log to logbackups on launch - must work while our handle is open
+            os.rename(self.path, self.path + ".moved")
+        self.assertTrue(os.path.exists(self.path + ".moved"))
 
     def test_new_log_resets_session(self):
         self.write(LOGIN + KILL_PLAYER + KILL_PLAYER)

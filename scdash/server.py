@@ -7,7 +7,7 @@ import logging
 import mimetypes
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from scdash.state import DashboardState
 
@@ -23,6 +23,8 @@ mimetypes.add_type("font/woff2", ".woff2")
 def make_handler(state: DashboardState):
     class Handler(BaseHTTPRequestHandler):
         server_version = "SC-Dash"
+        protocol_version = "HTTP/1.1"  # keep-alive: no new TCP connection for every poll
+        timeout = 60  # drop idle keep-alive connections (e.g. closed dashboard window)
 
         def log_message(self, fmt, *args):  # keep the console quiet
             log.debug("%s - %s", self.address_string(), fmt % args)
@@ -41,9 +43,14 @@ def make_handler(state: DashboardState):
             self.do_GET()
 
         def do_GET(self):
-            path = urlparse(self.path).path
+            url = urlparse(self.path)
+            path = url.path
             if path == "/api/state":
-                body = json.dumps(state.snapshot(), ensure_ascii=False).encode("utf-8")
+                # The dashboard polls every 2 s; answer with an empty 204 while nothing changed.
+                since = parse_qs(url.query).get("since", [""])[0]
+                if since and since == state.token:
+                    return self._send(204, b"", "application/json; charset=utf-8")
+                body = json.dumps(state.snapshot(), ensure_ascii=False, separators=(",", ":")).encode("utf-8")
                 return self._send(200, body, "application/json; charset=utf-8")
             if path == "/":
                 path = "/index.html"
@@ -54,8 +61,9 @@ def make_handler(state: DashboardState):
             ctype = mimetypes.guess_type(full)[0] or "application/octet-stream"
             if ctype.startswith("text/") or ctype.endswith("json"):
                 ctype += "; charset=utf-8"
+            cache = "public, max-age=604800, immutable" if full.endswith(".woff2") else "no-store"
             with open(full, "rb") as fh:
-                return self._send(200, fh.read(), ctype)
+                return self._send(200, fh.read(), ctype, cache)
 
     return Handler
 

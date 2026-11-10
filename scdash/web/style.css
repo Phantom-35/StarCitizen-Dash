@@ -413,3 +413,7 @@ body[data-mode="mission"] [data-only="combat"] { display: none !important; }
 #feed li.success::before, #feed li.fail::before, #feed li.mission::before { background: var(--c); box-shadow: 0 0 10px var(--c); }
 .banner.fail { --c: var(--death); --g: rgba(255, 61, 90, .2); }
 .banner.mission { --c: var(--amber); --g: rgba(255, 140, 30, .18); }
+
+/* long HUD messages (ATC hints etc.) must not flood the feed */
+.ev-actor { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+#feed li.comms .ev-actor { font-size: 1.0625rem; font-weight: 500; color: var(--dim); }

@@ -40,7 +40,22 @@ _QUIT = re.compile(r"<SystemQuit>|CSystem::Quit")
 # Every HUD notification (contracts, objectives, zones, ...) ends up in the log as
 #   <SHUDEvent_OnNotification> Added notification "Contract Accepted: Foo: " [12] to queue. ...
 #   MissionId: [uuid], ObjectiveId: [id] ...
-_NOTIFICATION = re.compile(r"<SHUDEvent_OnNotification>.*?Added notification \"(?P<text>[^\"]*)\"")
+_NOTIFICATION = re.compile(r"<SHUDEvent_OnNotification>.*?Added notification \"(?P<text>[^\"]*)\"?")
+_CHANNEL = re.compile(r"^You have (?P<act>joined|left)(?: the)? channel '(?P<name>[^']*)'", re.I)
+_OBJECTIVE_UPSERT = re.compile(
+    r"<ObjectiveUpserted>.*?mission_id (?P<mid>[\w-]+) - objective_id (?P<oid>\S+) - state (?P<st>\w+)"
+)
+_QT_TARGET = re.compile(r"<Player Selected Quantum Target[^>]*>.*?selected point (?P<target>\S+) as their destination")
+_QT_ARRIVED = re.compile(r"<Quantum Drive Arrived")
+_VERSION = re.compile(r"ProductVersion: (?P<v>\d+\.\d+(?:\.\d+)?)")
+
+# Cheap pre-filter: >95 % of all log lines are irrelevant, skip them with one search.
+_INTERESTING = re.compile(
+    r"Actor Death|Vehicle Destruction|RequestLocationInventory|<Join PU>|Login Success|"
+    r"AccountLoginCharacterStatus_Character|SHUDEvent_OnNotification|<EndMission>|<MissionEnded>|"
+    r"<ObjectiveUpserted>|Vehicle Control Flow|Quantum Target|Quantum Drive Arrived|"
+    r"SystemQuit|CSystem::Quit|ProductVersion"
+)
 _MISSION_ID = re.compile(r"MissionId:?\s*\[(?P<mid>[^\]]*)\]")
 _OBJECTIVE_ID = re.compile(r"ObjectiveId:?\s*\[(?P<oid>[^\]]*)\]")
 _END_MISSION = re.compile(r"<EndMission>.*?MissionId\[(?P<mid>[^\]]+)\].*?CompletionType\[(?P<ct>[^\]]+)\]")
@@ -52,6 +67,7 @@ _JURISDICTION = re.compile(r"(?:Entering|Entered)\s+(?P<name>.+?)\s+Jurisdiction
 
 # (prefix, category) – first match wins, compared case-insensitively
 NOTIFICATION_KINDS = (
+    ("contract available", "available"),
     ("contract accepted", "accepted"),
     ("contract complete", "completed"),
     ("contract failed", "failed"),
@@ -73,6 +89,8 @@ NOTIFICATION_KINDS = (
     ("entering monitored", "monitored_on"),
     ("leaving monitored", "monitored_off"),
     ("left monitored", "monitored_off"),
+    ("exited monitored", "monitored_off"),
+    ("exiting monitored", "monitored_off"),
     ("entered unmonitored", "monitored_off"),
     ("entering unmonitored", "monitored_off"),
 )
@@ -92,7 +110,14 @@ def _id(value: Optional[str]) -> Optional[str]:
 
 def classify_notification(text: str) -> dict:
     """Split a HUD notification into category + subject."""
-    text = text.strip().rstrip(":").strip()
+    text = " ".join(text.split()).rstrip(":").strip()
+    m = _CHANNEL.match(text)
+    if m:
+        # "You have joined channel 'RSI Aurora Mk II : PilotName'." -> the ship you just boarded
+        name = m.group("name")
+        ship = name.rsplit(" : ", 1)[0].strip() if " : " in name else None
+        return {"text": text.rstrip("."), "category": "channel_" + m.group("act").lower(), "subject": ship or name,
+                "is_ship": ship is not None}
     low = text.lower()
     category = "comms"
     for prefix, cat in NOTIFICATION_KINDS:
@@ -105,6 +130,19 @@ def classify_notification(text: str) -> dict:
         if m:
             category, subject = "jurisdiction", m.group("name").strip()
     return {"text": text, "category": category, "subject": subject}
+
+
+_QT_GUID = re.compile(r"_?\{[0-9A-Fa-f-]+\}|\.socpak$|_\d{6,}$")
+
+
+def quantum_target(raw: str) -> Optional[str]:
+    """Best-effort readable name for a quantum destination id (many are purely technical)."""
+    name = _QT_GUID.sub("", _QT_GUID.sub("", raw))
+    name = re.sub(r"_LOC$", "", name)
+    # ids like "em_shelter_001_frost" or "NavPoint_Dynamic_..." are internal names, not worth showing
+    if not name or not name[0].isupper() or name.lower().startswith("navpoint") or re.search(r"(^|_)\d+(_|$)", name):
+        return None
+    return describe_location(name)["place"]
 
 
 def _end_result(raw: str) -> str:
@@ -121,7 +159,9 @@ _NPC_HINTS = ("PU_", "NPC", "AIModule", "Kopion", "Marok", "Quasigrazer", "Vlk_"
 class LogEvent:
     """A single interesting thing that happened in the log."""
 
-    kind: str  # login | join | death | vehicle | location | notify | mission_end | ship | quit
+    # login | join | death | vehicle | location | notify | mission_end | objective_state | ship | quantum |
+    # version | quit
+    kind: str
     ts: Optional[str] = None
     data: dict = field(default_factory=dict)
 
@@ -143,7 +183,7 @@ def pretty_label(raw: str) -> str:
 
 def parse_line(line: str) -> Optional[LogEvent]:
     """Parse one log line. Returns ``None`` for lines we do not care about."""
-    if "<" not in line:
+    if not _INTERESTING.search(line):
         return None
 
     m = _TS.match(line)
@@ -211,6 +251,19 @@ def parse_line(line: str) -> Optional[LogEvent]:
     if m:
         return LogEvent("mission_end", ts, {"mission_id": _id(m.group("mid")), "result": _end_result(m.group("st"))})
 
+    m = _OBJECTIVE_UPSERT.search(line)
+    if m:
+        state = {"completed": "done", "failed": "failed"}.get(m.group("st").lower().replace("mission_objective_state_", ""))
+        if state is None:
+            return None
+        return LogEvent("objective_state", ts, {"mission_id": _id(m.group("mid")), "objective_id": m.group("oid"), "state": state})
+
+    m = _QT_TARGET.search(line)
+    if m:
+        return LogEvent("quantum", ts, {"phase": "target", "target": quantum_target(m.group("target"))})
+    if _QT_ARRIVED.search(line):
+        return LogEvent("quantum", ts, {"phase": "arrived", "target": None})
+
     m = _VEHICLE_CONTROL.search(line)
     if m:
         entering = m.group("act") in ("requesting", "granted")
@@ -219,4 +272,53 @@ def parse_line(line: str) -> Optional[LogEvent]:
     if _QUIT.search(line):
         return LogEvent("quit", ts, {})
 
+    m = _VERSION.search(line)
+    if m:
+        return LogEvent("version", ts, {"version": m.group("v")})
+
     return None
+
+
+_TS_PREFIX = re.compile(r"^<\d{4}-\d{2}-\d{2}T[\d:.]+Z>\s?")
+_OPEN_NOTIFICATION = re.compile(r"<SHUDEvent_OnNotification>.*Added notification \"[^\"]*$")
+_NEW_ENTRY = re.compile(r"^<[^>]+> \[\w+\] <")
+
+
+class LineAssembler:
+    """Re-joins log entries that the game splits over several lines.
+
+    Notification texts may contain a line break, e.g.::
+
+        <ts> [Notice] <SHUDEvent_OnNotification> Added notification "Objective Complete: Foo
+        <ts> : " [16] to queue. ... MissionId: [..], ObjectiveId: [..]
+
+    ``feed`` returns the complete logical lines that are ready to be parsed.
+    """
+
+    MAX_PARTS = 4
+
+    def __init__(self) -> None:
+        self._pending: Optional[str] = None
+        self._parts = 0
+
+    def feed(self, line: str) -> list:
+        out = []
+        if self._pending is not None:
+            if _NEW_ENTRY.match(line) or self._parts >= self.MAX_PARTS:
+                out.append(self._pending)  # continuation never came - use what we have
+                self._pending = None
+            else:
+                self._pending += _TS_PREFIX.sub("", line)
+                self._parts += 1
+                if self._pending.count('"') % 2 == 0:  # closing quote arrived
+                    out.append(self._pending)
+                    self._pending = None
+                return out
+        if _OPEN_NOTIFICATION.search(line):
+            self._pending, self._parts = line, 1
+        else:
+            out.append(line)
+        return out
+
+    def reset(self) -> None:
+        self._pending = None

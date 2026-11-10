@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 HANDLE = "Demo_Pilot"
 
 _STATIC = [
+    "<{ts}> ProductVersion: 4.10.197.2878",
     "<{ts}> [Notice] <Legacy login response> [CIG-net] User Login Success - Handle[{me}] - Time[123456] [Team_GameServices][Login]",
     "<{ts}> [Notice] <Join PU> address[10.0.0.1] port[64300] shard[pub_euw1b_9876543_100] locationId[-281470681743359] [Team_GameServices][GIM]",
     "<{ts}> [Notice] <RequestLocationInventory> Player[{me}] requested inventory for Location[Stanton1_Lorville] [Team_CoreGameplayFeatures][Inventory]",
@@ -37,6 +38,16 @@ _RANDOM = [
 
 _N = '<{ts}> [Notice] <SHUDEvent_OnNotification> Added notification "%s: " [11] to queue. New queue size: 1, MissionId: [%s], ObjectiveId: [%s] [Team_CoreGameplayFeatures][Missions][Comms]'
 _PILOT = "<{ts}> [Notice] <Vehicle Control Flow> CVehicleMovementBase::SetDriver: Local client node [1] requesting control token for '%s_{n}' [{n}] [Team_VehicleFeatures][Vehicle]"
+# Some notifications contain a line break in the real log - keep that quirk in the demo.
+_N2 = ('<{ts}> [Notice] <SHUDEvent_OnNotification> Added notification "%s\r\n<{ts}> : " [11] to queue. '
+       'New queue size: 1, MissionId: [%s], ObjectiveId: [%s] [Team_CoreGameplayFeatures][Missions][Comms]')
+_UPSERT = ("<{ts}> [Notice] <ObjectiveUpserted> Received ObjectiveUpserted push message for: mission_id %s - "
+           "objective_id %s - state MISSION_OBJECTIVE_STATE_COMPLETED - created 0 - flags=ShowInLog| [Team_GameServices][Missions]")
+_QT_SET = ("<{ts}> [Notice] <Player Selected Quantum Target - Local> [ItemNavigation][CL][1] | NOT AUTH | DRAK_Cutlass_Black_{n}[{n}]|"
+           "CSCItemNavigation::OnPlayerSelectedQuantumTarget|Player has selected point %s as their destination, routing locally [Team_CGP4][QuantumTravel]")
+_QT_DONE = ("<{ts}> [Notice] <Quantum Drive Arrived - Arrived at Final Destination> [ItemNavigation][CL][1] | NOT AUTH | DRAK_Cutlass_Black_{n}[{n}]|"
+            "CSCItemNavigation::OnQuantumDriveArrived|Quantum Drive has arrived at final destination [Team_CGP4][QuantumTravel]")
+_ZERO = "00000000-0000-0000-0000-000000000000"
 _END = "<{ts}> [Notice] <EndMission> Ending mission for player. MissionId[%s] Player[{me}] PlayerId[1] CompletionType[%s] Reason[]"
 
 
@@ -50,24 +61,28 @@ def mission_script(c: int) -> list:
         _N % ("Contract Accepted: Hauling - Hurston to Crusader", b, ""),
         _N % ("New Objective: Pick up 24 SCU Agricium at HDMS-Edmond", b, "o1"),
         _N % ("New Objective: Deliver 0/24 SCU to Seraphim Station", b, "o2"),
-        _N % ("Objective Complete: Collect 3 packages at Lorville Spaceport", a, "o1"),
+        _N2 % ("Objective Complete: Collect 3 packages at Lorville Spaceport", a, "o1"),
         _N % ("New Objective: Deliver 0/3 packages to Everus Harbor", a, "o2"),
-        _PILOT % "DRAK_Cutlass_Black",
-        _N % ("Leaving Armistice Zone - Combat Enabled", "", ""),
-        _N % ("Quantum Travel Route Set: Everus Harbor", "", ""),
+        _N2 % ("You have joined channel 'Drake Cutlass Black : {me}'.", _ZERO, ""),
+        _N % ("Hangar Request Completed", _ZERO, ""),
+        _N % ("Leaving Armistice Zone - Caution Advised", _ZERO, ""),
+        _QT_SET % "EverusHarbor_LOC",
+        _QT_DONE,
         _LOC % "Stanton1_Everus",
-        _N % ("Entered Armistice Zone - Combat Prohibited", "", ""),
+        _N % ("Entering Armistice Zone - Combat Prohibited", _ZERO, ""),
         _N % ("New Objective: Deliver 3/3 packages to Everus Harbor", a, "o2"),
-        _N % ("Objective Complete: Deliver 3/3 packages to Everus Harbor", a, "o2"),
-        _N % ("Contract Complete: Covalex Local Delivery", a, ""),
+        _UPSERT % (a, "o2"),
+        "<{ts}> [Notice] <MissionEnded> Received MissionEnded push message for: mission_id %s - mission_state MISSION_STATE_COMPLETED [Team_GameServices][Missions]" % a,
         _END % (a, "Complete"),
+        _N % ("Contract Complete: Covalex Local Delivery", a, ""),
         _N % ("Objective Complete: Pick up 24 SCU Agricium at HDMS-Edmond", b, "o1"),
-        _N % ("Entering Crusader Industries Jurisdiction", "", ""),
+        _N % ("Entered Crusader Jurisdiction", _ZERO, ""),
         _N % ("Contract Accepted: Retrieve Stolen Cargo", x, ""),
         _N % ("New Objective: Recover cargo from wreck near Yela", x, "o1"),
-        _N % ("Leaving Monitored Space", "", ""),
+        _N % ("Exited Monitored Space", _ZERO, ""),
         _N % ("Contract Failed: Retrieve Stolen Cargo", x, ""),
-        _N % ("Entered Monitored Space", "", ""),
+        _N % ("Entered Monitored Space", _ZERO, ""),
+        _N % ("Contract Available: Covalex Shipping: Rush Delivery", f"demo-o-{c}", ""),
         _LOC % "Stanton2_Seraphim",
     ]
 
@@ -86,8 +101,8 @@ class DemoLogWriter(threading.Thread):
 
     def _write(self, template: str) -> None:
         line = template.format(ts=_ts(), me=HANDLE, n=random.randint(100000, 9999999))
-        with open(self.path, "a", encoding="utf-8") as fh:
-            fh.write(line + "\n")
+        with open(self.path, "a", encoding="utf-8", newline="") as fh:
+            fh.write(line + "\r\n")
 
     def stop(self) -> None:
         self._halt.set()

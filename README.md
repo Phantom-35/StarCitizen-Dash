@@ -161,8 +161,49 @@ Bereiche untereinander angeordnet. Vollbild mit `F11`.
 
 ## Was wird erkannt?
 
-| Ereignis | Log-Eintrag |
-|---|---|
+Stand: geprüft gegen eine echte `Game.log` von **Star Citizen 4.10** (ein anonymisierter Auszug liegt
+als Testfall in `tests/fixtures/`).
+
+| Ereignis | Log-Eintrag | Geprüft mit 4.10 |
+|---|---|:-:|
+| Login / Pilotenname | `User Login Success - Handle[…]` | ✅ |
+| Shard & Region | `<Join PU> … shard[…]` | ✅ |
+| Spielversion | `ProductVersion: …` | ✅ |
+| Ortswechsel | `<RequestLocationInventory> … Location[…]` | ✅ |
+| Aufträge & Ziele | `<SHUDEvent_OnNotification> Added notification "Contract Accepted: …"`, `New Objective`, `Objective Complete`, `Contract Complete/Failed` | ✅ |
+| Ziel-Status | `<ObjectiveUpserted> … state MISSION_OBJECTIVE_STATE_COMPLETED` | ✅ |
+| Auftragsende | `<MissionEnded> … mission_state …`, `<EndMission> … CompletionType[…]` | ✅ |
+| Zonen | Meldungen *Armistice Zone*, *Monitored Space*, *… Jurisdiction* | ✅ |
+| Schiff (ein-/aussteigen) | Meldung `You have joined channel '<Schiff> : <Pilot>'` | ✅ |
+| Quantum-Sprünge | `<Player Selected Quantum Target …>`, `<Quantum Drive Arrived …>` | ✅ |
+| Spiel beendet | `<SystemQuit>` | ✅ |
+| Kills & Tode | `<Actor Death> CActor::Kill: …` | ⚠️ noch ohne echtes Beispiel |
+| Schiffszerstörung | `<Vehicle Destruction> …` | ⚠️ noch ohne echtes Beispiel |
+
+### Wie das Live-Mitlesen funktioniert
+
+Star Citizen hat keine Schnittstelle für Drittprogramme – die `Game.log` ist die einzige Quelle.
+SC-Dash liest sie deshalb so vorsichtig und robust wie möglich:
+
+- **Einmal pro Sekunde** wird nur der neu hinzugekommene Teil gelesen (bis zum echten Dateiende,
+  nicht nach der gemeldeten Dateigröße – die hinkt unter Windows manchmal hinterher).
+- Die Datei wird **nur kurz** und mit voller Freigabe geöffnet. Das Spiel kann sie jederzeit
+  weiterschreiben, verschieben oder ersetzen.
+- **Halbe Zeilen** (das Spiel schreibt gerade) werden zurückgehalten, bis sie vollständig sind.
+- **Mehrzeilige Meldungen** werden wieder zusammengesetzt (manche HUD-Texte enthalten einen Zeilenumbruch).
+- **Spiel-Neustart** wird an Datei-Identität, Größe und der ersten Zeile erkannt → neue Session.
+- Über 95 % der Zeilen sind uninteressant und werden mit einer einzigen Prüfung übersprungen:
+  eine komplette 1-Stunden-Log (1 MB) ist in ca. 15 ms ausgewertet.
+- Das Dashboard fragt alle 2 s nach – der Server antwortet mit einem leeren „nichts Neues“,
+  solange sich nichts geändert hat.
+
+Ob das Spiel läuft, wird zusätzlich alle 15 s über die Prozessliste geprüft.
+
+> Das Log-Format ist nicht offiziell dokumentiert und ändert sich gelegentlich mit Patches. Wenn
+> etwas nicht (mehr) erkannt wird, bitte ein Issue mit der betreffenden Log-Zeile öffnen. Meldungen,
+> die SC-Dash nicht einordnen kann, erscheinen trotzdem im Komm-Log.
+
+---|---|
 | Login / Pilotenname | `User Login Success - Handle[…]` |
 | Shard-Beitritt | `<Join PU> … shard[…]` |
 | Ortswechsel | `<RequestLocationInventory> … Location[…]` |

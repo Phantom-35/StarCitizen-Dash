@@ -13,7 +13,7 @@
   const pad = (n) => String(n).padStart(2, "0");
 
   let st = null;            // last state from the server
-  let lastVersion = -1;
+  let lastToken = "";       // "<server boot id>-<version>", sent back so the server can answer 204
   let lastEventId = null;   // null = first render, no banner for old events
   let pollTimer = null;
   let bannerTimer = null;
@@ -96,18 +96,20 @@
   // ---------------------------------------------------------------- polling
   async function poll() {
     try {
-      const res = await fetch("/api/state", { cache: "no-store" });
+      const res = await fetch("/api/state?since=" + encodeURIComponent(lastToken), { cache: "no-store" });
       if (!res.ok) throw new Error(res.status);
-      const data = await res.json();
       setClass($("ind-link"), "on");
-      if (data.version !== lastVersion) {
-        lastVersion = data.version;
-        st = data;
-        render();
-      }
+      if (res.status === 204) return; // nothing changed
+      const data = await res.json();
+      if (data.token === lastToken) return;
+      // event ids start again after a server restart
+      if (lastToken.split("-")[0] !== data.token.split("-")[0]) lastEventId = null;
+      lastToken = data.token;
+      st = data;
+      render();
     } catch (e) {
       setClass($("ind-link"), "off");
-      lastVersion = -1;
+      lastToken = "";
     }
   }
   function startPolling() {
@@ -147,6 +149,7 @@
     $("loc-place").classList.toggle("long", place.length > 11);
     setText($("loc-region"), s.region || "");
     setText($("loc-shard"), s.shard || "");
+    setText($("loc-version"), st.game_version ? "SC " + st.game_version : "");
 
     const k = st.stats;
     const deaths = k.deaths + k.suicides;
@@ -279,6 +282,7 @@
     const total = k.missions_completed + k.missions_failed;
     setText($("ms-rate"), total ? `${Math.round((k.missions_completed / total) * 100)} % Quote` : "–");
     setText($("ms-places"), String(k.places));
+    setText($("ms-jumps"), `besucht · ${k.quantum_jumps} QT-Sprünge`);
     renderEarnings();
   }
 

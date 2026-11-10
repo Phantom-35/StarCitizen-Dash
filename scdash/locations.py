@@ -34,14 +34,30 @@ _RR = re.compile(r"^RR_(?P<body>[A-Z]{3})_(?P<orbit>\w+)$")
 _CAMEL = re.compile(r"(?<=[a-z])(?=[A-Z])")
 
 
+# camelCase brand names that must not be split into two words
+_KEEP = {"micro Tech": "microTech", "Arc Corp": "ArcCorp", "Grim HEX": "Grim HEX"}
+
+
 def _split_words(s: str) -> str:
-    return _CAMEL.sub(" ", s.replace("_", " ")).strip()
+    out = _CAMEL.sub(" ", s.replace("_", " ")).strip()
+    for wrong, right in _KEEP.items():
+        out = out.replace(wrong, right)
+    return out
 
 
 def _place(rest: Optional[str]) -> Optional[str]:
     if not rest:
         return None
-    key = rest.split("_")[0]
+    parts = rest.split("_")
+    key = parts[0]
+    # "EMShelter_ClearView" -> "Clear View Emergency Shelter"
+    if key == "EMShelter" and len(parts) > 1:
+        return f"{_split_words('_'.join(parts[1:]))} Emergency Shelter"
+    # "DistributionCentre_Covalex_S4DC05" -> "Covalex Distribution Centre S4DC05"
+    if key in ("DistributionCentre", "DistributionCenter") and len(parts) > 1:
+        code = parts[2] if len(parts) > 2 else ""
+        kind = "Logistics Depot" if "LD" in code else "Distribution Centre"
+        return f"{_split_words(parts[1])} {kind} {code}".strip()
     if rest in _PLACE_NAMES:
         return _PLACE_NAMES[rest]
     if key in _PLACE_NAMES:

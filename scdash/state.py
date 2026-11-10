@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import threading
 import time
 from collections import OrderedDict, deque
@@ -11,7 +12,7 @@ from typing import Any, Dict, Iterable, Optional
 from scdash.locations import shard_region
 from scdash.parser import LogEvent
 
-MAX_EVENTS = 40
+MAX_EVENTS = 60
 MAX_HISTORY = 12
 
 COMBAT, MISSION = "combat", "mission"
@@ -34,6 +35,7 @@ class DashboardState:
     def __init__(self) -> None:
         self._lock = threading.Lock()
         self._version = 0
+        self._boot = os.urandom(4).hex()  # distinguishes server restarts for the frontend
         self._event_id = 0
         self.log_path: Optional[str] = None
         self.log_found = False
@@ -72,6 +74,11 @@ class DashboardState:
         self.armistice: Optional[bool] = None
         self.monitored: Optional[bool] = None
         self.jurisdiction: Optional[str] = None
+        self._ship_from_channel = False
+        self._ended_missions: set = set()
+        self.quantum_jumps = 0
+        self.quantum_target: Optional[str] = None
+        self.game_version: Optional[str] = None
 
     def _touch(self) -> None:
         self._version += 1
@@ -148,6 +155,8 @@ class DashboardState:
                 self._push(ev, "info", "Eingeloggt", self.handle, feeds=BOTH)
         elif ev.kind == "join":
             self.shard = d["shard"]
+            self.alive_since = ev.ts  # time in the menus should not count as "alive"
+            self.armistice = self.monitored = self.jurisdiction = self.ship = None
             self._push(ev, "info", "Shard beigetreten", shard_region(self.shard) or "", self.shard, feeds=BOTH)
         elif ev.kind == "location":
             loc = d["location"]
@@ -201,18 +210,42 @@ class DashboardState:
             self.ended = True
             self._push(ev, "info", "Spiel beendet", feeds=BOTH)
         elif ev.kind == "ship":
+            # Control tokens only tell us about the pilot seat. If the ship channel already told
+            # us which ship we are in, leaving the seat does not mean leaving the ship.
             if d["entering"]:
-                if d["vehicle"] != self.ship:
+                if not self._ship_from_channel and d["vehicle"] != self.ship:
                     self.ship = d["vehicle"]
                     self._push(ev, "nav", "Pilotensitz", self.ship, feeds=BOTH)
-            elif d["vehicle"] == self.ship:
+            elif not self._ship_from_channel and d["vehicle"] == self.ship:
                 self.ship = None
+        elif ev.kind == "quantum":
+            if d["phase"] == "target":
+                self.quantum_target = d["target"]
+                if d["target"]:
+                    self._push(ev, "nav", "Quantum-Ziel", d["target"], feeds=(MISSION,))
+            else:
+                self.quantum_jumps += 1
+                self._push(ev, "nav", "Quantum-Sprung", "Ziel erreicht", self.quantum_target or "", feeds=(MISSION,))
+                self.quantum_target = None
+        elif ev.kind == "version":
+            self.game_version = d["version"]
+        elif ev.kind == "objective_state":
+            mission = self.missions.get(d["mission_id"] or "")
+            obj = mission["objectives"].get(d["objective_id"]) if mission else None
+            if obj and obj["state"] != d["state"]:
+                obj["state"] = d["state"]
+                mission["seq"] = self._event_id + 1
+                self._push(ev, "success" if d["state"] == "done" else "fail",
+                           "Ziel erledigt" if d["state"] == "done" else "Ziel gescheitert",
+                           obj["text"], mission["title"], feeds=(MISSION,))
         elif ev.kind == "notify":
             self._notify(ev)
         elif ev.kind == "mission_end":
             mission = self.missions.get(d["mission_id"] or "")
             if mission:
                 self._end_mission(ev, mission, d["result"])
+            elif d["mission_id"]:
+                self._ended_missions.add(d["mission_id"])
 
     # ------------------------------------------------------------------ missions
     def _find_mission(self, mission_id: Optional[str], title: Optional[str] = None) -> Optional[Dict[str, Any]]:
@@ -245,6 +278,8 @@ class DashboardState:
 
     def _end_mission(self, ev: LogEvent, mission: Dict[str, Any], result: str) -> None:
         self.missions.pop(mission["id"], None)
+        if mission["id"]:
+            self._ended_missions.add(mission["id"])
         if result == "completed":
             self.missions_completed += 1
         elif result == "failed":
@@ -271,6 +306,8 @@ class DashboardState:
             mission["seq"] = self._event_id + 1
             self._push(ev, "mission", "Auftrag angenommen", subject, feeds=(MISSION,), banner=True)
         elif cat in ("completed", "failed", "abandoned"):
+            if d["mission_id"] in self._ended_missions:
+                return  # the game reports the end up to three times (push message, EndMission, HUD)
             mission = self._find_mission(d["mission_id"], subject)
             if mission is None:
                 # not tracked (e.g. accepted before the log started)
@@ -288,22 +325,38 @@ class DashboardState:
                 obj = next((o for o in objectives.values() if o["text"].lower() == subject.lower()), None)
             if obj is None:
                 objectives[key] = {"text": subject, "state": state}
+                if key.startswith("pickup"):
+                    # the game announces the drop-off first; show the pick-up on top
+                    objectives.move_to_end(key, last=False)
             else:
+                if obj["state"] == state and obj["text"] == subject:
+                    return  # already known (e.g. via the server push message)
+                if cat == "objective_new" or obj["state"] != state:
+                    obj["text"] = subject if cat == "objective_new" else obj["text"]
                 obj["state"] = state
-                if cat == "objective_new":
-                    obj["text"] = subject
             title = {"open": "Neues Ziel", "done": "Ziel erledigt", "failed": "Ziel gescheitert"}[state]
             self._push(ev, "success" if state == "done" else "fail" if state == "failed" else "mission",
                        title, subject, mission["title"], feeds=(MISSION,))
         elif cat in ("armistice_on", "armistice_off"):
             self.armistice = cat == "armistice_on"
-            self._push(ev, "zone", "Armistice-Zone", "betreten" if self.armistice else "verlassen",
-                       "" if self.armistice else "Waffen frei", feeds=BOTH)
+            self._push(ev, "zone", "Zone", "Armistice betreten" if self.armistice else "Armistice verlassen",
+                       "Waffen gesperrt" if self.armistice else "Waffen frei", feeds=BOTH)
         elif cat in ("monitored_on", "monitored_off"):
             self.monitored = cat == "monitored_on"
-            self._push(ev, "zone", "Überwachter Raum" if self.monitored else "Unüberwachter Raum",
-                       "betreten", "Comm-Array aktiv" if self.monitored else "keine CrimeStat-Meldung",
+            self._push(ev, "zone", "Zone", "Überwachter Raum" if self.monitored else "Unüberwachter Raum",
+                       "Comm-Array aktiv" if self.monitored else "kein Comm-Array in Reichweite",
                        feeds=BOTH)
+        elif cat in ("channel_joined", "channel_left"):
+            if not d.get("is_ship"):
+                self._push(ev, "comms", "Kanal", d["text"], feeds=(MISSION,))
+            elif cat == "channel_joined":
+                self.ship, self._ship_from_channel = subject, True
+                self._push(ev, "nav", "Eingestiegen", subject, feeds=BOTH)
+            elif self.ship == subject or not self._ship_from_channel:
+                self.ship, self._ship_from_channel = None, False
+                self._push(ev, "nav", "Ausgestiegen", subject, feeds=(MISSION,))
+        elif cat == "available":
+            self._push(ev, "comms", "Auftrag verfügbar", subject, feeds=(MISSION,))
         elif cat == "jurisdiction":
             self.jurisdiction = subject
             self._push(ev, "zone", "Jurisdiktion", subject, feeds=(MISSION,))
@@ -316,10 +369,17 @@ class DashboardState:
         with self._lock:
             return self._version
 
+    @property
+    def token(self) -> str:
+        """Changes whenever the state changes (or the server was restarted)."""
+        with self._lock:
+            return f"{self._boot}-{self._version}"
+
     def snapshot(self) -> Dict[str, Any]:
         with self._lock:
             return {
                 "version": self._version,
+                "token": f"{self._boot}-{self._version}",
                 "server_time": time.time(),
                 "log": {"path": self.log_path, "found": self.log_found},
                 "game_running": self.game_running,
@@ -348,13 +408,16 @@ class DashboardState:
                     "missions_failed": self.missions_failed,
                     "missions_abandoned": self.missions_abandoned,
                     "places": len(self.places),
+                    "quantum_jumps": self.quantum_jumps,
                 },
                 "nav": {
                     "ship": self.ship,
                     "armistice": self.armistice,
                     "monitored": self.monitored,
                     "jurisdiction": self.jurisdiction,
+                    "quantum_target": self.quantum_target,
                 },
+                "game_version": self.game_version,
                 "missions": {
                     "active": [
                         {

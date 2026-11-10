@@ -1,0 +1,134 @@
+"""Regression tests against an (anonymised) excerpt of a real Star Citizen 4.10 Game.log.
+
+The excerpt keeps the original quirks: latin-1 bytes, mixed CRLF/LF line endings and
+notifications that the game splits over two lines.
+"""
+
+import os
+import random
+import shutil
+import tempfile
+import unittest
+
+from scdash.parser import LineAssembler, parse_line
+from scdash.state import DashboardState
+from scdash.watcher import LogWatcher
+
+FIXTURE = os.path.join(os.path.dirname(__file__), "fixtures", "session_4.10_courier.log")
+
+
+def comparable(snapshot):
+    """Everything except the fields that differ between two runs."""
+    return {k: v for k, v in snapshot.items() if k not in ("version", "token", "server_time", "log")}
+
+
+class RealLogTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        with open(FIXTURE, "rb") as fh:
+            cls.raw = fh.read()
+
+    def setUp(self):
+        self.dir = tempfile.mkdtemp()
+        self.path = os.path.join(self.dir, "Game.log")
+
+    def tearDown(self):
+        shutil.rmtree(self.dir, ignore_errors=True)
+
+    def read_all_at_once(self):
+        with open(self.path, "wb") as fh:
+            fh.write(self.raw)
+        state = DashboardState()
+        LogWatcher(lambda: self.path, state).poll()
+        return state.snapshot()
+
+    def test_session_summary(self):
+        s = self.read_all_at_once()
+        self.assertEqual(s["session"]["handle"], "TestPilot")
+        self.assertEqual(s["session"]["shard"], "pub_use1b_12881860_450")
+        self.assertEqual(s["session"]["region"], "US East")
+        self.assertEqual(s["session"]["location"], {"system": "Stanton", "planet": "microTech", "place": "New Babbage"})
+        self.assertTrue(s["session"]["ended"])
+        self.assertEqual(s["game_version"], "4.10.197")
+
+        st = s["stats"]
+        self.assertEqual((st["missions_completed"], st["missions_failed"], st["missions_abandoned"]), (1, 0, 1))
+        self.assertEqual(st["quantum_jumps"], 4)
+        self.assertEqual(st["places"], 4)
+        self.assertEqual((st["kills"], st["deaths"]), (0, 0))
+
+        nav = s["nav"]
+        self.assertEqual((nav["armistice"], nav["monitored"], nav["jurisdiction"]), (True, True, "microTech"))
+        self.assertIsNone(nav["ship"])  # left the ship before quitting
+
+    def test_missions(self):
+        s = self.read_all_at_once()
+        self.assertEqual(s["missions"]["active"], [])
+        done, = [h for h in s["missions"]["history"] if h["result"] == "completed"]
+        self.assertEqual(done["title"], "ENTRY LVL. COURIER NEEDED IN STANTON")
+        self.assertAlmostEqual(done["duration"], 595, delta=1)
+
+        feed = s["feeds"]["mission"]
+        titles = [e["title"] for e in feed]
+        # the game reports a finished contract three times - it must be counted once
+        self.assertEqual(titles.count("Auftrag erledigt"), 1)
+        self.assertEqual(titles.count("Auftrag abgebrochen"), 1)
+        # the multi-line "Objective Complete" notification and the drop-off (push message only)
+        self.assertEqual(titles.count("Ziel erledigt"), 2)
+        # ship name comes from the multi-line channel notification
+        self.assertIn(("Eingestiegen", "RSI Aurora Mk II"), [(e["title"], e["actor"]) for e in feed])
+        # a mere offer is not an accepted contract
+        self.assertEqual(titles.count("Auftrag angenommen"), 2)
+
+    def test_multiline_notifications_are_joined(self):
+        asm, texts = LineAssembler(), []
+        for raw in self.raw.split(b"\n"):
+            for full in asm.feed(raw.decode("latin-1").rstrip("\r")):
+                ev = parse_line(full)
+                if ev and ev.kind == "notify":
+                    texts.append((ev.data["category"], ev.data["mission_id"], ev.data["objective_id"]))
+        self.assertEqual(len(texts), 37)
+        done = [t for t in texts if t[0] == "objective_done"]
+        self.assertEqual(len(done), 1)
+        self.assertTrue(done[0][1] and done[0][2], "mission/objective id of the joined line got lost")
+
+    def test_live_tailing_gives_same_result(self):
+        """Write the log in random chunks (as the game does) and poll in between."""
+        expected = comparable(self.read_all_at_once())
+        rng = random.Random(4)
+        for _ in range(5):
+            os.remove(self.path)
+            state = DashboardState()
+            watcher = LogWatcher(lambda: self.path, state)
+            pos = 0
+            with open(self.path, "wb"):
+                pass
+            while pos < len(self.raw):
+                n = rng.choice((1, 7, 60, 300, 2000))
+                with open(self.path, "ab") as fh:
+                    fh.write(self.raw[pos : pos + n])
+                pos += n
+                watcher.poll()
+            self.assertEqual(comparable(state.snapshot()), expected)
+
+    def test_game_restart_starts_new_session(self):
+        state = DashboardState()
+        watcher = LogWatcher(lambda: self.path, state)
+        with open(self.path, "wb") as fh:
+            fh.write(self.raw)
+        watcher.poll()
+        self.assertEqual(state.snapshot()["stats"]["missions_completed"], 1)
+
+        # The game recreates Game.log on launch. Same path, different first line (start time),
+        # and here even *larger* than before so only the head check can notice it.
+        new = self.raw.replace(b"2026-11-10T", b"2026-11-11T") + b"<2026-11-11T18:00:00.000Z> filler\r\n" * 50
+        with open(self.path, "r+b") as fh:  # rewrite in place: keeps the same file identity
+            fh.write(new)
+        watcher.poll()
+        s = state.snapshot()
+        self.assertEqual(s["stats"]["missions_completed"], 1)  # not 2
+        self.assertTrue(s["session"]["start"].startswith("2026-11-11"))
+
+
+if __name__ == "__main__":
+    unittest.main()
