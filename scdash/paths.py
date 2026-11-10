@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import string
 import sys
 from typing import Iterable, List, Optional
@@ -13,6 +14,8 @@ CHANNELS = ("LIVE", "PTU", "EPTU", "TECH-PREVIEW", "HOTFIX")
 # plus a few layouts people commonly choose.
 _ROOTS = (
     r"Program Files\Roberts Space Industries\StarCitizen",
+    r"Program Files (x86)\Roberts Space Industries\StarCitizen",
+    r"SteamLibrary\StarCitizen",
     r"Roberts Space Industries\StarCitizen",
     r"Games\Roberts Space Industries\StarCitizen",
     r"StarCitizen",
@@ -26,11 +29,38 @@ def _drives() -> List[str]:
     return [f"{d}:\\" for d in string.ascii_uppercase if os.path.exists(f"{d}:\\")]
 
 
+_LAUNCHER_PATH = re.compile(r'([A-Za-z]:(?:\\\\|\\|/)[^"\'<>|\r\n]*?StarCitizen)(?=[\\/"\'\s]|$)')
+
+
+def launcher_install_roots() -> List[str]:
+    """Install folders mentioned in the RSI Launcher's own log (exact even for custom paths)."""
+    appdata = os.environ.get("APPDATA")
+    if not appdata:
+        return []
+    roots: List[str] = []
+    for rel in (("rsilauncher", "logs", "log.log"), ("rsilauncher", "log.log")):
+        try:
+            with open(os.path.join(appdata, *rel), "rb") as fh:
+                fh.seek(0, os.SEEK_END)
+                fh.seek(max(0, fh.tell() - 3_000_000))
+                text = fh.read().decode("utf-8", errors="replace")
+        except OSError:
+            continue
+        for m in _LAUNCHER_PATH.finditer(text):
+            root = os.path.normpath(m.group(1).replace("\\\\", "\\"))
+            if root.lower() not in (r.lower() for r in roots):
+                roots.append(root)
+    return roots
+
+
 def candidate_logs() -> Iterable[str]:
+    bases = launcher_install_roots()
     for drive in _drives():
-        for root in _ROOTS:
-            for channel in CHANNELS:
-                yield os.path.join(drive, root, channel, "Game.log")
+        bases.extend(os.path.join(drive, root) for root in _ROOTS)
+    for base in bases:
+        yield os.path.join(base, "Game.log")
+        for channel in CHANNELS:
+            yield os.path.join(base, channel, "Game.log")
 
 
 def resolve_log(user_path: Optional[str]) -> Optional[str]:

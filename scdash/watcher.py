@@ -16,6 +16,8 @@ import sys
 import threading
 from typing import Callable, Optional
 
+import re
+
 from scdash.parser import LineAssembler, parse_line
 from scdash.state import DashboardState
 
@@ -65,7 +67,10 @@ def open_log(path: str):
     return open(path, "rb")
 
 
-HEAD_BYTES = 96  # the first log line contains the start timestamp -> unique per game launch
+HEAD_BYTES = 96
+_FIRST_TS = re.compile(rb"^<(\d{4}-\d{2}-\d{2}T[\d:.]+Z)>")
+HEAD_SCAN_BYTES = 2 * 1024 * 1024  # login, shard and version are written in the first minutes
+HEAD_KINDS = ("version", "login", "join")  # the first log line contains the start timestamp -> unique per game launch
 
 
 def _decode(raw: bytes) -> str:
@@ -96,6 +101,12 @@ class LogWatcher(threading.Thread):
 
     def stop(self) -> None:
         self._halt.set()
+
+    def _scan_head(self, fh, length: int) -> None:
+        """Only the end of a very long log is replayed - take who/where from its beginning."""
+        fh.seek(0)
+        for ev in _scan_lines(fh.read(length), LineAssembler(), HEAD_KINDS):
+            self.state.apply(ev)
 
     def run(self) -> None:
         while not self._halt.is_set():
@@ -144,7 +155,11 @@ class LogWatcher(threading.Thread):
                 self._offset = max(0, size - INITIAL_READ_LIMIT)
                 if self._offset:
                     self._remainder = None  # drop the first, partial line
+                    self._scan_head(fh, min(HEAD_SCAN_BYTES, self._offset))
             if len(self._head) < HEAD_BYTES:
+                m = _FIRST_TS.match(head)  # retried until the first line is complete
+                if m:
+                    self.state.begin_session(m.group(1).decode())
                 self._head = head
 
             if size == self._offset:
@@ -172,22 +187,31 @@ class LogWatcher(threading.Thread):
                 log.debug("Zeile übersprungen: %r", raw[:200], exc_info=True)
 
 
+def _scan_lines(data: bytes, assembler: "LineAssembler", kinds=None):
+    for raw in data.split(b"\n"):
+        for full in assembler.feed(_decode(raw).rstrip("\r")):
+            ev = parse_line(full)
+            if ev is not None and (kinds is None or ev.kind in kinds):
+                yield ev
+
+
 def _is_game_running() -> Optional[bool]:
     """Return True/False if detectable, None if we cannot tell."""
     try:
         if sys.platform == "win32":
-            out = subprocess.run(
+            # Read bytes: tasklist prints in the OEM code page ("ausgeführt" on German Windows),
+            # decoding that as text would raise and silently kill the watcher thread.
+            raw = subprocess.run(
                 ["tasklist", "/FI", "IMAGENAME eq StarCitizen.exe", "/NH", "/FO", "CSV"],
                 capture_output=True,
-                text=True,
                 timeout=10,
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             ).stdout
-            return "starcitizen.exe" in out.lower()
+            return b"starcitizen.exe" in raw.lower()
         if shutil.which("pgrep"):
             res = subprocess.run(["pgrep", "-f", "StarCitizen.exe"], capture_output=True, timeout=10)
             return res.returncode == 0
-    except (OSError, subprocess.SubprocessError):
+    except (OSError, ValueError, subprocess.SubprocessError):
         log.debug("Prozessprüfung fehlgeschlagen", exc_info=True)
     return None
 
@@ -204,5 +228,8 @@ class ProcessWatcher(threading.Thread):
 
     def run(self) -> None:
         while not self._halt.is_set():
-            self.state.set_game_running(_is_game_running())
+            try:
+                self.state.set_game_running(_is_game_running())
+            except Exception:  # never let the thread die
+                log.exception("Prozessprüfung fehlgeschlagen")
             self._halt.wait(self.interval)

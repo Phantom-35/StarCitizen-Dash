@@ -6,8 +6,10 @@ Danke für dein Interesse! Ein paar Grundregeln, damit SC-Dash schlank bleibt:
    Verläufe) nur statisch; Animationen nur kurz und auf kleinen Flächen (z. B. Kill-Einblendung).
    Kein Canvas/WebGL, keine Videos, kein `backdrop-filter`, keine Dauer-Animationen über große Flächen.
 2. **Keine Abhängigkeiten.** Backend nur Python-Standardbibliothek, Frontend nur Vanilla-JS.
-3. **Tests.** Neue Log-Muster bitte mit einer echten (anonymisierten) Beispielzeile in
-   `tests/test_parser.py` absichern.
+3. **Belege statt Vermutungen.** Jedes neue Log-Muster braucht entweder eine echte (anonymisierte)
+   Zeile aus einer `Game.log` oder eine Quelle (quelloffenes Projekt, das mit echten Logs arbeitet).
+   Bitte im README unter „Was wird erkannt?“ eintragen und mit einem Test absichern. Echte Zeilen
+   gehören nach `tests/fixtures/` – Spielernamen, Konto-IDs und IP-Adressen vorher ersetzen.
 
 ```bash
 python -m unittest discover -s tests -t . -v   # Tests

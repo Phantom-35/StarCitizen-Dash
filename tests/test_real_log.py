@@ -80,6 +80,23 @@ class RealLogTests(unittest.TestCase):
         # a mere offer is not an accepted contract
         self.assertEqual(titles.count("Auftrag angenommen"), 2)
 
+    def test_navigation_from_real_lines(self):
+        s = self.read_all_at_once()
+        # session time starts with the first log line, not with the login a few seconds later
+        self.assertEqual(s["session"]["start"], "2026-11-10T16:18:05.458Z")
+        feed = list(reversed(s["feeds"]["mission"]))
+        targets = [e["actor"] for e in feed if e["title"] == "Quantum-Ziel"]
+        # em_shelter_001_frost_{GUID}.socpak -> place from the active objective; NavPoint_Dynamic_* -> marker
+        self.assertEqual(targets, ["Auftragsziel · Clear View Emergency Shelter", "Markierter Navpunkt",
+                                   "Markierter Navpunkt", "Markierter Navpunkt", "New Babbage"])
+        self.assertIn("Quantum blockiert", [e["title"] for e in feed])
+        # arriving at a real place updates the location right away (inventory request came 20 s later)
+        arrival = [e for e in feed if e["title"] == "Ort" and e["actor"] == "New Babbage"][-1]
+        self.assertEqual(arrival["ts"], "2026-11-10T17:03:42.688Z")
+        places = [e["actor"] for e in feed if e["title"] == "Ort"]
+        self.assertEqual(places, ["New Babbage", "Clear View Emergency Shelter", "Covalex Distribution Centre S4DC05",
+                                  "microTech Logistics Depot S4LD13", "New Babbage"])
+
     def test_multiline_notifications_are_joined(self):
         asm, texts = LineAssembler(), []
         for raw in self.raw.split(b"\n"):

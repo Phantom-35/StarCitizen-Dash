@@ -5,6 +5,39 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+## [0.6.0] – 2026-11-10
+
+Gesamtprüfung: jede Erkennungsregel gegen die echte 4.10-Log und die Quellen abgeglichen, Live-Betrieb
+mit End-to-End- und Dauertest geprüft.
+
+### Behoben
+- **„Spiel läuft“-Anzeige konnte auf deutschem Windows ausfallen:** Die Ausgabe von `tasklist` steht im
+  OEM-Zeichensatz („ausgeführt“); das Dekodieren schlug fehl und beendete den Prüf-Thread unbemerkt.
+- Raststationen hießen „R&R HUR-LEO“ statt „Everus Harbor“ (geratene Namen durch abgeglichene ersetzt)
+- Waffenhersteller: KBAR ist Kroneg, nicht KnightBridge; zwei unbelegte Kürzel entfernt
+- Server-Regionen: `apse` ist Australien (Sydney); fehlende Codes `ape`, `sae` ergänzt, geratene entfernt
+- Session-Zeit fehlte nach einem Spielneustart bis zum Login – kommt jetzt aus der ersten Log-Zeile
+- Ein nie angeflogenes Quantum-Ziel blieb bis zum nächsten Sprung stehen (wird bei Tod/Serverwechsel geräumt)
+- Antwort „nichts Neues“ (HTTP 204) enthielt unzulässige Header
+- README: Reste der alten Erkennungs-Tabelle entfernt
+
+### Geändert
+- Erkennungsregeln ohne Beleg entfernt (z. B. „Contract Expired“, „Entered Armistice Zone“) – jede Regel ist
+  jetzt in einer echten Log gesehen oder in einer Quelle belegt; „Exiting Armistice Zone“ ergänzt
+- Jurisdiktion nur noch mit dem echten Wortlaut „Entered … Jurisdiction“
+
+### Hinzugefügt
+- Installationsordner wird aus der Log des RSI-Launchers gelesen (auch bei eigenen Pfaden), dazu
+  `Program Files (x86)` und `SteamLibrary` als Suchorte
+- Standort wird bei Quantum-Ankunft an einem bekannten Ort sofort aktualisiert und über
+  „Projected Start Location“ korrigiert, wenn man sich ohne Inventar-Abfrage bewegt hat
+- Weitere Ortsnamen: Pyro-Stationen (Checkmate, Orbituary …), Außenposten, Sprungtor-Gateways
+- Meldung „Quantum blockiert“
+- Bei Logs > 8 MB werden Pilot, Shard und Version trotzdem vom Dateianfang gelesen
+- Zeitabgleich mit der Uhr des Gaming-PCs (Dashboard auf Tablet/Handy)
+- End-to-End-Live-Test (Watcher + Server, Log wird während des Betriebs geschrieben und rotiert) und
+  Test der Prozessprüfung auf echtem Windows
+
 ## [0.5.0] – 2026-11-10
 
 Recherche in quelloffenen Log-Parsern (sc-log-tracker, csr, all-slain, StarLogs), siehe README → Quellen.

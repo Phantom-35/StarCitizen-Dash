@@ -13,7 +13,13 @@ class LocationTests(unittest.TestCase):
 
     def test_rest_stop(self):
         loc = describe_location("RR_HUR_LEO")
-        self.assertEqual((loc["planet"], loc["place"]), ("Hurston", "R&R HUR-LEO"))
+        self.assertEqual((loc["planet"], loc["place"]), ("Hurston", "Everus Harbor"))
+        self.assertEqual(describe_location("RR_CRU_L4")["place"], "CRU-L4")
+        self.assertEqual(describe_location("RR_P2_L4"), {"system": "Pyro", "planet": "Monox", "place": "Checkmate"})
+
+    def test_outposts_and_gateways(self):
+        self.assertEqual(describe_location("Outpost_OLP_Stanton2b_Attritus")["place"], "Attritus (Daymar)")
+        self.assertEqual(describe_location("RR_JP_StantonPyro")["place"], "Pyro Gateway")
 
     def test_ship_zone(self):
         self.assertEqual(describe_location("ANVL_Arrow_1234567")["place"], "Anvil Arrow")
@@ -24,6 +30,7 @@ class LocationTests(unittest.TestCase):
     def test_shard_region(self):
         self.assertEqual(shard_region("pub_euw1b_9876543_100"), "EU West")
         self.assertEqual(shard_region("pub_use1a_1_1"), "US East")
+        self.assertEqual(shard_region("pub_apse2a_1_1"), "Australien")
         self.assertIsNone(shard_region(None))
         self.assertIsNone(shard_region("garbage"))
 

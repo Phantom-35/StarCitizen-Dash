@@ -47,6 +47,7 @@ _OBJECTIVE_UPSERT = re.compile(
 )
 _QT_TARGET = re.compile(r"<Player Selected Quantum Target[^>]*>.*?selected point (?P<target>\S+) as their destination")
 _QT_FUEL = re.compile(r"<Player Requested Fuel to Quantum Target[^>]*>.*?destination (?P<target>\S+)")
+_QT_ROUTE_START = re.compile(r"Projected Start Location is (?P<start>.+?) for route to destination")
 _QT_ARRIVED = re.compile(r"<Quantum Drive Arrived|Quantum Drive has arrived at final destination")
 
 # --- survival (4.x) ------------------------------------------------------------
@@ -71,7 +72,7 @@ _VERSION = re.compile(r"ProductVersion: (?P<v>\d+\.\d+(?:\.\d+)?)")
 _INTERESTING = re.compile(
     r"Actor Death|Vehicle Destruction|RequestLocationInventory|<Join PU>|Login Success|"
     r"AccountLoginCharacterStatus_Character|SHUDEvent_OnNotification|<EndMission>|<MissionEnded>|"
-    r"<ObjectiveUpserted>|Vehicle Control Flow|Quantum Target|Quantum Drive|"
+    r"<ObjectiveUpserted>|Vehicle Control Flow|Quantum Target|Quantum Drive|Projected Start Location|"
     r"ActorState\] (?:Dead|Corpse)|<Corpse>|Logged an incap|MED BED HEAL|Fatal ?Collision|"
     r"SystemQuit|CSystem::Quit|ProductVersion"
 )
@@ -82,37 +83,27 @@ _MISSION_ENDED = re.compile(r"<MissionEnded>.*?mission_id (?P<mid>[\w-]+).*?miss
 _VEHICLE_CONTROL = re.compile(
     r"<Vehicle Control Flow>.*?(?P<act>requesting|granted|releasing|released)\b.*?control token for '(?P<vehicle>[^']+)'"
 )
-_JURISDICTION = re.compile(r"(?:Entering|Entered)\s+(?P<name>.+?)\s+Jurisdiction", re.I)
+_JURISDICTION = re.compile(r"^Entered\s+(?P<name>.+?)\s+Jurisdiction", re.I)
 
-# (prefix, category) – first match wins, compared case-insensitively
+# (prefix, category) – first match wins, compared case-insensitively.
+# Every entry is either seen in a real 4.10 Game.log or used by sc-log-tracker / csr
+# (open-source parsers tested with real 4.x logs). No guesses - see README "Quellen".
 NOTIFICATION_KINDS = (
     ("contract available", "available"),
     ("contract accepted", "accepted"),
     ("contract complete", "completed"),
     ("contract failed", "failed"),
-    ("contract abandoned", "abandoned"),
     ("contract withdrawn", "abandoned"),
     ("contract shared", "shared"),
-    ("contract cancel", "abandoned"),
-    ("contract expired", "abandoned"),
     ("new objective", "objective_new"),
-    ("objective updated", "objective_new"),
     ("objective complete", "objective_done"),
     ("objective failed", "objective_failed"),
     ("objective withdrawn", "objective_failed"),
-    ("entered armistice", "armistice_on"),
     ("entering armistice", "armistice_on"),
     ("leaving armistice", "armistice_off"),
-    ("left armistice", "armistice_off"),
-    ("exited armistice", "armistice_off"),
+    ("exiting armistice", "armistice_off"),
     ("entered monitored", "monitored_on"),
-    ("entering monitored", "monitored_on"),
-    ("leaving monitored", "monitored_off"),
-    ("left monitored", "monitored_off"),
     ("exited monitored", "monitored_off"),
-    ("exiting monitored", "monitored_off"),
-    ("entered unmonitored", "monitored_off"),
-    ("entering unmonitored", "monitored_off"),
     ("monitored space down", "monitored_down"),
     ("monitored space restored", "monitored_on"),
     ("entering private property", "private_on"),
@@ -127,6 +118,7 @@ NOTIFICATION_KINDS = (
     ("low fuel", "low_fuel"),
     ("transaction complete", "transaction"),
     ("hangar request completed", "hangar"),
+    ("quantum travel: your destination is obstructed", "qt_blocked"),
     ("received blueprint", "blueprint"),
 )
 
@@ -353,6 +345,9 @@ def parse_line(line: str) -> Optional[LogEvent]:
     m = _QT_TARGET.search(line)
     if m:
         return LogEvent("quantum", ts, {"phase": "target", **quantum_destination(m.group("target"))})
+    m = _QT_ROUTE_START.search(line)
+    if m:
+        return LogEvent("route_start", ts, {"start": m.group("start").strip()})
     m = _QT_FUEL.search(line)
     if m:
         return LogEvent("quantum", ts, {"phase": "fuel", **quantum_destination(m.group("target"))})

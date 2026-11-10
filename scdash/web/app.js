@@ -16,6 +16,10 @@
   let lastToken = "";       // "<server boot id>-<version>", sent back so the server can answer 204
   let lastEventId = null;   // null = first render, no banner for old events
   let pollTimer = null;
+  // Difference between the server clock (= the game PC, which writes the log timestamps)
+  // and this device. Matters when the dashboard runs on a tablet whose clock is off.
+  let skew = 0;
+  const serverNow = () => Date.now() + skew;
   let bannerTimer = null;
 
   // ---------------------------------------------------------------- helpers
@@ -105,6 +109,7 @@
       // event ids start again after a server restart
       if (lastToken.split("-")[0] !== data.token.split("-")[0]) lastEventId = null;
       lastToken = data.token;
+      if (typeof data.server_time === "number") skew = data.server_time * 1000 - Date.now();
       st = data;
       render();
     } catch (e) {
@@ -196,7 +201,7 @@
 
   function renderFeed() {
     const events = st.feeds[mode] || [];
-    const now = Date.now();
+    const now = serverNow();
     const frag = document.createDocumentFragment();
     if (!events.length) frag.appendChild(el("li", "empty", "Noch keine Ereignisse in dieser Session."));
     for (const ev of events) {
@@ -366,8 +371,8 @@
   const dateFmt = new Intl.DateTimeFormat("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" });
 
   function tick() {
-    const now = Date.now();
-    const d = new Date(now);
+    const d = new Date();          // the clock shows this device's own time
+    const now = serverNow();       // durations are measured against the log's clock
     setText($("clock-local"), `${pad(d.getHours())}:${pad(d.getMinutes())}`);
     setText($("clock-sec"), pad(d.getSeconds()));
     setText($("clock-utc"), `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`);
@@ -411,7 +416,7 @@
       setText($("st-best-alive-sub"), isFinite(alive) && alive >= st.stats.best_alive * 1000 && st.stats.deaths
         ? "neuer Rekord läuft" : "diese Session");
     }
-    tickTimers(now);
+    tickTimers(Date.now()); // timers are stored with this device's clock
   }
 
   // ---------------------------------------------------------------- timers

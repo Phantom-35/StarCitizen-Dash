@@ -9,7 +9,7 @@ from collections import OrderedDict, deque
 from datetime import datetime
 from typing import Any, Dict, Iterable, Optional
 
-from scdash.locations import objective_place, shard_region
+from scdash.locations import locate_place, objective_place, shard_region
 from scdash.parser import LogEvent
 
 MAX_EVENTS = 60
@@ -102,6 +102,7 @@ class DashboardState:
         self.private: Optional[bool] = None
         self._jur_left: Dict[str, str] = {}
         self.quantum_target: Optional[str] = None
+        self._qt_location: Optional[Dict[str, Optional[str]]] = None  # where a real-place jump ends
         self.game_version: Optional[str] = None
 
     def _touch(self) -> None:
@@ -113,6 +114,17 @@ class DashboardState:
         with self._lock:
             self._reset_session()
             self._touch()
+
+    def begin_session(self, ts: Optional[str]) -> None:
+        """The first line of a fresh Game.log carries the game's start time."""
+        if not ts:
+            return
+        with self._lock:
+            if self.session_start is None or ts < self.session_start:
+                self.session_start = ts
+                if self.alive_since is None:
+                    self.alive_since = ts
+                self._touch()
 
     def set_log(self, path: Optional[str], found: bool) -> None:
         with self._lock:
@@ -183,6 +195,7 @@ class DashboardState:
         self._died(ev.ts)
         self.ship = None
         self._ship_from_channel = False
+        self.quantum_target = self._qt_location = None
         self.last_death = {"ts": ev.ts, "cause": cause, "who": who, "where": where}
         self._push(ev, "death", cause, who or (where or ""), where if who else "", feeds=BOTH, banner=True)
         return True
@@ -205,15 +218,11 @@ class DashboardState:
             self.shard = d["shard"]
             self.alive_since = ev.ts  # time in the menus should not count as "alive"
             self.armistice = self.monitored = self.jurisdiction = self.ship = None
+            self.quantum_target = self._qt_location = None
+            self.restricted = self.private = None
             self._push(ev, "info", "Shard beigetreten", shard_region(self.shard) or "", self.shard, feeds=BOTH)
         elif ev.kind == "location":
-            loc = d["location"]
-            if loc != self.location:
-                self.location = loc
-                self.location_since = ev.ts
-                if loc["place"]:
-                    self.places.add(loc["place"])
-                self._push(ev, "nav", "Ort", loc["place"] or "", self._detail(loc["system"], loc["planet"]), feeds=BOTH)
+            self._set_location(ev, d["location"])
         elif ev.kind == "death":
             victim, killer = d["victim"], d["killer"]
             detail = self._detail(d["weapon"], d["zone"])
@@ -268,6 +277,7 @@ class DashboardState:
                 if d["phase"] == "fuel" and self.quantum_target:
                     return  # fuel estimate for a target we already know
                 target = self._describe_qt(d)
+                self._qt_location = locate_place(d["name"]) if d["kind"] == "place" else None
                 if target != self.quantum_target:
                     self.quantum_target = target
                     if target:
@@ -276,6 +286,17 @@ class DashboardState:
                 self.quantum_jumps += 1
                 self._push(ev, "nav", "Quantum-Sprung", "Ziel erreicht", self.quantum_target or "", feeds=(MISSION,))
                 self.quantum_target = None
+                if self._qt_location:
+                    self._set_location(ev, self._qt_location)
+                self._qt_location = None
+        elif ev.kind == "route_start":
+            # "Projected Start Location is microTech": the game's own idea of where we are.
+            # Only use it when it contradicts what we know (we moved without an inventory request).
+            loc = self.location or {}
+            if d["start"] not in (loc.get("place"), loc.get("planet")):
+                where = locate_place(d["start"])
+                if where:
+                    self._set_location(ev, where)
         elif ev.kind == "version":
             self.game_version = d["version"]
         elif ev.kind == "objective_state":
@@ -317,6 +338,15 @@ class DashboardState:
                 self._end_mission(ev, mission, d["result"])
             elif d["mission_id"]:
                 self._ended_missions.add(d["mission_id"])
+
+    def _set_location(self, ev: LogEvent, loc: Dict[str, Optional[str]]) -> None:
+        if loc == self.location:
+            return
+        self.location = loc
+        self.location_since = ev.ts
+        if loc["place"]:
+            self.places.add(loc["place"])
+        self._push(ev, "nav", "Ort", loc["place"] or "", self._detail(loc["system"], loc["planet"]), feeds=BOTH)
 
     def _describe_qt(self, d: Dict[str, Any]) -> Optional[str]:
         if d["kind"] != "mission":
@@ -496,6 +526,8 @@ class DashboardState:
             self._push(ev, "zone", "Zone", "Überwachung ausgefallen", "Comm-Array offline", feeds=BOTH)
         elif cat == "shared":
             self._push(ev, "comms", "Auftrag geteilt", subject, feeds=(MISSION,))
+        elif cat == "qt_blocked":
+            self._push(ev, "warn", "Quantum blockiert", "Ziel verdeckt", "erst woandershin fliegen", feeds=BOTH)
         elif cat == "hangar":
             self._push(ev, "nav", "Hangar bereit", feeds=(MISSION,))
         elif cat == "transaction":

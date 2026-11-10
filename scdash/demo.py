@@ -69,7 +69,7 @@ def mission_script(c: int) -> list:
         _N % ("Leaving Armistice Zone - Caution Advised", _ZERO, ""),
         _QT_SET % "EverusHarbor_LOC",
         _QT_DONE,
-        _LOC % "Stanton1_Everus",
+        _LOC % "RR_HUR_LEO",
         _N % ("Entering Armistice Zone - Combat Prohibited", _ZERO, ""),
         _N % ("New Objective: Deliver 3/3 packages to Everus Harbor", a, "o2"),
         _UPSERT % (a, "o2"),
