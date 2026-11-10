@@ -61,8 +61,7 @@
   }
 
   // ---------------------------------------------------------------- chrono ticks (static)
-  (function buildTicks() {
-    const g = $("ticks");
+  document.querySelectorAll(".ticks").forEach(function buildTicks(g) {
     const NS = "http://www.w3.org/2000/svg";
     for (let i = 0; i < 60; i++) {
       const a = (i / 60) * Math.PI * 2;
@@ -76,7 +75,23 @@
       if (major) l.setAttribute("class", "major");
       g.appendChild(l);
     }
-  })();
+  });
+
+  // ---------------------------------------------------------------- mode switch
+  const MODE_KEY = "scdash.mode";
+  const MODES = ["combat", "mission"];
+  let mode = new URLSearchParams(location.search).get("mode") || localStorage.getItem(MODE_KEY) || "combat";
+
+  function setMode(m) {
+    mode = MODES.includes(m) ? m : "combat";
+    document.body.dataset.mode = mode;
+    localStorage.setItem(MODE_KEY, mode);
+    document.querySelectorAll(".modes button").forEach((b) => b.classList.toggle("active", b.dataset.mode === mode));
+    setText($("feed-title"), mode === "combat" ? "Ereignisse" : "Komm-Log");
+    if (st) renderFeed();
+    tick();
+  }
+  document.querySelectorAll(".modes button").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
 
   // ---------------------------------------------------------------- polling
   async function poll() {
@@ -147,7 +162,9 @@
     setText($("st-vlost"), String(k.vehicles_lost));
     setText($("st-killer"), s.last_killer ? s.last_killer.name : "–");
 
-    renderFeed(st.events);
+    renderPills(st.nav);
+    renderMissions();
+    renderFeed();
     renderRsi(st.rsi_status);
     setText($("log-path"), st.log.path ? "Log: " + st.log.path : "Keine Game.log gefunden – siehe README (--log)");
     tick();
@@ -164,7 +181,8 @@
     });
   }
 
-  function renderFeed(events) {
+  function renderFeed() {
+    const events = st.feeds[mode] || [];
     const now = Date.now();
     const frag = document.createDocumentFragment();
     if (!events.length) frag.appendChild(el("li", "empty", "Noch keine Ereignisse in dieser Session."));
@@ -183,12 +201,112 @@
     }
     $("feed").replaceChildren(frag);
 
-    // banner for brand-new kills / deaths
-    const newest = events.find((e) => (e.cat === "kill" || e.cat === "death") && lastEventId !== null && e.id > lastEventId);
+    // banner for brand-new important events of the current mode
+    const newest = events.find((e) => e.banner && lastEventId !== null && e.id > lastEventId);
     if (newest && now - parseTs(newest.ts) < 60000) showBanner(newest);
-    if (events.length) lastEventId = Math.max(lastEventId ?? 0, events[0].id);
-    else if (lastEventId === null) lastEventId = 0;
+    let maxId = lastEventId ?? 0;
+    for (const f of Object.values(st.feeds)) if (f.length) maxId = Math.max(maxId, f[0].id);
+    lastEventId = maxId;
   }
+
+  // ---------------------------------------------------------------- zone / ship pills
+  function pill(id, text, cls) {
+    const e = $(id);
+    setText(e, text || "");
+    setClass(e, cls || "");
+  }
+  function renderPills(nav) {
+    pill("p-ship", nav.ship ? "◈ " + nav.ship : "", "ship");
+    pill("p-arm", nav.armistice === true ? "Armistice" : nav.armistice === false ? "Waffen frei" : "",
+      nav.armistice ? "ok" : "warn");
+    pill("p-mon", nav.monitored === true ? "Überwacht" : nav.monitored === false ? "Unüberwacht" : "",
+      nav.monitored ? "ok" : "bad");
+    pill("p-jur", nav.jurisdiction || "", "");
+  }
+
+  // ---------------------------------------------------------------- missions
+  const RESULT_LABEL = { completed: "Erledigt", failed: "Gescheitert", abandoned: "Abgebrochen" };
+
+  function mins(sec) {
+    if (sec == null) return "";
+    const m = Math.round(sec / 60);
+    return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`;
+  }
+
+  function renderMissions() {
+    const ms = st.missions;
+    const active = ms.active;
+    const focus = active[0];
+    const title = $("c-title");
+    setText(title, focus ? focus.title : "Kein aktiver Auftrag");
+    title.classList.toggle("none", !focus);
+    setText($("c-count"), active.length > 1 ? `1 / ${active.length}` : "");
+
+    const ol = $("c-objectives");
+    const frag = document.createDocumentFragment();
+    if (!focus) {
+      frag.appendChild(el("li", "hint", "Nimm einen Auftrag an – er erscheint hier automatisch mit allen Zielen."));
+    } else if (!focus.objectives.length) {
+      frag.appendChild(el("li", "hint", "Ziele erscheinen, sobald das Spiel sie meldet."));
+    } else {
+      // open objectives first, then finished ones; at most 6
+      const sorted = [...focus.objectives].sort((a, b) => (a.state === "open" ? 0 : 1) - (b.state === "open" ? 0 : 1));
+      for (const o of sorted.slice(0, 6)) frag.appendChild(el("li", o.state, o.text));
+    }
+    ol.replaceChildren(frag);
+
+    const others = $("c-others");
+    const of = document.createDocumentFragment();
+    for (const m of active.slice(1, 4)) {
+      const li = el("li");
+      li.appendChild(el("b", "", "Aktiv"));
+      const open = m.objectives.filter((o) => o.state === "open").length;
+      li.appendChild(document.createTextNode(m.title + (m.objectives.length ? ` · ${open} offene Ziele` : "")));
+      of.appendChild(li);
+    }
+    for (const h of ms.history.slice(0, Math.max(0, 4 - Math.min(3, active.length - 1)))) {
+      const li = el("li", "r-" + h.result);
+      li.appendChild(el("b", "", RESULT_LABEL[h.result] || h.result));
+      li.appendChild(document.createTextNode(h.title + (h.duration != null ? ` · ${mins(h.duration)}` : "")));
+      of.appendChild(li);
+    }
+    others.replaceChildren(of);
+
+    const k = st.stats;
+    setText($("ms-done"), String(k.missions_completed));
+    setText($("ms-failed"), String(k.missions_failed));
+    setText($("ms-aband"), `${k.missions_abandoned} abgebrochen`);
+    const total = k.missions_completed + k.missions_failed;
+    setText($("ms-rate"), total ? `${Math.round((k.missions_completed / total) * 100)} % Quote` : "–");
+    setText($("ms-places"), String(k.places));
+    renderEarnings();
+  }
+
+  // ---------------------------------------------------------------- earnings (manual, per game session)
+  const EARN_KEY = "scdash.earnings";
+  const numFmt = new Intl.NumberFormat("de-DE");
+  function earnings() {
+    const e = load(EARN_KEY, { session: null, total: 0 });
+    const cur = st && st.session.start;
+    if (cur && e.session !== cur) return { session: cur, total: 0 };
+    return e;
+  }
+  function renderEarnings() {
+    const e = earnings();
+    setText($("ms-earn"), numFmt.format(e.total));
+  }
+  $("earn-form").addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    const raw = $("earn-in").value.trim().toLowerCase().replace(/[\s.,]/g, "");
+    const m = raw.match(/^([+-]?\d+)(k|m)?$/);
+    if (!m) return;
+    const val = parseInt(m[1], 10) * (m[2] === "k" ? 1e3 : m[2] === "m" ? 1e6 : 1);
+    const e = earnings();
+    e.total += val;
+    localStorage.setItem(EARN_KEY, JSON.stringify(e));
+    $("earn-in").value = "";
+    renderEarnings();
+  });
 
   function showBanner(ev) {
     const b = $("banner");
@@ -249,6 +367,22 @@
         arcMin.style.strokeDasharray = `${(((sec / 60) % 60) / 60) * 1000} 1000`;
         arcSec.style.strokeDasharray = `${((sec % 60) / 60) * 1000} 1000`;
       }
+      // mission ring: time in the focused contract, otherwise session time
+      const focus = st.missions.active[0];
+      const accepted = focus ? parseTs(focus.accepted) : NaN;
+      const sessionMs = ref - parseTs(s.start);
+      const ringMs = isFinite(accepted) ? ref - accepted : sessionMs;
+      setText($("m-ring-label"), isFinite(accepted) ? "Im Auftrag" : "Session");
+      setText($("m-ring"), isFinite(ringMs) ? short(ringMs) : "--:--");
+      setText($("m-ring-sub-wrap"), isFinite(accepted)
+        ? "Session " + (isFinite(sessionMs) ? hms(sessionMs) : "--:--:--")
+        : `${st.stats.missions_completed} Aufträge erledigt`);
+      if (isFinite(ringMs)) {
+        const sec = Math.floor(ringMs / 1000);
+        $("m-arc-min").style.strokeDasharray = `${(((sec / 60) % 60) / 60) * 1000} 1000`;
+        $("m-arc-sec").style.strokeDasharray = `${((sec % 60) / 60) * 1000} 1000`;
+      }
+
       const since = parseTs(s.location_since);
       setText($("loc-since"), isFinite(since) && s.location ? "Hier seit " + short(ref - since) : "");
       setText($("st-killer-sub"), s.last_killer ? ago(now - parseTs(s.last_killer.ts)) : "noch keiner – weiter so");
@@ -354,6 +488,7 @@
     if (/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName) || e.ctrlKey || e.altKey || e.metaKey) return;
     if (e.key === "n" || e.key === "N") { e.preventDefault(); openDrawer("notes"); }
     if (e.key === "l" || e.key === "L") { e.preventDefault(); openDrawer("links"); }
+    if (e.key === "m" || e.key === "M") { e.preventDefault(); setMode(mode === "combat" ? "mission" : "combat"); }
   });
 
   const NOTES_KEY = "scdash.notes";
@@ -383,6 +518,7 @@
     .catch(() => {});
 
   // ---------------------------------------------------------------- start
+  setMode(mode);
   renderTimers();
   tick();
   setTimeout(() => { tick(); setInterval(tick, 1000); }, 1000 - (Date.now() % 1000));

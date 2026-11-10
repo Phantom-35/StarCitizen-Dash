@@ -8,12 +8,16 @@
   <link rel="preload" href="fonts/rajdhani-700.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-mode="combat">
   <div class="bg" aria-hidden="true"></div>
 
   <!-- ============================================================ header -->
   <header class="top">
     <div class="brand"><b>SC</b><i>//</i>DASH</div>
+    <div class="modes" role="tablist" title="Modus wechseln (M)">
+      <button role="tab" data-mode="combat">Kampf</button>
+      <button role="tab" data-mode="mission">Aufträge</button>
+    </div>
     <ul class="sys">
       <li id="ind-game"><span class="dot"></span><em>Spiel</em></li>
       <li id="ind-log"><span class="dot"></span><em>Log</em></li>
@@ -40,12 +44,18 @@
           <span id="loc-region"></span>
           <span id="loc-shard" class="mono"></span>
         </div>
+        <div class="pills">
+          <span id="p-ship"></span>
+          <span id="p-arm"></span>
+          <span id="p-mon"></span>
+          <span id="p-jur"></span>
+        </div>
       </div>
 
-      <div class="core">
+      <div class="core" data-only="combat">
         <div class="chrono">
           <svg viewBox="0 0 200 200" aria-hidden="true">
-            <g id="ticks" class="ticks"></g>
+            <g class="ticks"></g>
             <circle class="track" cx="100" cy="100" r="78"/>
             <circle id="arc-min" class="arc-min" cx="100" cy="100" r="78" pathLength="1000"/>
             <circle id="arc-sec" class="arc-sec" cx="100" cy="100" r="90" pathLength="1000"/>
@@ -72,6 +82,39 @@
         </div>
       </div>
 
+      <div class="core" data-only="mission">
+        <div class="chrono">
+          <svg viewBox="0 0 200 200" aria-hidden="true">
+            <g class="ticks"></g>
+            <circle class="track" cx="100" cy="100" r="78"/>
+            <circle id="m-arc-min" class="arc-min" cx="100" cy="100" r="78" pathLength="1000"/>
+            <circle id="m-arc-sec" class="arc-sec" cx="100" cy="100" r="90" pathLength="1000"/>
+          </svg>
+          <div class="chrono-in">
+            <small id="m-ring-label">Session</small>
+            <b id="m-ring">--:--</b>
+            <span id="m-ring-sub-wrap">Session <em id="m-session">--:--:--</em></span>
+          </div>
+        </div>
+
+        <div class="contract">
+          <div class="tag">Aktiver Auftrag <span id="c-count" class="count"></span></div>
+          <h2 id="c-title">Kein aktiver Auftrag</h2>
+          <ol id="c-objectives" class="objectives"></ol>
+          <ul id="c-others" class="others"></ul>
+          <div class="small-stats">
+            <div><small>Erledigt</small><b class="kill" id="ms-done">0</b><em id="ms-rate">–</em></div>
+            <div><small>Gescheitert</small><b class="death" id="ms-failed">0</b><em id="ms-aband">0 abgebrochen</em></div>
+            <div><small>Orte</small><b id="ms-places">0</b><em>besucht</em></div>
+            <div class="earn">
+              <small>Einnahmen</small>
+              <b><span id="ms-earn">0</span> <i>aUEC</i></b>
+              <form id="earn-form" autocomplete="off"><input id="earn-in" inputmode="numeric" placeholder="+ Betrag" title="Betrag eintragen, Enter. Negativ für Ausgaben."></form>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="banner" class="banner" hidden>
         <small id="banner-title"></small>
         <b id="banner-actor"></b>
@@ -80,7 +123,7 @@
     </section>
 
     <aside class="feed">
-      <div class="tag">Ereignisse</div>
+      <div class="tag" id="feed-title">Ereignisse</div>
       <ol id="feed"></ol>
     </aside>
   </main>

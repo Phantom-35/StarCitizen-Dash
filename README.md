@@ -8,17 +8,25 @@
 ![Lizenz](https://img.shields.io/badge/lizenz-MIT-lightgrey)
 
 SC-Dash liest die `Game.log` von Star Citizen live mit und zeigt dir auf dem zweiten Monitor
-in Cockpit-HUD-Optik, was gerade zählt: **wo du bist, wie lange du schon überlebst, wer dich zuletzt
-erwischt hat** – plus Kill-Statistik, Ereignis-Log, Timer für Raffinerie & Co. und den RSI-Serverstatus.
+in Cockpit-HUD-Optik, was gerade zählt. Zwei Modi, umschaltbar oben links oder mit der Taste `M`:
 
-![Screenshot](docs/screenshot.png)
+**⚔ Kampf** – wo du bist, wie lange du schon überlebst, wer dich zuletzt erwischt hat, Kills, Tode, K/D.
+
+![Kampf-Modus](docs/screenshot.png)
+
+**◈ Aufträge** – dein aktiver Auftrag mit allen Zielen als Checkliste, weitere laufende Aufträge,
+Zonen-Status (Armistice, überwachter Raum, Jurisdiktion), dein Schiff, Komm-Log und Session-Bilanz.
+
+![Auftrags-Modus](docs/screenshot-mission.png)
 
 <details>
-<summary>Kill-/Tod-Einblendung</summary>
+<summary>Einblendungen bei Kills, Toden und Aufträgen</summary>
 
-Bei jedem Kill oder Tod blendet SC-Dash für ein paar Sekunden einen großen Hinweis ein:
+Bei Kills, Toden, angenommenen, erledigten und gescheiterten Aufträgen blendet SC-Dash für ein paar
+Sekunden einen großen Hinweis ein:
 
 ![Kill-Einblendung](docs/screenshot-banner.png)
+![Auftrag erledigt](docs/screenshot-mission-banner.png)
 </details>
 
 ---
@@ -50,19 +58,36 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
 
 ## Funktionen
 
-- **Standort groß im Blick:** System › Planet und der Ort in Riesenschrift (z. B. *Stanton › Crusader – ORISON*),
-  wie lange du schon dort bist, Server-Region (EU West, US East …) und Shard
+### Immer sichtbar
+
+- **Standort groß im Blick:** System › Planet und der Ort in Riesenschrift, Server-Region und Shard
+- **Zonen-Status:** Armistice-Zone / Waffen frei, überwachter / unüberwachter Raum, Jurisdiktion
+- **Aktuelles Schiff**, sobald du im Pilotensitz sitzt
+- **Timer** mit Fortschrittsbalken (Raffinerie, Miete, Cooldowns – laufen auch nach Neustart weiter)
+- **RSI-Serverstatus**, **Notizen & Links** (Tasten `N` / `L`)
+- **Lokal & privat:** Alles läuft auf deinem PC (`127.0.0.1`). Die einzige Internetanfrage ist der
+  RSI-Serverstatus – abschaltbar mit `--no-status`.
+
+### Modus „Aufträge“ (`M`)
+
+- **Aktiver Auftrag** groß mit allen Zielen als Checkliste – offene oben, erledigte durchgestrichen.
+  Im Fokus steht immer der Auftrag, an dem du zuletzt etwas gemacht hast.
+- **Weitere laufende Aufträge** und die zuletzt erledigten / gescheiterten mit Dauer
+- **Ring „Im Auftrag“:** wie lange du schon am aktuellen Auftrag sitzt
+- **Session-Bilanz:** erledigt, gescheitert, Erfolgsquote, besuchte Orte
+- **Einnahmen:** Betrag eintippen und Enter (`25k`, `12.500`, `-3000` für Ausgaben). Wird pro
+  Spielsitzung automatisch auf 0 gesetzt. Manuell, weil das Spiel Belohnungen nicht zuverlässig ins Log schreibt.
+- **Komm-Log:** alle Spielmeldungen (Aufträge, Ziele, Zonen, Quantum-Routen …). Auch HUD-Meldungen,
+  die SC-Dash nicht genauer einordnen kann, landen hier.
+
+### Modus „Kampf“
+
 - **Am-Leben-Chronometer:** Ring-Anzeige, wie lange du seit deinem letzten Tod überlebst, dazu die Session-Dauer
 - **Kampfstatistik:** Spieler-Kills, NPC-Kills, Tode, K/D, aktuelle Kill-Serie und Bestwert,
   zerstörte/verlorene Schiffe, **wer dich zuletzt getötet hat**
 - **Kill-/Tod-Einblendung:** großer Hinweis für ein paar Sekunden bei jedem Kill oder Tod
 - **Ereignis-Zeitleiste:** Kills, Tode, Schiffszerstörungen, Ortswechsel – mit lesbaren Namen
   (*Drake Cutlass Black* statt `DRAK_Cutlass_Black_8471923`, *Behring …* statt `behr_rifle_…`)
-- **Timer** mit Fortschrittsbalken, z. B. für Raffinerie-Jobs, Schiffsmieten oder Cooldowns – laufen auch nach Neustart weiter
-- **RSI-Serverstatus:** Plattform / PU / Arena Commander (alle 5 min)
-- **Notizen & Links** in einer ausfahrbaren Seitenleiste (Tasten `N` und `L`, `Esc` schließt)
-- **Lokal & privat:** Alles läuft auf deinem PC (`127.0.0.1`). Die einzige Internetanfrage ist der
-  RSI-Serverstatus – abschaltbar mit `--no-status`.
 
 ---
 
@@ -124,6 +149,9 @@ Windows fragt beim ersten Mal nach einer Firewall-Freigabe (nur „Private Netzw
 keinen Grafikspeicher nutzt, in dessen Einstellungen die *Hardwarebeschleunigung* deaktivieren –
 oder lieber `--open` verwenden, das macht genau das, ohne deinen normalen Browser zu verändern.
 
+**Modus per Link:** `http://127.0.0.1:8777/?mode=mission` bzw. `?mode=combat` öffnet direkt im
+gewünschten Modus (praktisch für Lesezeichen). Sonst merkt sich SC-Dash den zuletzt gewählten Modus.
+
 **Links anpassen:** `scdash/web/links.json` bearbeiten.
 
 **Monitorgrößen:** Das Layout skaliert von 1366×768 bis 4K mit. Auf Hochkant-Monitoren werden die
@@ -140,6 +168,10 @@ Bereiche untereinander angeordnet. Vollbild mit `F11`.
 | Ortswechsel | `<RequestLocationInventory> … Location[…]` |
 | Kills & Tode | `<Actor Death> CActor::Kill: …` |
 | Schiffszerstörung | `<Vehicle Destruction> …` |
+| Aufträge & Ziele | `<SHUDEvent_OnNotification> Added notification "Contract Accepted: …"`, `New Objective`, `Objective Complete`, `Contract Complete/Failed` |
+| Auftragsende | `<EndMission> … CompletionType[…]` |
+| Zonen | Meldungen *Armistice Zone*, *Monitored Space*, *… Jurisdiction* |
+| Schiff | `<Vehicle Control Flow> … control token for '…'` |
 | Spiel beendet | `<SystemQuit>` |
 
 Startet das Spiel neu, legt es eine frische `Game.log` an – SC-Dash merkt das und beginnt eine neue

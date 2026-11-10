@@ -37,7 +37,8 @@ class ServerTests(unittest.TestCase):
         self.assertIn("application/json", ctype)
         data = json.loads(body)
         self.assertIn("stats", data)
-        self.assertIn("events", data)
+        self.assertIn("feeds", data)
+        self.assertIn("missions", data)
 
     def test_static_assets(self):
         for p in ("/app.js", "/style.css", "/links.json", "/fonts/rajdhani-700.woff2"):

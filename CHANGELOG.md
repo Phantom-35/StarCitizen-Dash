@@ -5,6 +5,20 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+## [0.3.0] – 2026-11-10
+
+### Hinzugefügt
+- Modus-Umschalter **Kampf / Aufträge** (Taste `M`, `?mode=` in der URL, wird gemerkt)
+- Auftrags-Modus: aktiver Auftrag mit Ziel-Checkliste, weitere laufende Aufträge, Verlauf mit Dauer,
+  Ring „Im Auftrag“, Erfolgsquote, besuchte Orte, manuelle Einnahmen pro Spielsitzung
+- Komm-Log mit allen HUD-Meldungen aus der `Game.log`
+- Zonen-Status (Armistice, überwachter Raum, Jurisdiktion) und aktuelles Schiff als Anzeige unter dem Standort
+- Einblendungen für angenommene, erledigte und gescheiterte Aufträge
+- Demo-Modus spielt jetzt auch einen Auftrags-Abend durch
+
+### Geändert
+- Getrennte Ereignis-Feeds je Modus, damit Spielmeldungen keine Kampf-Ereignisse verdrängen
+
 ## [0.2.0] – 2026-11-10
 
 ### Geändert

@@ -334,3 +334,82 @@ body.offline .place { filter: grayscale(1) brightness(.6); }
   .sys { gap: 14px; }
   .dock { flex-wrap: wrap; }
 }
+
+/* ================================================================== modes */
+body[data-mode="combat"] [data-only="mission"],
+body[data-mode="mission"] [data-only="combat"] { display: none !important; }
+
+.modes { display: flex; }
+.modes button {
+  background: transparent; border: 1px solid rgba(255, 181, 71, .35); color: var(--dim);
+  font-weight: 700; font-size: 0.75rem; letter-spacing: .24em; text-transform: uppercase;
+  padding: 6px 16px; cursor: pointer;
+}
+.modes button:first-child { clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px); }
+.modes button:last-child { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%); border-left: 0; }
+.modes button:hover { color: var(--ink); }
+.modes button.active { background: var(--amber); color: #120c04; border-color: var(--amber); box-shadow: 0 0 18px var(--amber-glow); }
+
+/* zone / ship pills under the location */
+.pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.pills span {
+  --c: var(--dim);
+  font-size: 0.75rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--c); border: 1px solid var(--c); padding: 4px 12px 3px;
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+}
+.pills span:empty { display: none; }
+.pills .ok { --c: var(--kill); }
+.pills .warn { --c: var(--amber); }
+.pills .bad { --c: var(--death); background: rgba(255, 61, 90, .08); }
+.pills .ship { --c: var(--ink); border-color: rgba(244, 234, 217, .35); }
+
+/* ================================================================== contract view */
+.contract { flex: 1; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
+.count { color: var(--dim); letter-spacing: .1em; }
+#c-title {
+  margin: .25em 0 .35em;
+  font-size: clamp(30px, min(3.2vw, 6vh), 88px); font-weight: 700; line-height: 1; text-transform: uppercase;
+  color: var(--ink); text-shadow: 0 0 26px rgba(255, 140, 30, .25);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#c-title.none { color: var(--dim); text-shadow: none; }
+.objectives { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.objectives li {
+  --c: var(--amber);
+  position: relative; padding-left: 28px;
+  font-size: clamp(16px, 1.25vw, 30px); font-weight: 600; letter-spacing: .02em; line-height: 1.2;
+}
+.objectives li::before {
+  content: ""; position: absolute; left: 3px; top: .35em; width: 10px; height: 10px;
+  border: 1.5px solid var(--c); transform: rotate(45deg);
+}
+.objectives li.done { --c: var(--kill); color: var(--dim); text-decoration: line-through; text-decoration-color: rgba(61, 255, 176, .5); }
+.objectives li.done::before { background: var(--c); box-shadow: 0 0 8px var(--kill-glow); }
+.objectives li.failed { --c: var(--death); color: var(--dim); text-decoration: line-through; }
+.objectives li.failed::before { background: var(--c); }
+.objectives li.open::before { box-shadow: 0 0 8px var(--amber-glow); }
+.objectives li.hint { --c: var(--faint); color: var(--dim); font-weight: 500; font-size: 1rem; }
+
+.others { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.others li { font-size: 0.9375rem; color: var(--dim); letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.others b { font-weight: 700; letter-spacing: .18em; text-transform: uppercase; font-size: 0.75rem; margin-right: 10px; color: var(--amber); }
+.others .r-completed b { color: var(--kill); }
+.others .r-failed b { color: var(--death); }
+.others .r-abandoned b { color: var(--dim); }
+
+.earn b i { font-style: normal; font-size: .5em; color: var(--dim); letter-spacing: .15em; margin: 0; }
+#earn-in {
+  width: 8rem; margin-top: 2px; background: transparent; border: 0; border-bottom: 1px solid var(--faint);
+  color: var(--ink); font-size: 0.875rem; padding: 2px 0; outline: none;
+}
+#earn-in:focus { border-bottom-color: var(--amber); }
+#earn-in::placeholder { color: rgba(244, 234, 217, .3); }
+
+/* feed + banner colours for mission events */
+#feed li.success { --c: var(--kill); }
+#feed li.fail { --c: var(--death); }
+#feed li.comms { --c: var(--dim); }
+#feed li.success::before, #feed li.fail::before, #feed li.mission::before { background: var(--c); box-shadow: 0 0 10px var(--c); }
+.banner.fail { --c: var(--death); --g: rgba(255, 61, 90, .2); }
+.banner.mission { --c: var(--amber); --g: rgba(255, 140, 30, .18); }

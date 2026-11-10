@@ -35,12 +35,49 @@ _RANDOM = [
 ]
 
 
+_N = '<{ts}> [Notice] <SHUDEvent_OnNotification> Added notification "%s: " [11] to queue. New queue size: 1, MissionId: [%s], ObjectiveId: [%s] [Team_CoreGameplayFeatures][Missions][Comms]'
+_PILOT = "<{ts}> [Notice] <Vehicle Control Flow> CVehicleMovementBase::SetDriver: Local client node [1] requesting control token for '%s_{n}' [{n}] [Team_VehicleFeatures][Vehicle]"
+_END = "<{ts}> [Notice] <EndMission> Ending mission for player. MissionId[%s] Player[{me}] PlayerId[1] CompletionType[%s] Reason[]"
+
+
+def mission_script(c: int) -> list:
+    """One loop of a hauling evening; ``c`` makes mission ids unique per loop."""
+    a, b, x = f"demo-a-{c}", f"demo-b-{c}", f"demo-x-{c}"
+    return [
+        _LOC % "Stanton1_Lorville",
+        _N % ("Contract Accepted: Covalex Local Delivery", a, ""),
+        _N % ("New Objective: Collect 3 packages at Lorville Spaceport", a, "o1"),
+        _N % ("Contract Accepted: Hauling - Hurston to Crusader", b, ""),
+        _N % ("New Objective: Pick up 24 SCU Agricium at HDMS-Edmond", b, "o1"),
+        _N % ("New Objective: Deliver 0/24 SCU to Seraphim Station", b, "o2"),
+        _N % ("Objective Complete: Collect 3 packages at Lorville Spaceport", a, "o1"),
+        _N % ("New Objective: Deliver 0/3 packages to Everus Harbor", a, "o2"),
+        _PILOT % "DRAK_Cutlass_Black",
+        _N % ("Leaving Armistice Zone - Combat Enabled", "", ""),
+        _N % ("Quantum Travel Route Set: Everus Harbor", "", ""),
+        _LOC % "Stanton1_Everus",
+        _N % ("Entered Armistice Zone - Combat Prohibited", "", ""),
+        _N % ("New Objective: Deliver 3/3 packages to Everus Harbor", a, "o2"),
+        _N % ("Objective Complete: Deliver 3/3 packages to Everus Harbor", a, "o2"),
+        _N % ("Contract Complete: Covalex Local Delivery", a, ""),
+        _END % (a, "Complete"),
+        _N % ("Objective Complete: Pick up 24 SCU Agricium at HDMS-Edmond", b, "o1"),
+        _N % ("Entering Crusader Industries Jurisdiction", "", ""),
+        _N % ("Contract Accepted: Retrieve Stolen Cargo", x, ""),
+        _N % ("New Objective: Recover cargo from wreck near Yela", x, "o1"),
+        _N % ("Leaving Monitored Space", "", ""),
+        _N % ("Contract Failed: Retrieve Stolen Cargo", x, ""),
+        _N % ("Entered Monitored Space", "", ""),
+        _LOC % "Stanton2_Seraphim",
+    ]
+
+
 def _ts() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
 
 
 class DemoLogWriter(threading.Thread):
-    def __init__(self, interval: float = 5.0) -> None:
+    def __init__(self, interval: float = 4.0) -> None:
         super().__init__(name="scdash-demo", daemon=True)
         self.interval = interval
         fd, self.path = tempfile.mkstemp(prefix="scdash-demo-", suffix=".log")
@@ -58,5 +95,13 @@ class DemoLogWriter(threading.Thread):
     def run(self) -> None:
         for t in _STATIC:
             self._write(t)
+        loop, script = 0, mission_script(0)
         while not self._halt.wait(self.interval):
-            self._write(random.choice(_RANDOM))
+            # alternate between the mission story and random combat noise
+            if random.random() < 0.6:
+                if not script:
+                    loop += 1
+                    script = mission_script(loop)
+                self._write(script.pop(0))
+            else:
+                self._write(random.choice(_RANDOM))
