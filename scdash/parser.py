@@ -47,8 +47,28 @@ _OBJECTIVE_UPSERT = re.compile(
 )
 _QT_TARGET = re.compile(r"<Player Selected Quantum Target[^>]*>.*?selected point (?P<target>\S+) as their destination")
 _QT_FUEL = re.compile(r"<Player Requested Fuel to Quantum Target[^>]*>.*?destination (?P<target>\S+)")
+# Real 4.10 line: ...|CSCItemNavigation::CalculateRoute|Successfully calculated route to <target> fuel estimate 16.858223
+_QT_ROUTE = re.compile(r"Successfully calculated route to (?P<target>\S+) fuel estimate (?P<fuel>[\d.]+)")
+# All quantum lines name the ship they come from: "| NOT AUTH | RSI_Aurora_Mk2_920601993986[920601993986]|"
+_QT_SHIP = re.compile(r"\| (?:NOT )?AUTH \| (?P<ship>[A-Za-z][A-Za-z0-9_]+?)_\d{6,}\[")
 _QT_ROUTE_START = re.compile(r"Projected Start Location is (?P<start>.+?) for route to destination")
 _QT_ARRIVED = re.compile(r"<Quantum Drive Arrived|Quantum Drive has arrived at final destination")
+
+# --- cargo, shopping, connection ---------------------------------------------------
+# Real 4.10 line: ... [CSCActorControlAdditiveStatePlace::DoPlace] 'Pilot' [id] placed
+#   'Carryable_2H_FL_05x05x05_Commodity_medical_supplies_a_<id>' [id] in lootable container '<container>' [id]
+_PLACE = re.compile(
+    r"StatePlace::DoPlace\] '(?P<actor>[^']+)' \[\d+\] placed '(?P<item>[^']+?)(?:_\d{6,})?' \[\d+\] "
+    r"in (?:lootable container|itemport \d+ on) '(?P<container>[^']+)'"
+)
+_COMMODITY = re.compile(r"Commodity_(?P<name>[A-Za-z_]+?)(?:_[a-z])?$")
+# Purchases (formats per sc-log-tracker / csr: SendStandardItemBuyRequest until 4.7,
+# SendShopBuyRequest / SendCommodityBuyRequest since 4.8)
+_BUY_ITEM = re.compile(r"client_price\[(?P<price>[\d.]+)\].*?itemName\[(?P<item>[^\]]+)\] quantity\[(?P<qty>\d+)\]")
+_BUY_COMMODITY = re.compile(r"\bprice\[(?P<price>[\d.]+)\]")
+_SHOP = re.compile(r"shopName\[(?P<shop>[^\]]+)\]")
+_DISCONNECT = re.compile(r'cause=(?P<code>\d+) reason="(?P<reason>[^"]*)"')
+_CREW = re.compile(r"^(?:New Member Joined|Member Left) (?P<who>\S+) has (?P<act>joined|left) (?:the )?channel '(?P<name>[^']*)'", re.I)
 
 # --- survival (4.x) ------------------------------------------------------------
 # Kill lines (<Actor Death>) are limited to the local player since 4.0.2 and gone since
@@ -72,8 +92,9 @@ _VERSION = re.compile(r"ProductVersion: (?P<v>\d+\.\d+(?:\.\d+)?)")
 _INTERESTING = re.compile(
     r"Actor Death|Vehicle Destruction|RequestLocationInventory|<Join PU>|Login Success|"
     r"AccountLoginCharacterStatus_Character|SHUDEvent_OnNotification|<EndMission>|<MissionEnded>|"
-    r"<ObjectiveUpserted>|Vehicle Control Flow|Quantum Target|Quantum Drive|Projected Start Location|"
+    r"<ObjectiveUpserted>|Vehicle Control Flow|Quantum Target|Quantum Drive|Projected Start Location|Successfully calculated route|"
     r"ActorState\] (?:Dead|Corpse)|<Corpse>|Logged an incap|MED BED HEAL|Fatal ?Collision|"
+    r"StatePlace::DoPlace|BuyRequest|cause=\d+ reason=\"|"
     r"SystemQuit|CSystem::Quit|ProductVersion"
 )
 _MISSION_ID = re.compile(r"MissionId:?\s*\[(?P<mid>[^\]]*)\]")
@@ -162,6 +183,11 @@ def _id(value: Optional[str]) -> Optional[str]:
 def classify_notification(text: str) -> dict:
     """Split a HUD notification into category + subject."""
     text = clean_notification_text(text)
+    m = _CREW.match(text)
+    if m:
+        name = m.group("name").replace("@vehicle_Name", "").strip()
+        return {"text": text.rstrip("."), "category": "crew_" + m.group("act").lower(), "subject": m.group("who"),
+                "ship": name.rsplit(" : ", 1)[0].strip() if " : " in name else None}
     m = _CHANNEL.match(text)
     if m:
         # "You have joined channel 'RSI Aurora Mk II : PilotName'." -> the ship you just boarded
@@ -335,6 +361,36 @@ def parse_line(line: str) -> Optional[LogEvent]:
             "where": describe_location(zone.strip())["place"] if zone else None,
         })
 
+    m = _PLACE.search(line)
+    if m:
+        c = _COMMODITY.search(m.group("item"))
+        if not c:
+            return None  # only cargo boxes are interesting
+        return LogEvent("cargo", ts, {
+            "actor": m.group("actor"),
+            "item": c.group("name").replace("_", " ").title(),
+            "delivered": m.group("container").lower().startswith("mission_"),
+        })
+    if "BuyRequest" in line:
+        if "Sending" not in line:
+            return None
+        shop = _SHOP.search(line)
+        shop_name = re.sub(r"_\d+$", "", shop.group("shop")).replace("_", " ").strip() if shop else None
+        if "Commodity" in line:
+            m = _BUY_COMMODITY.search(line)
+            return LogEvent("purchase", ts, {"price": float(m.group("price")) if m else 0.0, "item": "Fracht",
+                                             "qty": 1, "shop": shop_name})
+        m = _BUY_ITEM.search(line)
+        if m:
+            item = re.sub(r"_\d{6,}$", "", m.group("item")).replace("_", " ")
+            return LogEvent("purchase", ts, {"price": float(m.group("price")), "item": item,
+                                             "qty": int(m.group("qty")), "shop": shop_name})
+        return None
+    m = _DISCONNECT.search(line)
+    if m:
+        return LogEvent("disconnect", ts, {"code": m.group("code"), "reason": m.group("reason"),
+                                           "in_pu": 'gamerules="SC_Default"' in line})
+
     m = _OBJECTIVE_UPSERT.search(line)
     if m:
         state = {"completed": "done", "failed": "failed"}.get(m.group("st").lower().replace("mission_objective_state_", ""))
@@ -342,17 +398,23 @@ def parse_line(line: str) -> Optional[LogEvent]:
             return None
         return LogEvent("objective_state", ts, {"mission_id": _id(m.group("mid")), "objective_id": m.group("oid"), "state": state})
 
+    ship = _QT_SHIP.search(line)
+    qt_ship = ship_name(ship.group("ship")) if ship else None
+    m = _QT_ROUTE.search(line)
+    if m:
+        return LogEvent("quantum", ts, {"phase": "route", "fuel": float(m.group("fuel")), "ship": qt_ship,
+                                        **quantum_destination(m.group("target"))})
     m = _QT_TARGET.search(line)
     if m:
-        return LogEvent("quantum", ts, {"phase": "target", **quantum_destination(m.group("target"))})
+        return LogEvent("quantum", ts, {"phase": "target", "ship": qt_ship, **quantum_destination(m.group("target"))})
     m = _QT_ROUTE_START.search(line)
     if m:
         return LogEvent("route_start", ts, {"start": m.group("start").strip()})
     m = _QT_FUEL.search(line)
     if m:
-        return LogEvent("quantum", ts, {"phase": "fuel", **quantum_destination(m.group("target"))})
+        return LogEvent("quantum", ts, {"phase": "fuel", "ship": qt_ship, **quantum_destination(m.group("target"))})
     if _QT_ARRIVED.search(line):
-        return LogEvent("quantum", ts, {"phase": "arrived", "name": None, "kind": None})
+        return LogEvent("quantum", ts, {"phase": "arrived", "name": None, "kind": None, "ship": qt_ship})
 
     m = _VEHICLE_CONTROL.search(line)
     if m:

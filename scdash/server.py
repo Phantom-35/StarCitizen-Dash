@@ -13,6 +13,8 @@ from scdash.state import DashboardState
 
 log = logging.getLogger(__name__)
 
+MAX_WAIT = 25.0  # seconds a long poll may be held open
+
 WEB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 
 mimetypes.add_type("text/javascript", ".js")
@@ -48,9 +50,17 @@ def make_handler(state: DashboardState):
             path = url.path
             if path == "/api/state":
                 # The dashboard polls every 2 s; answer with an empty 204 while nothing changed.
-                since = parse_qs(url.query).get("since", [""])[0]
+                query = parse_qs(url.query)
+                since = query.get("since", [""])[0]
                 if since and since == state.token:
-                    return self._send(204, b"", "application/json; charset=utf-8")
+                    # Long poll: hold the request until something happens (max. MAX_WAIT s),
+                    # so new events reach the dashboard immediately instead of on the next poll.
+                    try:
+                        wait = min(MAX_WAIT, max(0.0, float(query.get("wait", ["0"])[0])))
+                    except ValueError:
+                        wait = 0.0
+                    if not (wait and state.wait_for_change(since, wait)):
+                        return self._send(204, b"", "application/json; charset=utf-8")
                 body = json.dumps(state.snapshot(), ensure_ascii=False, separators=(",", ":")).encode("utf-8")
                 return self._send(200, body, "application/json; charset=utf-8")
             if path == "/":

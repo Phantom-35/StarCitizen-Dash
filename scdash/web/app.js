@@ -7,7 +7,8 @@
 (() => {
   "use strict";
 
-  const POLL_MS = 2000;
+  const LONG_POLL_S = 20;   // how long the server may hold a request
+  const RETRY_MS = 2000;    // pause after a failed request
   const BANNER_MS = 7000;
   const $ = (id) => document.getElementById(id);
   const pad = (n) => String(n).padStart(2, "0");
@@ -15,7 +16,6 @@
   let st = null;            // last state from the server
   let lastToken = "";       // "<server boot id>-<version>", sent back so the server can answer 204
   let lastEventId = null;   // null = first render, no banner for old events
-  let pollTimer = null;
   // Difference between the server clock (= the game PC, which writes the log timestamps)
   // and this device. Matters when the dashboard runs on a tablet whose clock is off.
   let skew = 0;
@@ -98,33 +98,45 @@
   document.querySelectorAll(".modes button").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
 
   // ---------------------------------------------------------------- polling
-  async function poll() {
-    try {
-      const res = await fetch("/api/state?since=" + encodeURIComponent(lastToken), { cache: "no-store" });
-      if (!res.ok) throw new Error(res.status);
-      setClass($("ind-link"), "on");
-      if (res.status === 204) return; // nothing changed
-      const data = await res.json();
-      if (data.token === lastToken) return;
-      // event ids start again after a server restart
-      if (lastToken.split("-")[0] !== data.token.split("-")[0]) lastEventId = null;
-      lastToken = data.token;
-      if (typeof data.server_time === "number") skew = data.server_time * 1000 - Date.now();
-      st = data;
-      render();
-    } catch (e) {
-      setClass($("ind-link"), "off");
-      lastToken = "";
+  // Long polling: the server holds the request until something changes, so events show up
+  // within the watcher's read interval instead of waiting for the next poll.
+  let pollGen = 0;            // increases whenever polling is (re)started or stopped
+  let pollAbort = null;
+
+  function applyState(data) {
+    if (data.token === lastToken) return;
+    // event ids start again after a server restart
+    if (lastToken.split("-")[0] !== data.token.split("-")[0]) lastEventId = null;
+    lastToken = data.token;
+    if (typeof data.server_time === "number") skew = data.server_time * 1000 - Date.now();
+    st = data;
+    render();
+  }
+
+  async function pollLoop(gen) {
+    while (gen === pollGen) {
+      try {
+        pollAbort = new AbortController();
+        const url = `/api/state?since=${encodeURIComponent(lastToken)}&wait=${LONG_POLL_S}`;
+        const res = await fetch(url, { cache: "no-store", signal: pollAbort.signal });
+        if (gen !== pollGen) return;
+        if (!res.ok) throw new Error(res.status);
+        setClass($("ind-link"), "on");
+        if (res.status !== 204) applyState(await res.json());
+      } catch (e) {
+        if (gen !== pollGen) return; // aborted on purpose
+        setClass($("ind-link"), "off");
+        lastToken = "";
+        await new Promise((r) => setTimeout(r, RETRY_MS));
+      }
     }
   }
   function startPolling() {
-    if (pollTimer) return;
-    poll();
-    pollTimer = setInterval(poll, POLL_MS);
+    pollLoop(++pollGen);
   }
   function stopPolling() {
-    clearInterval(pollTimer);
-    pollTimer = null;
+    pollGen++;
+    if (pollAbort) pollAbort.abort();
   }
   document.addEventListener("visibilitychange", () => (document.hidden ? stopPolling() : startPolling()));
 
@@ -155,6 +167,8 @@
     setText($("loc-region"), s.region || "");
     setText($("loc-shard"), s.shard || "");
     setText($("loc-version"), st.game_version ? "SC " + st.game_version : "");
+    setText($("loc-server"), s.server ? "Server " + s.server : "");
+    renderHealth();
 
     const k = st.stats;
     bigNumber("st-deaths", k.deaths);
@@ -180,6 +194,21 @@
     renderRsi(st.rsi_status);
     setText($("log-path"), st.log.path ? "Log: " + st.log.path : "Keine Game.log gefunden – siehe README (--log)");
     tick();
+  }
+
+  function renderHealth() {
+    const inj = st.health.injuries;
+    const b = $("st-health");
+    if (!inj.length) {
+      setText(b, "Unverletzt");
+      setClass(b, "ok");
+      setText($("st-health-sub"), "keine offenen Verletzungen");
+      return;
+    }
+    const worst = Math.min(...inj.map((i) => i.tier)); // tier 1 = needs the best med bed
+    setText(b, inj.length === 1 ? inj[0].part : `${inj.length} Verletzungen`);
+    setClass(b, inj.some((i) => i.severe) ? "bad" : "hurt");
+    setText($("st-health-sub"), (inj.length > 1 ? inj.map((i) => i.part).join(", ") + " · " : "") + `Med-Bed Tier ${worst} nötig`);
   }
 
   function bigNumber(id, value) {
@@ -233,16 +262,28 @@
     setText(e, text || "");
     setClass(e, cls || "");
   }
+  const fuelFmt = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+  /** Ship name plus how long we have been aboard (updated by the 1 s tick). */
+  function shipPill(now) {
+    const nav = st.nav;
+    const since = parseTs(nav.ship_since);
+    const aboard = isFinite(since) ? " · an Bord " + short(sessionNow(now) - since) : "";
+    pill("p-ship", nav.ship ? "◈ " + nav.ship + aboard : "", "ship");
+  }
+
   function renderPills(nav) {
-    pill("p-ship", nav.ship ? "◈ " + nav.ship : "", "ship");
+    shipPill(Date.now() + skew);
     pill("p-arm", nav.armistice === true ? "Armistice" : nav.armistice === false ? "Waffen frei" : "",
       nav.armistice ? "ok" : "warn");
     pill("p-mon", nav.monitored === true ? "Überwacht" : nav.monitored === false ? "Unüberwacht" : "",
       nav.monitored ? "ok" : "bad");
+    pill("p-crew", nav.crew.length ? "Crew: " + nav.crew.join(", ") : "", "crew");
     pill("p-jur", nav.jurisdiction || "", nav.jurisdiction && nav.jurisdiction.toLowerCase() === "ungoverned" ? "bad" : "");
     pill("p-restricted", nav.restricted ? "Sperrgebiet" : "", "bad");
     pill("p-private", nav.private ? "Privatgelände" : "", "warn");
-    pill("p-qt", nav.quantum_target ? "⟶ " + nav.quantum_target : "", "qt");
+    const need = nav.quantum_fuel ? ` · Bedarf ${fuelFmt.format(nav.quantum_fuel)}` : "";
+    pill("p-qt", nav.quantum_target ? "⟶ " + nav.quantum_target + need : "", "qt");
   }
 
   // ---------------------------------------------------------------- missions
@@ -263,6 +304,8 @@
     title.classList.toggle("none", !focus);
     setText($("c-count"), active.length > 1 ? `1 / ${active.length}` : "");
 
+    const loc = st.session.location;
+    const here = loc && loc.place ? loc.place.toLowerCase() : "";
     const ol = $("c-objectives");
     const frag = document.createDocumentFragment();
     if (!focus) {
@@ -272,9 +315,30 @@
     } else {
       // open objectives first, then finished ones; at most 6
       const sorted = [...focus.objectives].sort((a, b) => (a.state === "open" ? 0 : 1) - (b.state === "open" ? 0 : 1));
-      for (const o of sorted.slice(0, 6)) frag.appendChild(el("li", o.state, o.text));
+      for (const o of sorted.slice(0, 6)) {
+        const li = el("li", o.state, o.text);
+        // "Deliver 12/24 SCU ..." -> progress bar
+        const m = o.text.match(/(\d+)\s*\/\s*(\d+)/);
+        if (m && +m[2] > 0) {
+          const bar = el("span", "bar");
+          const fill = el("i");
+          fill.style.width = Math.min(100, (100 * +m[1]) / +m[2]).toFixed(0) + "%";
+          bar.appendChild(fill);
+          li.appendChild(bar);
+        }
+        if (o.state === "open" && here && o.text.toLowerCase().includes(here)) li.classList.add("here");
+        frag.appendChild(li);
+      }
     }
     ol.replaceChildren(frag);
+
+    // where to fly next - and whether we are already there
+    const next = focus && focus.next;
+    $("c-next").hidden = !next;
+    if (next) {
+      setText($("c-next-place"), next);
+      $("c-next-here").hidden = !(here && next.toLowerCase().includes(here));
+    }
 
     const others = $("c-others");
     const of = document.createDocumentFragment();
@@ -298,9 +362,12 @@
     setText($("ms-failed"), String(k.missions_failed));
     setText($("ms-aband"), `${k.missions_abandoned} abgebrochen`);
     const total = k.missions_completed + k.missions_failed;
-    setText($("ms-rate"), total ? `${Math.round((k.missions_completed / total) * 100)} % Quote` : "–");
+    const durs = ms.history.filter((h) => h.result === "completed" && h.duration != null).map((h) => h.duration);
+    const avg = durs.length ? ` · Ø ${mins(durs.reduce((a, b) => a + b, 0) / durs.length)}` : "";
+    setText($("ms-rate"), total ? `${Math.round((k.missions_completed / total) * 100)} % Quote${avg}` : "–");
     setText($("ms-places"), String(k.places));
-    setText($("ms-jumps"), `besucht · ${k.quantum_jumps} QT-Sprünge`);
+    const burned = k.quantum_fuel_used ? ` · ${fuelFmt.format(k.quantum_fuel_used)} QT-Treibstoff` : "";
+    setText($("ms-jumps"), `besucht · ${k.quantum_jumps} QT-Sprünge${burned}`);
     renderEarnings();
   }
 
@@ -315,7 +382,17 @@
   }
   function renderEarnings() {
     const e = earnings();
-    setText($("ms-earn"), numFmt.format(e.total));
+    const k = st ? st.stats : { money_in: 0, money_out: 0, spend: 0, fines: 0 };
+    // manual contract pay + what the log tells us: transfers, purchases, fines
+    const plus = e.total + k.money_in;
+    const minus = k.spend + k.money_out + k.fines;
+    const total = plus - minus;
+    setText($("ms-earn"), numFmt.format(total));
+    $("ms-earn").classList.toggle("neg", total < 0);
+    const parts = [];
+    if (minus) parts.push(`−${numFmt.format(minus)} ausgegeben`);
+    if (k.money_in) parts.push(`+${numFmt.format(k.money_in)} erhalten`);
+    setText($("ms-earn-sub"), parts.join(" · "));
   }
   $("earn-form").addEventListener("submit", (ev) => {
     ev.preventDefault();
@@ -330,7 +407,53 @@
     renderEarnings();
   });
 
+  // ---------------------------------------------------------------- sound cues
+  // Short, quiet tones so you notice important things while looking at the game.
+  const SOUND_KEY = "scdash.sound";
+  let soundOn = localStorage.getItem(SOUND_KEY) !== "off";
+  let audio = null;
+  const TONES = {
+    good: [[660, 0], [880, 0.12]],            // rising: contract done, timer finished
+    bad: [[440, 0], [330, 0.14], [247, 0.28]], // falling: death, K.O., error
+    info: [[587, 0]],                          // single: contract accepted, warnings
+  };
+  function beep(kind) {
+    if (!soundOn) return;
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      if (audio.state === "suspended") audio.resume();
+      for (const [freq, at] of TONES[kind] || TONES.info) {
+        const osc = audio.createOscillator();
+        const gain = audio.createGain();
+        const t0 = audio.currentTime + at;
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.09, t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+        osc.connect(gain).connect(audio.destination);
+        osc.start(t0);
+        osc.stop(t0 + 0.25);
+      }
+    } catch (e) { /* no audio device - stay silent */ }
+  }
+  function renderSoundToggle() {
+    const b = $("sound-toggle");
+    setText(b, soundOn ? "Ton an" : "Ton aus");
+    b.classList.toggle("off", !soundOn);
+  }
+  function toggleSound() {
+    soundOn = !soundOn;
+    localStorage.setItem(SOUND_KEY, soundOn ? "on" : "off");
+    renderSoundToggle();
+    beep("good");
+  }
+  $("sound-toggle").addEventListener("click", toggleSound);
+  renderSoundToggle();
+  const CAT_TONE = { death: "bad", fail: "bad", success: "good", kill: "good" };
+
   function showBanner(ev) {
+    beep(CAT_TONE[ev.cat] || "info");
     const b = $("banner");
     setText($("banner-title"), ev.title);
     setText($("banner-actor"), ev.actor || (ev.cat === "kill" ? "Ziel neutralisiert" : "K.O."));
@@ -405,6 +528,7 @@
         $("m-arc-sec").style.strokeDasharray = `${((sec % 60) / 60) * 1000} 1000`;
       }
 
+      shipPill(now);
       const since = parseTs(s.location_since);
       setText($("loc-since"), isFinite(since) && s.location ? "Hier seit " + short(ref - since) : "");
       const ld = s.last_death;
@@ -470,6 +594,12 @@
         done++;
         setText(n.left, "FERTIG");
         setClass(n.li, "done");
+        if (!t.notified) {
+          // announce once - but not for timers that ran out while the dashboard was closed
+          t.notified = true;
+          saveTimers();
+          if (left > -15000) showBanner({ cat: "success", title: "Timer fertig", actor: t.label, detail: "" });
+        }
       } else {
         setText(n.left, short(left));
       }
@@ -517,6 +647,7 @@
     if (/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName) || e.ctrlKey || e.altKey || e.metaKey) return;
     if (e.key === "n" || e.key === "N") { e.preventDefault(); openDrawer("notes"); }
     if (e.key === "l" || e.key === "L") { e.preventDefault(); openDrawer("links"); }
+    if (e.key === "t" || e.key === "T") { e.preventDefault(); toggleSound(); }
     if (e.key === "m" || e.key === "M") { e.preventDefault(); setMode(mode === "combat" ? "mission" : "combat"); }
   });
 

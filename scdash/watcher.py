@@ -86,7 +86,7 @@ class LogWatcher(threading.Thread):
         self,
         path_resolver: Callable[[], Optional[str]],
         state: DashboardState,
-        interval: float = 1.0,
+        interval: float = 0.5,
     ) -> None:
         super().__init__(name="scdash-log", daemon=True)
         self._resolve = path_resolver

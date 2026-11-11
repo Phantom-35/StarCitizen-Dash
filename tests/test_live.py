@@ -111,6 +111,25 @@ class LiveTests(unittest.TestCase):
         status, body = self.api(token)
         self.assertEqual((status, body), (204, None))
 
+    def test_long_poll_answers_as_soon_as_something_happens(self):
+        self.append(HEADER + LOGIN + JOIN)
+        s = self.wait_for(lambda s: s["session"]["shard"], "join")
+        token = s["token"]
+
+        # nothing happens: the request is held, then answered with 204
+        t0 = time.monotonic()
+        with urllib.request.urlopen(f"{self.base}/api/state?since={token}&wait=0.4", timeout=5) as r:
+            self.assertEqual(r.status, 204)
+        self.assertGreaterEqual(time.monotonic() - t0, 0.35)
+
+        # something happens while a request is waiting: answered right away with the new state
+        threading.Timer(0.3, self.append, args=(LOCATION,)).start()
+        t0 = time.monotonic()
+        with urllib.request.urlopen(f"{self.base}/api/state?since={token}&wait=10", timeout=15) as r:
+            data = json.loads(r.read())
+        self.assertLess(time.monotonic() - t0, 3)
+        self.assertNotEqual(data["token"], token)
+
     def test_game_restart_rotates_log(self):
         self.append(HEADER + LOGIN + JOIN + ACCEPT)
         self.wait_for(lambda s: len(s["missions"]["active"]) == 1, "first session")

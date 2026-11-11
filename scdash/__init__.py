@@ -1,3 +1,3 @@
 """SC-Dash – a lightweight second-monitor dashboard for Star Citizen."""
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"

@@ -48,6 +48,10 @@ _QT_SET = ("<{ts}> [Notice] <Player Selected Quantum Target - Local> [ItemNaviga
            "CSCItemNavigation::OnPlayerSelectedQuantumTarget|Player has selected point %s as their destination, routing locally [Team_CGP4][QuantumTravel]")
 _QT_DONE = ("<{ts}> [Notice] <Quantum Drive Arrived - Arrived at Final Destination> [ItemNavigation][CL][1] | NOT AUTH | DRAK_Cutlass_Black_{n}[{n}]|"
             "CSCItemNavigation::OnQuantumDriveArrived|Quantum Drive has arrived at final destination [Team_CGP4][QuantumTravel]")
+_PLACE = ("<{ts}> [Notice] <[ActorState] Place> [ACTOR STATE][CSCActorControlAdditiveStatePlace::DoPlace] '{me}' [1] placed "
+          "'Carryable_2H_FL_05x05x05_Commodity_%s_a_{n}' [{n}] in lootable container '%s' [{n}] [Team_ActorFeatures][Actor]")
+_BUY = ("<{ts}> [Notice] <CEntityComponentShopUIProvider::SendShopBuyRequest> Sending SShopBuyRequest - playerId[1] "
+        "shopName[SCShop_%s] client_price[%s] itemName[%s] quantity[%s] [Team_NAPU][Shops][UI]")
 _ZERO = "00000000-0000-0000-0000-000000000000"
 _END = "<{ts}> [Notice] <EndMission> Ending mission for player. MissionId[%s] Player[{me}] PlayerId[1] CompletionType[%s] Reason[]"
 
@@ -62,21 +66,28 @@ def mission_script(c: int) -> list:
         _N % ("Contract Accepted: Hauling - Hurston to Crusader", b, ""),
         _N % ("New Objective: Pick up 24 SCU Agricium at HDMS-Edmond", b, "o1"),
         _N % ("New Objective: Deliver 0/24 SCU to Seraphim Station", b, "o2"),
+        _PLACE % ("medical_supplies", "drak_cutlass_black_cargo_slot"),
         _N2 % ("Objective Complete: Collect 3 packages at Lorville Spaceport", a, "o1"),
         _N % ("New Objective: Deliver 0/3 packages to Everus Harbor", a, "o2"),
         _N2 % ("You have joined channel 'Drake Cutlass Black : {me}'.", _ZERO, ""),
+        _N % ("New Member Joined Bob_the_Hauler has joined channel 'Drake Cutlass Black : {me}'", _ZERO, ""),
         _N % ("Hangar Request Completed", _ZERO, ""),
         _N % ("Leaving Armistice Zone - Caution Advised", _ZERO, ""),
         _QT_SET % "EverusHarbor_LOC",
+        "<{ts}> [Notice] <Calculate Route> [ItemNavigation][CL][1] | NOT AUTH | DRAK_Cutlass_Black_{n}[{n}]|CSCItemNavigation::CalculateRoute|Successfully calculated route to EverusHarbor_LOC fuel estimate 23.417050 [Team_CGP4][QuantumTravel]",
+        _N % ("Entered Monitored Space", _ZERO, ""),
         _QT_DONE,
         _LOC % "RR_HUR_LEO",
         _N % ("Entering Armistice Zone - Combat Prohibited", _ZERO, ""),
         _N % ("New Objective: Deliver 3/3 packages to Everus Harbor", a, "o2"),
+        _PLACE % ("medical_supplies", "Mission_InvisibleItemPort_2H-010"),
         _UPSERT % (a, "o2"),
         "<{ts}> [Notice] <MissionEnded> Received MissionEnded push message for: mission_id %s - mission_state MISSION_STATE_COMPLETED [Team_GameServices][Missions]" % a,
         _END % (a, "Complete"),
         _N % ("Contract Complete: Covalex Local Delivery", a, ""),
+        _BUY % ("Refuel_EverusHarbor", "1850.000000", "Hydrogen_Fuel", "1"),
         _N % ("Objective Complete: Pick up 24 SCU Agricium at HDMS-Edmond", b, "o1"),
+        _N % ("New Objective: Deliver 8/24 SCU to Seraphim Station", b, "o2"),
         _N % ("Entered Crusader Jurisdiction", _ZERO, ""),
         _N % ("Contract Accepted: Retrieve Stolen Cargo", x, ""),
         _N % ("New Objective: Recover cargo from wreck near Yela", x, "o1"),
