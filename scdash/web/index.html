@@ -37,8 +37,10 @@
 
       <div class="loc">
         <div class="tag">Aktueller Standort</div>
-        <div class="crumb" id="loc-crumb">–</div>
-        <h1 class="place" id="loc-place">Kein Signal</h1>
+        <div class="loc-head" id="loc-head">
+          <div class="crumb" id="loc-crumb">–</div>
+          <h1 class="place" id="loc-place">Kein Signal</h1>
+        </div>
         <div class="loc-meta">
           <span id="loc-since"></span>
           <span id="loc-region"></span>
@@ -55,6 +57,12 @@
           <span id="p-restricted"></span>
           <span id="p-private"></span>
           <span id="p-qt"></span>
+        </div>
+        <!-- event banner: takes the place of the headline for a few seconds instead of covering content -->
+        <div id="banner" class="banner" hidden aria-live="polite">
+          <small id="banner-title"></small>
+          <b id="banner-actor"></b>
+          <span id="banner-detail"></span>
         </div>
       </div>
 
@@ -125,11 +133,6 @@
         </div>
       </div>
 
-      <div id="banner" class="banner" hidden>
-        <small id="banner-title"></small>
-        <b id="banner-actor"></b>
-        <span id="banner-detail"></span>
-      </div>
     </section>
 
     <aside class="feed">

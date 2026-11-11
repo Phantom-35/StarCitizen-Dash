@@ -5,6 +5,21 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+## [0.8.2] – 2026-11-11
+
+### Behoben
+- Einblendungen ohne Namen zeigten groß „K.O.“ – z. B. „CrimeStat erhöht“. Jetzt steht dann das Ereignis
+  selbst groß da. Tod ohne Verursacher: „Gestorben“ groß, der Ort darunter.
+- Quantum-Sprung im Komm-Log zeigte die rohe Zahl aus der Log („451872,2 Treibstoff“); jetzt Anteil am
+  Tank („9,8 % Tank“) bzw. SCU, wenn das Schiff unbekannt ist
+
+### Geändert
+- **Einblendungen überdecken keine Inhalte mehr halb:** Sie erscheinen jetzt an der Stelle des großen
+  Ortsnamens – der Ortsblock blendet aus, die Meldung ein, danach umgekehrt. Auftragsbereich und
+  Statistik bleiben die ganze Zeit sichtbar.
+- **Weicher Ortswechsel:** Der alte Name gleitet nach oben und blendet aus, der neue kommt von unten
+  (je ~0,3 s). Bei „Bewegung reduzieren“ im System ohne Animation.
+
 ## [0.8.1] – 2026-11-11
 
 ### Behoben

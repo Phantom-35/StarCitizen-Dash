@@ -87,6 +87,18 @@ class FuelUnitTests(unittest.TestCase):
         self.assertIsNone(ships.tank_share(18.0, {"name": "x"}))  # ship without tank data
 
 
+class FuelTextTests(unittest.TestCase):
+    def test_share_of_tank_or_scu(self):
+        st = DashboardState()
+        st.ship, st.ship_class = "Drake Cutlass Black", "DRAK_Cutlass_Black"   # 4.6 SCU tank
+        self.assertEqual(st._fuel_text(451872.25), "9,8 % Tank")
+        self.assertEqual(st._fuel_text(2_300_000), "50 % Tank")
+        self.assertEqual(st._fuel_text(18.18), "< 0,1 % Tank")
+        st.ship, st.ship_class = "Mystery Ship", None                           # not in the database
+        self.assertEqual(st._fuel_text(451872.25), "0,452 SCU Quantum-Treibstoff")
+        self.assertIsNone(st._fuel_text(0))
+
+
 class RealSessionTests(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.mkdtemp()

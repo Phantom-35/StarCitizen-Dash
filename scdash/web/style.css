@@ -462,3 +462,30 @@ body[data-mode="mission"] [data-only="combat"] { display: none !important; }
 /* the title is shrunk to fit by JS; no clipping, otherwise the glow gets cut off as a visible box */
 .banner b { max-width: 100%; white-space: nowrap; }
 .banner b.clip { overflow: hidden; text-overflow: ellipsis; }
+
+/* ================================================================== headline: banner slot + smooth place change */
+.loc { position: relative; }
+.loc > :not(.banner) { transition: opacity .3s ease; }
+.loc.alert > :not(.banner) { opacity: 0; }
+
+/* the banner now lives inside the headline block and covers exactly that block */
+.banner {
+  top: -10px; bottom: -10px; left: calc(-1 * var(--pad)); right: calc(-1 * var(--pad));
+  transform: none; justify-content: center; gap: 6px;
+  border-top-width: 1px; border-bottom-width: 1px;
+  animation: banner-in .35s ease-out both;
+}
+.banner.out { animation: banner-out .45s ease-in both; }
+.banner small:empty, .banner span:empty { display: none; }
+@keyframes banner-in { from { opacity: 0; clip-path: inset(0 50% 0 50%); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+@keyframes banner-out { from { opacity: 1; } to { opacity: 0; } }
+
+/* ".loc .loc-head" outranks ".loc > :not(.banner)" above, which would drop the transform transition */
+.loc .loc-head { transition: opacity .28s ease, transform .28s ease; }
+.loc .loc-head.swap-out { opacity: 0; transform: translateY(-14px); }
+.loc .loc-head.swap-in { opacity: 0; transform: translateY(14px); transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .loc > :not(.banner), .loc .loc-head { transition: none; }
+  .banner, .banner.out { animation: none; }
+}
