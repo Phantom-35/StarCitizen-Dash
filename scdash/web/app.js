@@ -10,6 +10,7 @@
   const LONG_POLL_S = 20;   // how long the server may hold a request
   const RETRY_MS = 2000;    // pause after a failed request
   const BANNER_MS = 7000;
+  const BANNER_MIN_MS = 3000;  // when more banners are waiting
   const $ = (id) => document.getElementById(id);
   const pad = (n) => String(n).padStart(2, "0");
 
@@ -94,6 +95,7 @@
     setText($("feed-title"), mode === "combat" ? "Ereignisse" : "Komm-Log");
     if (st) renderFeed();
     tick();
+    fitLayout();
   }
   document.querySelectorAll(".modes button").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
 
@@ -192,7 +194,52 @@
     renderRsi(st.rsi_status);
     setText($("log-path"), st.log.path ? "Log: " + st.log.path : "Keine Game.log gefunden – siehe README (--log)");
     tick();
+    fitLayout();
   }
+
+  // ---------------------------------------------------------------- layout fitting
+  // The headline area gets denser step by step until its content fits, so it can never
+  // run into the timer bar - whatever the screen size and however long the names are.
+  const DENSITY = ["dense-1", "dense-2", "dense-3"];
+  function fitHero() {
+    const hero = document.querySelector(".hero");
+    document.body.classList.remove(...DENSITY);
+    for (let i = 0; i <= DENSITY.length; i++) {
+      if (hero.scrollHeight <= hero.clientHeight + 1) return;
+      if (i < DENSITY.length) document.body.classList.add(DENSITY[i]);
+    }
+  }
+  /** Timer bar stays one row: hide the timers that do not fit and say how many there are. */
+  function fitTimers() {
+    const ul = $("timers");
+    const items = [...ul.children];
+    const more = $("timers-more");
+    items.forEach((li) => (li.hidden = false));
+    more.hidden = true;
+    let hidden = 0;
+    if (ul.scrollWidth > ul.clientWidth + 1) {
+      // measure with the "+N weitere" hint already in place - it takes room from the list
+      more.hidden = false;
+      setText(more, `+${items.length} weitere`);
+      for (let i = items.length - 1; i > 0 && ul.scrollWidth > ul.clientWidth + 1; i--) {
+        items[i].hidden = true;
+        hidden++;
+      }
+    }
+    more.hidden = !hidden;
+    setText(more, hidden ? `+${hidden} weitere` : "");
+    more.title = items.filter((li) => li.hidden).map((li) => li.firstChild.textContent).join(", ");
+  }
+  function fitLayout() {
+    fitTimers();
+    fitHero();
+  }
+  let fitFrame = 0;
+  window.addEventListener("resize", () => {
+    cancelAnimationFrame(fitFrame);
+    fitFrame = requestAnimationFrame(fitLayout);
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitLayout);
 
   function renderHealth() {
     const inj = st.health.injuries;
@@ -281,8 +328,10 @@
     $("feed").replaceChildren(frag);
 
     // banner for brand-new important events of the current mode
-    const newest = events.find((e) => e.banner && lastEventId !== null && e.id > lastEventId);
-    if (newest && now - parseTs(newest.ts) < 60000) showBanner(newest);
+    // every new important event gets its banner, oldest first (a death must not be swallowed by
+    // a CrimeStat notice one second later); stale ones after a reconnect are skipped
+    const fresh = events.filter((e) => e.banner && lastEventId !== null && e.id > lastEventId && now - parseTs(e.ts) < 60000);
+    fresh.reverse().slice(-4).forEach(showBanner);
     let maxId = lastEventId ?? 0;
     for (const f of Object.values(st.feeds)) if (f.length) maxId = Math.max(maxId, f[0].id);
     lastEventId = maxId;
@@ -334,7 +383,10 @@
       nav.armistice ? "ok" : "warn");
     pill("p-mon", nav.monitored === true ? "Überwacht" : nav.monitored === false ? "Unüberwacht" : "",
       nav.monitored ? "ok" : "bad");
-    pill("p-crew", nav.crew.length ? "Crew: " + nav.crew.join(", ") : "", "crew");
+    // at most two names, the rest as "+N" - long handles would otherwise fill a whole row
+    const crew = nav.crew.length > 2 ? `${nav.crew.slice(0, 2).join(", ")} +${nav.crew.length - 2}` : nav.crew.join(", ");
+    pill("p-crew", crew ? "Crew: " + crew : "", "crew");
+    $("p-crew").title = nav.crew.join(", ");
     pill("p-jur", nav.jurisdiction || "", nav.jurisdiction && nav.jurisdiction.toLowerCase() === "ungoverned" ? "bad" : "");
     pill("p-restricted", nav.restricted ? "Sperrgebiet" : "", "bad");
     pill("p-private", nav.private ? "Privatgelände" : "", "warn");
@@ -470,12 +522,34 @@
     if (k.money_in) parts.push(`+${numFmt.format(k.money_in)} erhalten`);
     setText($("ms-earn-sub"), parts.join(" · "));
   }
+  /**
+   * "25k" -> 25000, "2,5k" / "2.5k" -> 2500, "1,2m" -> 1200000, "12.500" / "12,500" -> 12500,
+   * "-3000" -> -3000. Returns null for anything else.
+   */
+  function parseAmount(text) {
+    const raw = text.trim().toLowerCase().replace(/\s/g, "").replace(/auec$|uec$/, "");
+    let m = raw.match(/^([+-]?)(\d+(?:[.,]\d+)?)(k|m)$/);
+    if (m) {
+      const n = parseFloat(m[2].replace(",", ".")) * (m[3] === "k" ? 1e3 : 1e6);
+      return Math.round(m[1] === "-" ? -n : n);
+    }
+    m = raw.match(/^([+-]?)(\d{1,3}(?:([.,])\d{3})(?:\3\d{3})*|\d+)$/);  // thousands separators
+    if (m) {
+      const n = parseInt(m[2].replace(/[.,]/g, ""), 10);
+      return m[1] === "-" ? -n : n;
+    }
+    return null;
+  }
+  window.__parseAmount = parseAmount; // used by the browser self-test
+
   $("earn-form").addEventListener("submit", (ev) => {
     ev.preventDefault();
-    const raw = $("earn-in").value.trim().toLowerCase().replace(/[\s.,]/g, "");
-    const m = raw.match(/^([+-]?\d+)(k|m)?$/);
-    if (!m) return;
-    const val = parseInt(m[1], 10) * (m[2] === "k" ? 1e3 : m[2] === "m" ? 1e6 : 1);
+    const val = parseAmount($("earn-in").value);
+    if (val === null) {
+      $("earn-in").classList.add("invalid");
+      return;
+    }
+    $("earn-in").classList.remove("invalid");
     const e = earnings();
     e.total += val;
     localStorage.setItem(EARN_KEY, JSON.stringify(e));
@@ -541,7 +615,39 @@
     if (e.scrollWidth > e.clientWidth + 1) e.classList.add("clip");
   }
 
+  // banners queue up; with more waiting, each one is shown a little shorter
+  const bannerQueue = [];
+  let bannerShowing = false;  // a banner is on screen (including its fade-out)
+  let bannerLeaving = false;  // ... and already fading out
+  let bannerSince = 0;
   function showBanner(ev) {
+    bannerQueue.push(ev);
+    if (!bannerShowing) nextBanner();
+    else if (bannerQueue.length === 1) shortenBanner();
+  }
+  function shortenBanner() {
+    // a second banner is waiting: the current one stays 3 s in total instead of 7 s.
+    // Not while it is fading out - that timer brings up the next banner and must not be lost.
+    if (bannerLeaving) return;
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(hideBanner, Math.max(0, BANNER_MIN_MS - (Date.now() - bannerSince)));
+  }
+  function hideBanner() {
+    bannerLeaving = true;
+    const b = $("banner");
+    b.classList.add("out");
+    b.parentElement.classList.remove("alert"); // headline fades back in while the banner fades out
+    bannerTimer = setTimeout(() => {
+      b.hidden = true;
+      bannerShowing = bannerLeaving = false;
+      if (bannerQueue.length) nextBanner();
+    }, 460);
+  }
+  function nextBanner() {
+    const ev = bannerQueue.shift();
+    bannerShowing = true;
+    bannerLeaving = false;
+    bannerSince = Date.now();
     beep(CAT_TONE[ev.cat] || "info");
     const b = $("banner");
     // big line: who/what it is about; without one, the event itself ("CrimeStat erhöht")
@@ -554,11 +660,7 @@
     fitOneLine($("banner-actor"), 26);
     void b.offsetWidth; // restart animation
     clearTimeout(bannerTimer);
-    bannerTimer = setTimeout(() => {
-      b.classList.add("out");
-      b.parentElement.classList.remove("alert"); // headline fades back in while the banner fades out
-      bannerTimer = setTimeout(() => (b.hidden = true), 460);
-    }, BANNER_MS);
+    bannerTimer = setTimeout(hideBanner, bannerQueue.length ? BANNER_MIN_MS : BANNER_MS);
   }
 
   const RSI_CLASS = { operational: "on", disrupted: "warn", notice: "warn", down: "off" };
@@ -672,6 +774,7 @@
       timerNodes.set(t.id, { li, left, fill });
     }
     tickTimers(Date.now());
+    fitLayout();
   }
 
   function tickTimers(now) {
@@ -701,6 +804,20 @@
     if (document.title !== title) document.title = title;
   }
 
+  function openTimerForm(open) {
+    const form = $("timer-form");
+    form.hidden = !open;
+    form.parentElement.classList.toggle("adding", open);
+    if (open) $("t-label").focus();
+    else form.reset();
+    fitLayout();
+  }
+  $("timer-add").addEventListener("click", () => openTimerForm(true));
+  $("timer-cancel").addEventListener("click", () => openTimerForm(false));
+  $("timer-form").addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { e.stopPropagation(); openTimerForm(false); }
+  });
+
   $("timer-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const h = parseInt($("t-h").value || "0", 10);
@@ -712,7 +829,7 @@
     timers.push({ id: now + Math.random(), label, start: now, end: now + mins * 60000 });
     saveTimers();
     renderTimers();
-    e.target.reset();
+    openTimerForm(false);
   });
 
   // ---------------------------------------------------------------- drawer (notes / links)

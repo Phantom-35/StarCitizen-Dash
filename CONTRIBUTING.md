@@ -20,3 +20,18 @@ python -m scdash --demo                        # ausprobieren ohne Spiel
 
 Star Citizen ändert das Log-Format gelegentlich. Wenn etwas nicht mehr erkannt wird, öffne ein Issue
 mit der betreffenden Zeile aus der `Game.log` – Spielernamen gerne vorher unkenntlich machen.
+
+## Layout prüfen (vor jedem Design-Änderung)
+
+Ein Prüfskript lädt das Dashboard mit absichtlich schwierigen Inhalten (sehr lange Namen, viele Ziele,
+alle Statusanzeigen gleichzeitig, sechs Timer) und misst in 9 Bildschirmgrößen × 2 Modi × 3 Zuständen
+(normal, Timer-Eingabe offen, Seitenleiste offen) plus einer laufenden Einblendung, ob irgendein
+sichtbares Element in einen anderen Bereich ragt, abgeschnitten wird, über den Rand läuft oder sich mit
+etwas anderem überlappt. Braucht Node.js und Playwright (nicht Teil der normalen Tests):
+
+```bash
+python tools/make_stress_log.py stress.log
+python -m scdash --log stress.log --no-status --port 8777      # in einem zweiten Fenster
+node tools/ui_audit.js ui-audit stress.log                     # Screenshots + Bericht, Exit-Code 1 bei Funden
+```
+

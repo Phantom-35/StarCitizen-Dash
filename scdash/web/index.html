@@ -146,11 +146,14 @@
     <div class="timers">
       <div class="tag">Timer</div>
       <ul id="timers"></ul>
-      <form id="timer-form" autocomplete="off">
+      <span id="timers-more" class="more" hidden></span>
+      <button id="timer-add" type="button" title="Neuen Timer anlegen">+ Timer</button>
+      <form id="timer-form" autocomplete="off" hidden>
         <input id="t-label" placeholder="Neuer Timer, z. B. Raffinerie" maxlength="40" required>
         <input id="t-h" type="number" min="0" max="999" placeholder="h">
         <input id="t-m" type="number" min="0" max="59" placeholder="min">
-        <button type="submit" title="Timer starten">+</button>
+        <button type="submit" title="Timer starten (Enter)">Start</button>
+        <button type="button" id="timer-cancel" title="Abbrechen (Esc)">×</button>
       </form>
     </div>
     <div class="rsi">

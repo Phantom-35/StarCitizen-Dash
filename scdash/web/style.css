@@ -489,3 +489,72 @@ body[data-mode="mission"] [data-only="combat"] { display: none !important; }
   .loc > :not(.banner), .loc .loc-head { transition: none; }
   .banner, .banner.out { animation: none; }
 }
+
+/* ================================================================== layout robustness */
+/* Timer bar: always one row. Timers that do not fit are summed up as "+N"; the form opens on demand. */
+.timers { flex-wrap: nowrap; }
+#timers { display: flex; flex: 0 1 auto; gap: 28px; min-width: 0; overflow: hidden; list-style: none; margin: 0; padding: 0; }
+#timers li { flex: none; padding-right: 18px; }
+#timers li[hidden] { display: none; }
+#timers .t-del { top: 0; right: 0; }
+.timers .more { flex: none; font-size: 0.8125rem; font-weight: 700; letter-spacing: .12em; color: var(--dim); white-space: nowrap; }
+#timer-add, #timer-form button {
+  flex: none; background: transparent; border: 1px solid rgba(255, 181, 71, .4); color: var(--amber);
+  font-weight: 700; letter-spacing: .2em; text-transform: uppercase; font-size: 0.75rem; padding: 6px 12px; cursor: pointer;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+#timer-add:hover, #timer-form button:hover { background: rgba(255, 181, 71, .14); }
+#timer-form[hidden] { display: none; }
+#timer-form { flex: 0 1 auto; min-width: 0; }
+#t-label { width: auto; flex: 1 1 15rem; min-width: 7rem; }
+.timers.adding #timers, .timers.adding .more, .timers.adding #timer-add { display: none; }
+
+/* Hero: never taller than its space. JS adds density levels (cumulative) until the content fits;
+   overflow is hidden only as a last guard, so nothing can ever run into the timer bar. */
+.hero { overflow: hidden; }
+body.dense-1 .hero { gap: 14px; padding-top: clamp(12px, 2vh, 28px); padding-bottom: clamp(12px, 2vh, 28px); }
+body.dense-1 .place { font-size: clamp(48px, min(7.5vw, 12vh), 220px); }
+body.dense-1 .place.long { font-size: clamp(40px, min(5.5vw, 9vh), 160px); }
+body.dense-1 .crumb { margin-top: 6px; }
+body.dense-1 .loc-meta { margin-top: 8px; }
+body.dense-1 .pills { margin-top: 8px; gap: 6px; }
+body.dense-1 .pills span { font-size: 0.6875rem; padding: 3px 9px 2px; }
+body.dense-1 .chrono { width: clamp(160px, min(14vw, 25vh), 380px); }
+body.dense-1 .n b { font-size: clamp(40px, min(4.4vw, 8.5vh), 150px); }
+body.dense-1 .small-stats { margin-top: 12px; padding-top: 10px; }
+body.dense-1 #c-title { font-size: clamp(24px, min(2.6vw, 5vh), 72px); margin: .15em 0 .25em; }
+body.dense-1 .next { margin-bottom: .5em; }
+body.dense-1 .objectives { gap: 4px; }
+
+body.dense-2 .place { font-size: clamp(40px, min(6vw, 10vh), 180px); }
+body.dense-2 #loc-shard, body.dense-2 #loc-version { display: none; }
+body.dense-2 .loc > .tag { display: none; }
+body.dense-2 .chrono { width: clamp(140px, min(12vw, 21vh), 320px); }
+body.dense-2 .objectives li:nth-child(n+5) { display: none; }
+body.dense-2 .others { margin-top: 8px; }
+body.dense-2 .others li:nth-child(n+3) { display: none; }
+body.dense-2 .small-stats em { font-size: 0.75rem; }
+
+body.dense-3 .place { font-size: clamp(34px, min(5vw, 8.5vh), 150px); }
+body.dense-3 .others { display: none; }
+body.dense-3 .objectives li:nth-child(n+4) { display: none; }
+body.dense-3 .objectives .cargo-hint { display: none; }
+body.dense-3 #p-jur, body.dense-3 #p-private { display: none; }
+body.dense-3 .chrono { width: clamp(120px, min(10vw, 18vh), 280px); }
+body.dense-3 .n b { font-size: clamp(32px, min(3.6vw, 7vh), 120px); }
+
+@media (max-width: 1100px), (max-aspect-ratio: 1/1) {
+  /* single column: the page grows and scrolls instead of squeezing the areas into the screen height */
+  html, body { height: auto; min-height: 100%; }
+  .hud, .hero { min-height: auto; }
+  .hero { overflow: visible; }
+}
+
+/* the balance must never be cut: its column keeps the width it needs, the others give way */
+.small-stats .earn { flex: none; }
+.small-stats .earn b { overflow: visible; }
+
+/* timers: fixed width, so the bar does not re-flow every second when the digits change */
+#timers li { width: 10.5rem; min-width: 0; }
+#timers .t-label { max-width: 100%; }
+#earn-in.invalid { border-bottom-color: var(--death); }
