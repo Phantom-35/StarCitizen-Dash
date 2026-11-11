@@ -3,7 +3,7 @@
 **Ein schlankes Second-Screen-Dashboard für Star Citizen – ohne Grafikkarten-Last.**
 
 [![Tests](https://github.com/phantom-35/starcitizen-dash/actions/workflows/tests.yml/badge.svg)](https://github.com/phantom-35/starcitizen-dash/actions/workflows/tests.yml)
-![Python](https://img.shields.io/badge/python-3.9%2B-blue)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Abhängigkeiten](https://img.shields.io/badge/abh%C3%A4ngigkeiten-keine-brightgreen)
 ![Lizenz](https://img.shields.io/badge/lizenz-MIT-lightgrey)
 
@@ -124,7 +124,7 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
 
 ## Installation (Windows)
 
-1. **Python 3.9 oder neuer** installieren: <https://www.python.org/downloads/>
+1. **Python 3.10 oder neuer** installieren: <https://www.python.org/downloads/>
    → beim Installieren den Haken bei **„Add python.exe to PATH“** setzen.
 2. Dieses Repository herunterladen: grüner Button **Code → Download ZIP** und entpacken
    (oder `git clone https://github.com/phantom-35/starcitizen-dash.git`).

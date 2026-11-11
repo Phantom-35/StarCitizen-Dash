@@ -7,6 +7,11 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [0.8.2] – 2026-11-11
 
+### Geändert (Wartung)
+- Mindestversion jetzt **Python 3.10** (3.9 wird seit Oktober 2025 nicht mehr gepflegt). Auslöser: GitHub hat
+  die Linux-Testrechner auf Ubuntu 26.04 umgestellt, für das es kein Python 3.9 mehr gibt – der Test-Job brach
+  deshalb schon beim Einrichten ab. Getestet wird jetzt mit 3.10 und 3.13 unter Windows und Linux.
+
 ### Behoben
 - Einblendungen ohne Namen zeigten groß „K.O.“ – z. B. „CrimeStat erhöht“. Jetzt steht dann das Ereignis
   selbst groß da. Tod ohne Verursacher: „Gestorben“ groß, der Ort darunter.
