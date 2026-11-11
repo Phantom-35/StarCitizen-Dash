@@ -110,6 +110,14 @@ def find_chromium_browser() -> Optional[str]:
     return None
 
 
+def data_dir() -> str:
+    """Where SC-Dash keeps its own small files (place memory). SCDASH_DATA_DIR overrides it."""
+    if os.environ.get("SCDASH_DATA_DIR"):
+        return os.environ["SCDASH_DATA_DIR"]
+    base = os.environ.get("LOCALAPPDATA") or os.path.join(os.path.expanduser("~"), ".local", "share")
+    return os.path.join(base, "scdash")
+
+
 def browser_profile_dir() -> str:
     base = os.environ.get("LOCALAPPDATA") or os.path.join(os.path.expanduser("~"), ".cache")
     return os.path.join(base, "scdash", "browser-profile")

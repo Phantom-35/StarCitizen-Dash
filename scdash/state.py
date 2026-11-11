@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Any, Dict, Iterable, Optional
 
 from scdash.locations import locate_place, objective_place, shard_region
+from scdash.memory import PlaceMemory, is_planet_frame
 from scdash import ships
 from scdash.parser import LogEvent
 
@@ -36,7 +37,9 @@ NET_ERRORS = {
 }
 BENIGN_NET = {"30010", "30016", "30028"}
 
-DEATH_DEDUP_SECONDS = 90   # Dead / Corpse / Actor Death lines of the same death
+DEATH_DEDUP_SECONDS = 90
+MEDBED_DEDUP_SECONDS = 300   # the HUD repeats "bed has restored your health" while you lie in it
+PLACE_FRESH_SECONDS = 1200   # the known location must be this recent to label a marker with it   # Dead / Corpse / Actor Death lines of the same death
 INCAP_DEDUP_SECONDS = 60
 JURISDICTION_FLAP_SECONDS = 30
 _BODY_DE = {"head": "Kopf", "torso": "Torso", "leftArm": "linker Arm", "rightArm": "rechter Arm",
@@ -56,7 +59,9 @@ def _secs_between(a: Optional[str], b: Optional[str]) -> Optional[float]:
 
 
 class DashboardState:
-    def __init__(self) -> None:
+    def __init__(self, places: Optional[PlaceMemory] = None) -> None:
+        #: remembers which place a mission marker belongs to (None = off, e.g. for log checks)
+        self.place_memory = places
         # A Condition (it is also a lock): HTTP long-polls sleep on it until the state changes.
         self._lock = threading.Condition()
         self._version = 0
@@ -123,6 +128,8 @@ class DashboardState:
         self._last_death_ts: Optional[str] = None
         self._last_incap_ts: Optional[str] = None
         self.restricted: Optional[bool] = None
+        self._markers: Dict[str, Dict[str, tuple]] = {}   # mission id -> objective id -> position
+        self._last_medbed_ts: Optional[str] = None
         self.private: Optional[bool] = None
         self._jur_left: Dict[str, str] = {}
         self.quantum_target: Optional[str] = None
@@ -356,11 +363,19 @@ class DashboardState:
                     self._set_location(ev, where)
         elif ev.kind == "version":
             self.game_version = d["version"]
+        elif ev.kind == "marker":
+            # keep the first marker per objective that uses planet coordinates (later ones inside
+            # buildings are local); markers come a few ms *before* the contract notification
+            if d["mission_id"] and is_planet_frame(d["pos"]):
+                self._markers.setdefault(d["mission_id"], {}).setdefault(d["objective_id"], d["pos"])
+            return
         elif ev.kind == "objective_state":
             mission = self.missions.get(d["mission_id"] or "")
             obj = mission["objectives"].get(d["objective_id"]) if mission else None
             if obj and obj["state"] != d["state"]:
                 obj["state"] = d["state"]
+                if d["state"] == "done":
+                    self._learn_place(ev, mission["id"], d["objective_id"])
                 mission["seq"] = self._event_id + 1
                 self._push(ev, "success" if d["state"] == "done" else "fail",
                            "Ziel erledigt" if d["state"] == "done" else "Ziel gescheitert",
@@ -381,7 +396,9 @@ class DashboardState:
                 self._incapacitated(ev, ", ".join(d["causes"]))
         elif ev.kind == "medbed":
             if (me is None or d["actor"] == me) and d["ok"]:
-                self.medbed += 1
+                if not self._within(self._last_medbed_ts, ev.ts, MEDBED_DEDUP_SECONDS):
+                    self.medbed += 1
+                self._last_medbed_ts = ev.ts
                 healed = {_BODY_DE.get(p, p) for p in d["parts"]}
                 # a med bed visit without part list is a full treatment
                 self.open_injuries = [i for i in self.open_injuries if healed and i["part"] not in healed]
@@ -492,6 +509,29 @@ class DashboardState:
             mission = self._new_mission(key, "Laufender Auftrag", ev.ts)
         return mission
 
+    def _learn_place(self, ev: LogEvent, mission_id: str, objective_id: str) -> None:
+        """An objective was completed here: remember which place its marker belongs to."""
+        pos = self._markers.get(mission_id, {}).get(objective_id)
+        if (self.place_memory is None or pos is None or not self.location
+                or not self._within(self.location_since, ev.ts, PLACE_FRESH_SECONDS)):
+            return
+        self.place_memory.learn(pos, self.location, ev.ts)
+
+    def _next_target(self, mission: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Where to go for the first open objective: remembered place of its marker, else its text."""
+        markers = self._markers.get(mission["id"], {})
+        for key, obj in mission["objectives"].items():
+            if obj["state"] != "open":
+                continue
+            named = objective_place(obj["text"])
+            known = self.place_memory.lookup(markers.get(key)) if self.place_memory is not None else None
+            if known:
+                extra = named if named and named.lower() not in known["place"].lower() else None
+                return {"place": known["place"], "detail": extra, "learned": True}
+            if named:
+                return {"place": named, "detail": None, "learned": False}
+        return None
+
     def _new_mission(self, key: str, title: str, ts: Optional[str]) -> Dict[str, Any]:
         mission = {"id": key, "title": title, "accepted": ts, "objectives": OrderedDict(), "seq": self._event_id}
         self.missions[key] = mission
@@ -546,6 +586,8 @@ class DashboardState:
                 obj = next((o for o in objectives.values() if o["text"].lower() == subject.lower()), None)
             if obj is None:
                 objectives[key] = {"text": subject, "state": state}
+                if state == "done":
+                    self._learn_place(ev, mission["id"], key)
                 if key.startswith("pickup"):
                     # the game announces the drop-off first; show the pick-up on top
                     objectives.move_to_end(key, last=False)
@@ -555,6 +597,8 @@ class DashboardState:
                 if cat == "objective_new" or obj["state"] != state:
                     obj["text"] = subject if cat == "objective_new" else obj["text"]
                 obj["state"] = state
+            if state == "done":
+                self._learn_place(ev, mission["id"], key)
             title = {"open": "Neues Ziel", "done": "Ziel erledigt", "failed": "Ziel gescheitert"}[state]
             self._push(ev, "success" if state == "done" else "fail" if state == "failed" else "mission",
                        title, subject, mission["title"], feeds=(MISSION,))
@@ -644,6 +688,14 @@ class DashboardState:
             self._push(ev, "comms", "Auftrag geteilt", subject, feeds=(MISSION,))
         elif cat == "qt_blocked":
             self._push(ev, "warn", "Quantum blockiert", "Ziel verdeckt", "erst woandershin fliegen", feeds=BOTH)
+        elif cat == "medbed_restored":
+            if not self._within(self._last_medbed_ts, ev.ts, MEDBED_DEDUP_SECONDS):
+                self.medbed += 1
+                self._push(ev, "success", "Med-Bed", "Gesundheit wiederhergestellt",
+                           "Verletzungen im Behandlungs-Tab heilen" if self.open_injuries else "", feeds=BOTH)
+            self._last_medbed_ts = ev.ts
+        elif cat == "tip":
+            return  # tutorial hint - shown in the game anyway, no value on the dashboard
         elif cat == "hangar":
             self._push(ev, "nav", "Hangar bereit", feeds=(MISSION,))
         elif cat == "transaction":
@@ -757,9 +809,8 @@ class DashboardState:
                         {
                             "id": m["id"], "title": m["title"], "accepted": m["accepted"],
                             "objectives": list(m["objectives"].values()),
-                            # where to go next: the place named in the first open objective
-                            "next": next((objective_place(o["text"]) for o in m["objectives"].values()
-                                          if o["state"] == "open" and objective_place(o["text"])), None),
+                            # where to go next: remembered place of the marker, else the place in the text
+                            "next": self._next_target(m),
                         }
                         for m in sorted(self.missions.values(), key=lambda m: m["seq"], reverse=True)
                     ],

@@ -558,3 +558,6 @@ body.dense-3 .n b { font-size: clamp(32px, min(3.6vw, 7vh), 120px); }
 #timers li { width: 10.5rem; min-width: 0; }
 #timers .t-label { max-width: 100%; }
 #earn-in.invalid { border-bottom-color: var(--death); }
+
+.next .next-sub { font-size: 0.8125rem; color: var(--dim); letter-spacing: .06em; }
+.next .next-sub:empty { display: none; }

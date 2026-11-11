@@ -23,8 +23,9 @@ class AnalyzeTests(unittest.TestCase):
         self.assertIn("Spielversion: 4.10.197", text)
         self.assertIn("missions_completed=1", text)
         self.assertIn("log_verbosity: keine Spur in der Log", text)
-        # the two ATC hints are the only HUD messages without a rule of their own
-        self.assertIn("Air Traffic Control (ATC)", text)
+        # the two ATC hints are tutorial tips: counted, but not listed as unknown
+        self.assertIn("2 Tutorial-Tipps", text)
+        self.assertIn("keine", text.split("HUD-Meldungen ohne eigene Regel")[1][:140])
         self.assertNotIn("TestPilot", text)  # player name is masked
 
     def test_rejected_verbosity_setting_is_reported(self):
@@ -37,6 +38,27 @@ class AnalyzeTests(unittest.TestCase):
         self.assertIn("log_verbosity: in der user.cfg gefunden, gewünscht 4, Wert im Spiel 1 – ABGELEHNT", text)
         self.assertIn("Vergleich mit", text)
         self.assertIn("Zeilenarten, die es nur in der neuen Log gibt: 0", text)
+
+    def test_verdict_outlier_and_short_reference(self):
+        # both settings refused (wording of the real 4.10 log), a burst of socket errors, a tiny reference log
+        refused = "".join(
+            f"<2026-11-11T17:54:10.181Z> [CVARS]: [CHANGED] CXConsole::LoadConfigVar(): variable [{n}] is marked "
+            f"[Not Whitelisted] with a value of [0]; config file attempting to change to [4] - IGNORING\r\n"
+            for n in ("log_Verbosity", "log_WriteToFileVerbosity"))
+        burst = ("<2026-11-11T18:18:46.952Z> [Notice] <Socket Send Error (Ignore)> UDP send of 359 bytes failed "
+                 "because of socket error: 10055 WSAENOBUFS - No buffer space available\r\n") * 300
+        new = os.path.join(self.dir, "new.log")
+        with open(FIXTURE, "rb") as fh:
+            raw = fh.read()
+        with open(new, "wb") as fh:
+            fh.write(raw + refused.encode() + burst.encode())
+        old = os.path.join(self.dir, "old.log")
+        with open(old, "wb") as fh:
+            fh.write(raw[:2000])
+        text = run(new, old)
+        self.assertIn("FAZIT: Das Spiel lässt keine ausführlichere Log zu", text)
+        self.assertIn("Ausreißer: 300× <Socket Send Error (Ignore)>", text)
+        self.assertIn("ACHTUNG: Die Vergleichs-Log ist sehr kurz", text)
 
     def test_masks_private_data(self):
         path = os.path.join(self.dir, "Game.log")
