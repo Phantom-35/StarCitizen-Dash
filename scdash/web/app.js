@@ -496,6 +496,19 @@
   renderSoundToggle();
   const CAT_TONE = { death: "bad", fail: "bad", success: "good", kill: "good" };
 
+  /** Shrink a heading until it fits on one line (long contract names would wrap otherwise). */
+  function fitOneLine(e, minPx) {
+    e.style.fontSize = "";
+    e.classList.remove("clip");
+    let size = parseFloat(getComputedStyle(e).fontSize);
+    while (e.scrollWidth > e.clientWidth + 1 && size > minPx) {
+      size = Math.max(minPx, size * 0.9);
+      e.style.fontSize = size + "px";
+    }
+    // still too long at the minimum size: cut with "…" instead of running off the screen
+    if (e.scrollWidth > e.clientWidth + 1) e.classList.add("clip");
+  }
+
   function showBanner(ev) {
     beep(CAT_TONE[ev.cat] || "info");
     const b = $("banner");
@@ -504,6 +517,7 @@
     setText($("banner-detail"), ev.detail || "");
     b.className = "banner " + ev.cat;
     b.hidden = false;
+    fitOneLine($("banner-actor"), 26);
     void b.offsetWidth; // restart animation
     clearTimeout(bannerTimer);
     bannerTimer = setTimeout(() => {
@@ -676,15 +690,15 @@
     setText($("drawer-title"), name === "notes" ? "Notizen" : "Links");
     drawer.classList.add("open");
     drawer.setAttribute("aria-hidden", "false");
-    document.querySelectorAll(".tools button").forEach((b) => b.classList.toggle("active", b.dataset.drawer === name));
+    document.querySelectorAll(".tools button[data-drawer]").forEach((b) => b.classList.toggle("active", b.dataset.drawer === name));
     if (name === "notes") setTimeout(() => $("notes").focus(), 260);
   }
   function closeDrawer() {
     drawer.classList.remove("open");
     drawer.setAttribute("aria-hidden", "true");
-    document.querySelectorAll(".tools button").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll(".tools button[data-drawer]").forEach((b) => b.classList.remove("active"));
   }
-  document.querySelectorAll(".tools button").forEach((b) => b.addEventListener("click", () => openDrawer(b.dataset.drawer)));
+  document.querySelectorAll(".tools button[data-drawer]").forEach((b) => b.addEventListener("click", () => openDrawer(b.dataset.drawer)));
   $("drawer-close").addEventListener("click", closeDrawer);
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") return closeDrawer();

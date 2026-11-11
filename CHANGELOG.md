@@ -5,6 +5,14 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+## [0.8.1] – 2026-11-11
+
+### Behoben
+- Der Knopf „Ton an/aus“ öffnete zusätzlich eine leere Links-Seitenleiste
+- Einblendungen (Auftrag angenommen, Kollision …) waren durchscheinend, der Auftragsbereich darunter
+  schimmerte durch; lange Namen brachen auf zwei Zeilen um. Jetzt deckender Hintergrund, Namen
+  werden auf eine Zeile verkleinert
+
 ## [0.8.0] – 2026-11-11
 
 ### Hinzugefügt
