@@ -234,7 +234,7 @@ class DashboardState:
         self.open_injuries = []
         self.crew = []
         self.last_death = {"ts": ev.ts, "cause": cause, "who": who, "where": where}
-        self._push(ev, "death", cause, who or (where or ""), where if who else "", feeds=BOTH, banner=True)
+        self._push(ev, "death", cause, who, where or "", feeds=BOTH, banner=True)
         return True
 
     def _apply(self, ev: LogEvent) -> None:
@@ -341,8 +341,7 @@ class DashboardState:
                     key = self.ship_class.lower()
                     self._fuel_by_ship[key] = self._fuel_by_ship.get(key, 0.0) + fuel
                 self._push(ev, "nav", "Quantum-Sprung", "Ziel erreicht",
-                           self._detail(self.quantum_target, f"{fuel:.1f} Treibstoff".replace(".", ",") if fuel else None),
-                           feeds=(MISSION,))
+                           self._detail(self.quantum_target, self._fuel_text(fuel)), feeds=(MISSION,))
                 self.quantum_target = self.quantum_fuel = None
                 if self._qt_location:
                     self._set_location(ev, self._qt_location)
@@ -437,6 +436,18 @@ class DashboardState:
         if loc["place"]:
             self.places.add(loc["place"])
         self._push(ev, "nav", "Ort", loc["place"] or "", self._detail(loc["system"], loc["planet"]), feeds=BOTH)
+
+    def _fuel_text(self, estimate: float) -> Optional[str]:
+        """The game's fuel estimate as something readable: share of the tank, or SCU if the ship is unknown."""
+        if not estimate:
+            return None
+        pct = ships.tank_share(estimate, self._ship_data())
+        if pct is not None:
+            if pct < 0.1:
+                return "< 0,1 % Tank"
+            return (f"{pct:.1f}" if pct < 10 else f"{pct:.0f}").replace(".", ",") + " % Tank"
+        scu = estimate * ships.ESTIMATE_UNIT_SCU
+        return (f"{scu:.3f}" if scu < 1 else f"{scu:.1f}").replace(".", ",") + " SCU Quantum-Treibstoff"
 
     def _describe_qt(self, d: Dict[str, Any]) -> Optional[str]:
         if d["kind"] != "mission":

@@ -161,9 +161,7 @@
       place = s.handle ? "Im Verse" : "Kein Signal";
     }
     if (gr === false && s.handle) crumb = "Letzte Session" + (crumb ? " · " + crumb : "");
-    renderCrumb(crumb || "–");
-    setText($("loc-place"), place);
-    $("loc-place").classList.toggle("long", place.length > 11);
+    showPlace(crumb || "–", place);
     setText($("loc-region"), s.region || "");
     setText($("loc-shard"), s.shard || "");
     setText($("loc-version"), st.game_version ? "SC " + st.game_version : "");
@@ -215,6 +213,40 @@
     const e = $(id);
     setText(e, String(value));
     e.classList.toggle("zero", !value);
+  }
+
+  // ---------------------------------------------------------------- place: smooth change
+  const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let shownPlace = null;
+  let placeTimer = null;
+
+  function applyPlace(crumb, place) {
+    renderCrumb(crumb);
+    setText($("loc-place"), place);
+    $("loc-place").classList.toggle("long", place.length > 11);
+  }
+
+  /** Old name slides up and fades, new one comes in from below - no hard jump. */
+  function showPlace(crumb, place) {
+    const key = crumb + "\u0000" + place;
+    if (key === shownPlace) return;
+    const first = shownPlace === null;
+    shownPlace = key;
+    clearTimeout(placeTimer);
+    const head = $("loc-head");
+    if (first || reducedMotion || document.hidden) {
+      head.classList.remove("swap-out", "swap-in");
+      applyPlace(crumb, place);
+      return;
+    }
+    head.classList.add("swap-out");
+    placeTimer = setTimeout(() => {
+      applyPlace(crumb, place);
+      head.classList.remove("swap-out");
+      head.classList.add("swap-in");
+      void head.offsetWidth; // start the second half from below
+      head.classList.remove("swap-in");
+    }, 280);
   }
 
   function renderCrumb(text) {
@@ -512,17 +544,20 @@
   function showBanner(ev) {
     beep(CAT_TONE[ev.cat] || "info");
     const b = $("banner");
-    setText($("banner-title"), ev.title);
-    setText($("banner-actor"), ev.actor || (ev.cat === "kill" ? "Ziel neutralisiert" : "K.O."));
+    // big line: who/what it is about; without one, the event itself ("CrimeStat erhöht")
+    setText($("banner-title"), ev.actor ? ev.title : "");
+    setText($("banner-actor"), ev.actor || ev.title);
     setText($("banner-detail"), ev.detail || "");
     b.className = "banner " + ev.cat;
     b.hidden = false;
+    $("banner").parentElement.classList.add("alert");
     fitOneLine($("banner-actor"), 26);
     void b.offsetWidth; // restart animation
     clearTimeout(bannerTimer);
     bannerTimer = setTimeout(() => {
       b.classList.add("out");
-      bannerTimer = setTimeout(() => (b.hidden = true), 650);
+      b.parentElement.classList.remove("alert"); // headline fades back in while the banner fades out
+      bannerTimer = setTimeout(() => (b.hidden = true), 460);
     }, BANNER_MS);
   }
 

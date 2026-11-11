@@ -154,6 +154,31 @@ class HudNotificationTests(unittest.TestCase):
         self.assertTrue(s["nav"]["restricted"])
 
 
+class BannerContentTests(unittest.TestCase):
+    """The banner shows actor (big) and title (small); without an actor the title is the headline.
+    So events must not put a place into the actor slot where the title is the actual news."""
+
+    def run_lines(self, *lines):
+        st = DashboardState()
+        for line in (LOGIN, JOIN) + lines:
+            ev = parse_line(line)
+            if ev is not None:
+                st.apply(ev)
+        return st.snapshot()
+
+    def test_plain_death_has_place_as_detail(self):
+        ev = self.run_lines(dead(ME, ts(10)))["feeds"]["combat"][0]
+        self.assertEqual((ev["title"], ev["actor"], ev["detail"]), ("Gestorben", "", "Daymar"))
+
+    def test_ship_death_names_the_ship(self):
+        ev = self.run_lines(dead(ME, ts(10), ship="RSI_Aurora_Mk2", destroyed=True))["feeds"]["combat"][0]
+        self.assertEqual((ev["title"], ev["actor"], ev["detail"]), ("Schiff zerstört", "RSI Aurora Mk2", "Daymar"))
+
+    def test_crimestat_has_no_actor(self):
+        ev = self.run_lines(notif("CrimeStat Rating Increased", ts(1)))["feeds"]["combat"][0]
+        self.assertEqual((ev["title"], ev["actor"], ev["banner"]), ("CrimeStat erhöht", "", True))
+
+
 class UsefulnessTests(unittest.TestCase):
     """Things that are shown because they help while playing."""
 

@@ -119,8 +119,9 @@ class RealLogTests(unittest.TestCase):
         self.assertAlmostEqual(s["stats"]["quantum_fuel_used"], 64.7, places=1)
         feed = list(reversed(s["feeds"]["mission"]))
         jumps = [e["detail"] for e in feed if e["title"] == "Quantum-Sprung"]
-        self.assertEqual(jumps[0], "Auftragsziel · Clear View Emergency Shelter · 16,9 Treibstoff")
-        self.assertEqual(jumps[-1], "New Babbage · 12,0 Treibstoff")
+        # shown as share of the Aurora's 0.9 SCU tank - short hops on one planet are tiny
+        self.assertEqual(jumps[0], "Auftragsziel · Clear View Emergency Shelter · < 0,1 % Tank")
+        self.assertEqual(jumps[-1], "New Babbage · < 0,1 % Tank")
         # boarding is known from the channel notification, with its time
         boarded = [e for e in feed if e["title"] == "Eingestiegen"]
         self.assertEqual(boarded[0]["ts"], "2026-11-10T16:28:41.844Z")
