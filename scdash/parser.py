@@ -47,6 +47,10 @@ _OBJECTIVE_UPSERT = re.compile(
 )
 _QT_TARGET = re.compile(r"<Player Selected Quantum Target[^>]*>.*?selected point (?P<target>\S+) as their destination")
 _QT_FUEL = re.compile(r"<Player Requested Fuel to Quantum Target[^>]*>.*?destination (?P<target>\S+)")
+# Real 4.10 line: ...|CSCItemNavigation::CalculateRoute|Successfully calculated route to <target> fuel estimate 16.858223
+_QT_ROUTE = re.compile(r"Successfully calculated route to (?P<target>\S+) fuel estimate (?P<fuel>[\d.]+)")
+# All quantum lines name the ship they come from: "| NOT AUTH | RSI_Aurora_Mk2_920601993986[920601993986]|"
+_QT_SHIP = re.compile(r"\| (?:NOT )?AUTH \| (?P<ship>[A-Za-z][A-Za-z0-9_]+?)_\d{6,}\[")
 _QT_ROUTE_START = re.compile(r"Projected Start Location is (?P<start>.+?) for route to destination")
 _QT_ARRIVED = re.compile(r"<Quantum Drive Arrived|Quantum Drive has arrived at final destination")
 
@@ -88,7 +92,7 @@ _VERSION = re.compile(r"ProductVersion: (?P<v>\d+\.\d+(?:\.\d+)?)")
 _INTERESTING = re.compile(
     r"Actor Death|Vehicle Destruction|RequestLocationInventory|<Join PU>|Login Success|"
     r"AccountLoginCharacterStatus_Character|SHUDEvent_OnNotification|<EndMission>|<MissionEnded>|"
-    r"<ObjectiveUpserted>|Vehicle Control Flow|Quantum Target|Quantum Drive|Projected Start Location|"
+    r"<ObjectiveUpserted>|Vehicle Control Flow|Quantum Target|Quantum Drive|Projected Start Location|Successfully calculated route|"
     r"ActorState\] (?:Dead|Corpse)|<Corpse>|Logged an incap|MED BED HEAL|Fatal ?Collision|"
     r"StatePlace::DoPlace|BuyRequest|cause=\d+ reason=\"|"
     r"SystemQuit|CSystem::Quit|ProductVersion"
@@ -394,17 +398,23 @@ def parse_line(line: str) -> Optional[LogEvent]:
             return None
         return LogEvent("objective_state", ts, {"mission_id": _id(m.group("mid")), "objective_id": m.group("oid"), "state": state})
 
+    ship = _QT_SHIP.search(line)
+    qt_ship = ship_name(ship.group("ship")) if ship else None
+    m = _QT_ROUTE.search(line)
+    if m:
+        return LogEvent("quantum", ts, {"phase": "route", "fuel": float(m.group("fuel")), "ship": qt_ship,
+                                        **quantum_destination(m.group("target"))})
     m = _QT_TARGET.search(line)
     if m:
-        return LogEvent("quantum", ts, {"phase": "target", **quantum_destination(m.group("target"))})
+        return LogEvent("quantum", ts, {"phase": "target", "ship": qt_ship, **quantum_destination(m.group("target"))})
     m = _QT_ROUTE_START.search(line)
     if m:
         return LogEvent("route_start", ts, {"start": m.group("start").strip()})
     m = _QT_FUEL.search(line)
     if m:
-        return LogEvent("quantum", ts, {"phase": "fuel", **quantum_destination(m.group("target"))})
+        return LogEvent("quantum", ts, {"phase": "fuel", "ship": qt_ship, **quantum_destination(m.group("target"))})
     if _QT_ARRIVED.search(line):
-        return LogEvent("quantum", ts, {"phase": "arrived", "name": None, "kind": None})
+        return LogEvent("quantum", ts, {"phase": "arrived", "name": None, "kind": None, "ship": qt_ship})
 
     m = _VEHICLE_CONTROL.search(line)
     if m:

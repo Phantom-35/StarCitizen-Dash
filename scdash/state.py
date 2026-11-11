@@ -126,6 +126,9 @@ class DashboardState:
         self._jur_left: Dict[str, str] = {}
         self.quantum_target: Optional[str] = None
         self._qt_location: Optional[Dict[str, Optional[str]]] = None  # where a real-place jump ends
+        self.quantum_fuel: Optional[float] = None   # the game's estimate for the planned route
+        self.quantum_fuel_used = 0.0                # sum of the estimates of the jumps actually made
+        self.ship_since: Optional[str] = None
         self.game_version: Optional[str] = None
 
     def _touch(self) -> None:
@@ -224,7 +227,7 @@ class DashboardState:
         self._died(ev.ts)
         self.ship = None
         self._ship_from_channel = False
-        self.quantum_target = self._qt_location = None
+        self.quantum_target = self._qt_location = self.quantum_fuel = None
         self.open_injuries = []
         self.crew = []
         self.last_death = {"ts": ev.ts, "cause": cause, "who": who, "where": where}
@@ -250,7 +253,7 @@ class DashboardState:
             self.alive_since = ev.ts  # time in the menus should not count as "alive"
             self.armistice = self.monitored = self.jurisdiction = self.ship = None
             self.crew = []
-            self.quantum_target = self._qt_location = None
+            self.quantum_target = self._qt_location = self.quantum_fuel = None
             self.restricted = self.private = None
             self._push(ev, "info", "Shard beigetreten", shard_region(self.shard) or "", self.shard, feeds=BOTH)
         elif ev.kind == "location":
@@ -300,24 +303,37 @@ class DashboardState:
             # us which ship we are in, leaving the seat does not mean leaving the ship.
             if d["entering"]:
                 if not self._ship_from_channel and d["vehicle"] != self.ship:
-                    self.ship = d["vehicle"]
+                    self.ship, self.ship_since = d["vehicle"], ev.ts
                     self._push(ev, "nav", "Pilotensitz", self.ship, feeds=BOTH)
             elif not self._ship_from_channel and d["vehicle"] == self.ship:
                 self.ship = None
         elif ev.kind == "quantum":
+            # Quantum lines name the ship: a fallback when the boarding notification was missed
+            # (dashboard started late, flying as crew).
+            if d.get("ship") and not self.ship:
+                self.ship, self._ship_from_channel, self.ship_since = d["ship"], False, ev.ts
+                self._push(ev, "nav", "Im Schiff", self.ship, feeds=BOTH)
+            if d["phase"] == "route":
+                self.quantum_fuel = d["fuel"]
+                return
             if d["phase"] in ("target", "fuel"):
                 if d["phase"] == "fuel" and self.quantum_target:
                     return  # fuel estimate for a target we already know
                 target = self._describe_qt(d)
                 self._qt_location = locate_place(d["name"]) if d["kind"] == "place" else None
                 if target != self.quantum_target:
+                    self.quantum_fuel = None  # a new estimate follows with the route calculation
                     self.quantum_target = target
                     if target:
                         self._push(ev, "nav", "Quantum-Ziel", target, feeds=(MISSION,))
             else:
                 self.quantum_jumps += 1
-                self._push(ev, "nav", "Quantum-Sprung", "Ziel erreicht", self.quantum_target or "", feeds=(MISSION,))
-                self.quantum_target = None
+                fuel = self.quantum_fuel or 0.0
+                self.quantum_fuel_used += fuel
+                self._push(ev, "nav", "Quantum-Sprung", "Ziel erreicht",
+                           self._detail(self.quantum_target, f"{fuel:.1f} Treibstoff".replace(".", ",") if fuel else None),
+                           feeds=(MISSION,))
+                self.quantum_target = self.quantum_fuel = None
                 if self._qt_location:
                     self._set_location(ev, self._qt_location)
                 self._qt_location = None
@@ -386,7 +402,7 @@ class DashboardState:
             if self._within(self._last_disconnect_ts, ev.ts, 30):
                 return
             self._last_disconnect_ts = ev.ts
-            self.quantum_target = self._qt_location = None
+            self.quantum_target = self._qt_location = self.quantum_fuel = None
             if code in BENIGN_NET:
                 text = "wegen Inaktivität" if code == "30028" else "Server verlassen oder gewechselt"
                 self._push(ev, "info", "Verbindung getrennt", text, feeds=BOTH)
@@ -543,7 +559,7 @@ class DashboardState:
             if not d.get("is_ship"):
                 self._push(ev, "comms", "Kanal", d["text"], feeds=(MISSION,))
             elif cat == "channel_joined":
-                self.ship, self._ship_from_channel = subject, True
+                self.ship, self._ship_from_channel, self.ship_since = subject, True, ev.ts
                 self._push(ev, "nav", "Eingestiegen", subject, feeds=BOTH)
             elif self.ship == subject or not self._ship_from_channel:
                 self.ship, self._ship_from_channel = None, False
@@ -672,6 +688,7 @@ class DashboardState:
                     "missions_abandoned": self.missions_abandoned,
                     "places": len(self.places),
                     "quantum_jumps": self.quantum_jumps,
+                    "quantum_fuel_used": round(self.quantum_fuel_used, 1),
                     "incaps": self.incaps,
                     "injuries": self.injuries,
                     "medbed": self.medbed,
@@ -693,7 +710,9 @@ class DashboardState:
                     "armistice": self.armistice,
                     "monitored": self.monitored,
                     "jurisdiction": self.jurisdiction,
+                    "ship_since": self.ship_since if self.ship else None,
                     "quantum_target": self.quantum_target,
+                    "quantum_fuel": self.quantum_fuel if self.quantum_target else None,
                     "crew": list(self.crew),
                     "restricted": self.restricted,
                     "private": self.private,

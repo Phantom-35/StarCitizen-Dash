@@ -16,6 +16,8 @@ Schwerpunkt: Mehrwert beim Spielen – beide Modi zeigen mehr von dem, was man w
   nur der Auftragslohn wird noch von Hand eingetragen
 - **Kampf & Überleben:** „Zustand“ mit offenen Verletzungen und nötiger Med-Bed-Stufe (bis zur Behandlung)
 - **Crew an Bord** und **Server-Nummer** in beiden Modi
+- **Schiff:** Zeit an Bord, Treibstoffbedarf der geplanten Quantum-Route und Summe der geflogenen
+  Sprünge (aus `fuel estimate` der echten Log); Schiffsname notfalls aus den Quantum-Zeilen
 - **Signaltöne** (abschaltbar, Taste `T`) bei Tod, K.O., Auftragsende, Verbindungsfehler und Timer;
   fertige Timer werden zusätzlich groß eingeblendet
 - **Verbindungsfehler** mit Klartext (30000 Zeitüberschreitung, 30013 Serverabsturz …); normale

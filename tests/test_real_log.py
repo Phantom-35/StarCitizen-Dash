@@ -112,6 +112,32 @@ class RealLogTests(unittest.TestCase):
         self.assertEqual(s["session"]["server"], "450")
         self.assertEqual(s["health"]["injuries"], [])
 
+    def test_ship_and_quantum_fuel_from_real_lines(self):
+        s = self.read_all_at_once()
+        # four jumps were made; the game's fuel estimates for them: 16.858 + 18.180 + 17.700 + 11.982.
+        # A fifth route (0.66) was planned at 16:52 but never flown and must not be counted.
+        self.assertAlmostEqual(s["stats"]["quantum_fuel_used"], 64.7, places=1)
+        feed = list(reversed(s["feeds"]["mission"]))
+        jumps = [e["detail"] for e in feed if e["title"] == "Quantum-Sprung"]
+        self.assertEqual(jumps[0], "Auftragsziel · Clear View Emergency Shelter · 16,9 Treibstoff")
+        self.assertEqual(jumps[-1], "New Babbage · 12,0 Treibstoff")
+        # boarding is known from the channel notification, with its time
+        boarded = [e for e in feed if e["title"] == "Eingestiegen"]
+        self.assertEqual(boarded[0]["ts"], "2026-11-10T16:28:41.844Z")
+        self.assertIsNone(s["nav"]["ship_since"])  # left the ship before quitting
+
+    def test_ship_from_quantum_lines_when_boarding_was_missed(self):
+        """Dashboard started mid-flight: the first quantum line still tells us the ship."""
+        start = self.raw.index(b"<2026-11-10T16:30:54")
+        with open(self.path, "wb") as fh:
+            fh.write(self.raw[:200] + b"\r\n" + self.raw[start:self.raw.index(b"<2026-11-10T16:31:30")])
+        state = DashboardState()
+        LogWatcher(lambda: self.path, state).poll()
+        nav = state.snapshot()["nav"]
+        self.assertEqual(nav["ship"], "RSI Aurora Mk2")
+        self.assertEqual(nav["ship_since"], "2026-11-10T16:30:54.148Z")
+        self.assertAlmostEqual(nav["quantum_fuel"], 16.858, places=2)
+
     def test_multiline_notifications_are_joined(self):
         asm, texts = LineAssembler(), []
         for raw in self.raw.split(b"\n"):

@@ -67,7 +67,10 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
 - **Quantum-Ziel**, solange ein Sprung geplant ist – lesbar statt interner IDs: Städte, Raststationen
   (*CRU-L4*), *Markierter Navpunkt*, *Partymitglied* und bei Auftragsmarkern der Ort aus dem aktiven
   Auftragsziel (*Auftragsziel · Clear View Emergency Shelter*)
-- **Aktuelles Schiff** und **Crew an Bord** (wer zu dir ins Schiff gekommen ist)
+- **Aktuelles Schiff mit Zeit an Bord** und **Crew an Bord** (wer zu dir ins Schiff gekommen ist).
+  Der Schiffsname kommt notfalls auch aus den Quantum-Zeilen, falls die Einsteige-Meldung fehlt.
+- **Treibstoffbedarf der geplanten Quantum-Route** (Schätzung des Spiels) direkt am Quantum-Ziel,
+  dazu die Summe der geflogenen Sprünge in der Session
 - **Server-Nummer** neben der Region – praktisch, um mit Freunden auf denselben Server zu kommen
 - **Signaltöne** (Taste `T` oder Knopf „Ton an/aus“): kurzer Ton bei Tod, K.O., erledigtem/gescheitertem
   Auftrag, Verbindungsfehler und fertigem Timer – damit du es merkst, während du ins Spiel schaust
@@ -202,6 +205,7 @@ als Testfall in `tests/fixtures/`).
 | Zonen | Meldungen *Armistice Zone*, *Monitored Space*, *… Jurisdiction* | ✅ |
 | Schiff (ein-/aussteigen) | Meldung `You have joined channel '<Schiff> : <Pilot>'` | ✅ |
 | Quantum-Ziele & Sprünge | `<Player Selected Quantum Target …>`, `<Player Requested Fuel to Quantum Target …>`, `<Quantum Drive Arrived …>` | ✅ |
+| Treibstoffbedarf der Route | `…CalculateRoute|Successfully calculated route to … fuel estimate 16.858223` | ✅ |
 | Quantum blockiert | Meldung *Quantum Travel: Your destination is obstructed …* | ✅ |
 | Spiel beendet | `<SystemQuit>` | ✅ |
 | Session-Start | Zeitstempel der ersten Log-Zeile | ✅ |
@@ -278,6 +282,18 @@ Ob das Spiel läuft, wird zusätzlich alle 15 s über die Prozessliste geprüft.
 > Das Log-Format ist nicht offiziell dokumentiert und ändert sich gelegentlich mit Patches. Wenn
 > etwas nicht (mehr) erkannt wird, bitte ein Issue mit der betreffenden Log-Zeile öffnen. Meldungen,
 > die SC-Dash nicht einordnen kann, erscheinen trotzdem im Komm-Log.
+
+---
+
+## Was nicht geht – und warum
+
+Star Citizen hat **keine Schnittstelle** für Live-Daten. Schilde, Hüllenschaden, Tankinhalt,
+Geschwindigkeit, Munition oder Ladungsmenge stehen nicht in der `Game.log` und sind von außen nicht
+erlaubt abrufbar. Alle „Star Citizen APIs“ liefern nur feste Daten (Schiffswerte, Handelspreise).
+Andere Zweitbildschirm-Tools lesen ebenfalls die `Game.log` oder schicken nur Tastendrücke.
+
+SC-Dash liest bewusst **nicht** den Arbeitsspeicher des Spiels aus (genau das soll Easy Anti-Cheat
+verhindern – Risiko für den Account) und macht **keine** Bildschirmerkennung (kostet dauerhaft Leistung).
 
 ---
 

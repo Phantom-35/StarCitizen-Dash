@@ -262,8 +262,18 @@
     setText(e, text || "");
     setClass(e, cls || "");
   }
+  const fuelFmt = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+  /** Ship name plus how long we have been aboard (updated by the 1 s tick). */
+  function shipPill(now) {
+    const nav = st.nav;
+    const since = parseTs(nav.ship_since);
+    const aboard = isFinite(since) ? " · an Bord " + short(sessionNow(now) - since) : "";
+    pill("p-ship", nav.ship ? "◈ " + nav.ship + aboard : "", "ship");
+  }
+
   function renderPills(nav) {
-    pill("p-ship", nav.ship ? "◈ " + nav.ship : "", "ship");
+    shipPill(Date.now() + skew);
     pill("p-arm", nav.armistice === true ? "Armistice" : nav.armistice === false ? "Waffen frei" : "",
       nav.armistice ? "ok" : "warn");
     pill("p-mon", nav.monitored === true ? "Überwacht" : nav.monitored === false ? "Unüberwacht" : "",
@@ -272,7 +282,8 @@
     pill("p-jur", nav.jurisdiction || "", nav.jurisdiction && nav.jurisdiction.toLowerCase() === "ungoverned" ? "bad" : "");
     pill("p-restricted", nav.restricted ? "Sperrgebiet" : "", "bad");
     pill("p-private", nav.private ? "Privatgelände" : "", "warn");
-    pill("p-qt", nav.quantum_target ? "⟶ " + nav.quantum_target : "", "qt");
+    const need = nav.quantum_fuel ? ` · Bedarf ${fuelFmt.format(nav.quantum_fuel)}` : "";
+    pill("p-qt", nav.quantum_target ? "⟶ " + nav.quantum_target + need : "", "qt");
   }
 
   // ---------------------------------------------------------------- missions
@@ -355,7 +366,8 @@
     const avg = durs.length ? ` · Ø ${mins(durs.reduce((a, b) => a + b, 0) / durs.length)}` : "";
     setText($("ms-rate"), total ? `${Math.round((k.missions_completed / total) * 100)} % Quote${avg}` : "–");
     setText($("ms-places"), String(k.places));
-    setText($("ms-jumps"), `besucht · ${k.quantum_jumps} QT-Sprünge`);
+    const burned = k.quantum_fuel_used ? ` · ${fuelFmt.format(k.quantum_fuel_used)} QT-Treibstoff` : "";
+    setText($("ms-jumps"), `besucht · ${k.quantum_jumps} QT-Sprünge${burned}`);
     renderEarnings();
   }
 
@@ -516,6 +528,7 @@
         $("m-arc-sec").style.strokeDasharray = `${((sec % 60) / 60) * 1000} 1000`;
       }
 
+      shipPill(now);
       const since = parseTs(s.location_since);
       setText($("loc-since"), isFinite(since) && s.location ? "Hier seit " + short(ref - since) : "");
       const ld = s.last_death;
