@@ -448,3 +448,17 @@ body[data-mode="mission"] [data-only="combat"] { display: none !important; }
 .objectives .cargo-hint { display: block; margin-top: 3px; font-size: 0.875rem; font-weight: 500; color: var(--dim); letter-spacing: .04em; }
 .pills .qt.warn { --c: var(--amber); border-style: solid; }
 .pills .qt.bad { --c: var(--death); border-style: solid; background: rgba(255, 61, 90, .08); }
+
+/* banner: opaque backdrop so nothing shows through, names always on one line */
+.banner {
+  background:
+    linear-gradient(90deg, transparent, var(--g) 25%, var(--g) 75%, transparent),
+    linear-gradient(90deg, rgba(5, 5, 7, 0), rgba(5, 5, 7, .97) 7%, rgba(5, 5, 7, .97) 93%, rgba(5, 5, 7, 0));
+  z-index: 5;
+}
+.banner span, .banner small {
+  max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* the title is shrunk to fit by JS; no clipping, otherwise the glow gets cut off as a visible box */
+.banner b { max-width: 100%; white-space: nowrap; }
+.banner b.clip { overflow: hidden; text-overflow: ellipsis; }
