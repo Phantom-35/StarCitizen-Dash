@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Any, Dict, Iterable, Optional
 
 from scdash.locations import locate_place, objective_place, shard_region
+from scdash import ships
 from scdash.parser import LogEvent
 
 MAX_EVENTS = 60
@@ -129,6 +130,8 @@ class DashboardState:
         self.quantum_fuel: Optional[float] = None   # the game's estimate for the planned route
         self.quantum_fuel_used = 0.0                # sum of the estimates of the jumps actually made
         self.ship_since: Optional[str] = None
+        self.ship_class: Optional[str] = None       # game class name, known from quantum lines
+        self._fuel_by_ship: Dict[str, float] = {}   # estimates of flown jumps per ship (log units)
         self.game_version: Optional[str] = None
 
     def _touch(self) -> None:
@@ -310,8 +313,12 @@ class DashboardState:
         elif ev.kind == "quantum":
             # Quantum lines name the ship: a fallback when the boarding notification was missed
             # (dashboard started late, flying as crew).
+            if d.get("ship_class"):
+                self.ship_class = d["ship_class"]
             if d.get("ship") and not self.ship:
-                self.ship, self._ship_from_channel, self.ship_since = d["ship"], False, ev.ts
+                known = ships.lookup(d.get("ship_class"))
+                self.ship = known["name"] if known else d["ship"]
+                self._ship_from_channel, self.ship_since = False, ev.ts
                 self._push(ev, "nav", "Im Schiff", self.ship, feeds=BOTH)
             if d["phase"] == "route":
                 self.quantum_fuel = d["fuel"]
@@ -330,6 +337,9 @@ class DashboardState:
                 self.quantum_jumps += 1
                 fuel = self.quantum_fuel or 0.0
                 self.quantum_fuel_used += fuel
+                if fuel and self.ship_class:
+                    key = self.ship_class.lower()
+                    self._fuel_by_ship[key] = self._fuel_by_ship.get(key, 0.0) + fuel
                 self._push(ev, "nav", "Quantum-Sprung", "Ziel erreicht",
                            self._detail(self.quantum_target, f"{fuel:.1f} Treibstoff".replace(".", ",") if fuel else None),
                            feeds=(MISSION,))
@@ -559,6 +569,8 @@ class DashboardState:
             if not d.get("is_ship"):
                 self._push(ev, "comms", "Kanal", d["text"], feeds=(MISSION,))
             elif cat == "channel_joined":
+                if subject != self.ship:
+                    self.ship_class = None  # a different ship - the class follows with the next quantum line
                 self.ship, self._ship_from_channel, self.ship_since = subject, True, ev.ts
                 self._push(ev, "nav", "Eingestiegen", subject, feeds=BOTH)
             elif self.ship == subject or not self._ship_from_channel:
@@ -653,8 +665,15 @@ class DashboardState:
         with self._lock:
             return f"{self._boot}-{self._version}"
 
+    def _ship_data(self) -> Optional[Dict[str, Any]]:
+        if not self.ship:
+            return None
+        return ships.lookup(self.ship_class, self.ship)
+
     def snapshot(self) -> Dict[str, Any]:
         with self._lock:
+            ship = self._ship_data()
+            flown = self._fuel_by_ship.get((ship or {}).get("class", "").lower(), 0.0) if ship else 0.0
             return {
                 "version": self._version,
                 "token": f"{self._boot}-{self._version}",
@@ -711,6 +730,10 @@ class DashboardState:
                     "monitored": self.monitored,
                     "jurisdiction": self.jurisdiction,
                     "ship_since": self.ship_since if self.ship else None,
+                    "ship_info": ships.public_info(ship),
+                    # share of the quantum tank: the planned route, and what this ship flew this session
+                    "quantum_need_pct": ships.tank_share(self.quantum_fuel, ship) if self.quantum_target else None,
+                    "quantum_used_pct": ships.tank_share(flown, ship),
                     "quantum_target": self.quantum_target,
                     "quantum_fuel": self.quantum_fuel if self.quantum_target else None,
                     "crew": list(self.crew),

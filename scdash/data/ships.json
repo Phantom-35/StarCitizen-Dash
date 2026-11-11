@@ -1,0 +1,6207 @@
+{
+ "meta": {
+  "game_version": "4.10.2-LIVE.12881860",
+  "generated": "2026-11-11",
+  "rule": "a value is included only if at least two sources agree",
+  "sources": [
+   "scunpacked-data (game files)",
+   "api.star-citizen.wiki",
+   "api.fleetyards.net",
+   "api.uexcorp.space"
+  ],
+  "units": {
+   "cargo": "SCU",
+   "qt_fuel": "SCU",
+   "qt_range": "m (stock quantum drive)"
+  }
+ },
+ "ships": {
+  "aegs_avenger_stalker": {
+   "aliases": [
+    "Avenger Stalker"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Avenger_Stalker",
+   "name": "Aegis Avenger Stalker",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 61224489796
+  },
+  "aegs_avenger_stalker_display": {
+   "aliases": [
+    "Avenger Stalker"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "AEGS_Avenger_Stalker_Display",
+   "name": "Aegis Avenger Stalker",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 61224489796
+  },
+  "aegs_avenger_titan": {
+   "aliases": [
+    "Avenger Titan"
+   ],
+   "cargo": 8.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "AEGS_Avenger_Titan",
+   "name": "Aegis Avenger Titan",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 61224489796
+  },
+  "aegs_avenger_titan_renegade": {
+   "aliases": [
+    "Avenger Titan Renegade"
+   ],
+   "cargo": 8.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "AEGS_Avenger_Titan_Renegade",
+   "name": "Aegis Avenger Titan Renegade",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 61224489796
+  },
+  "aegs_avenger_warlock": {
+   "aliases": [
+    "Avenger Warlock"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Avenger_Warlock",
+   "name": "Aegis Avenger Warlock",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 61224489796
+  },
+  "aegs_eclipse": {
+   "aliases": [
+    "Eclipse"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Eclipse",
+   "name": "Aegis Eclipse",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 54021608643
+  },
+  "aegs_eclipse_bis2950": {
+   "aliases": [
+    "Eclipse"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "AEGS_Eclipse_BIS2950",
+   "name": "Aegis Eclipse",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 54021608643
+  },
+  "aegs_gladius": {
+   "aliases": [
+    "Gladius"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Gladius",
+   "name": "Aegis Gladius",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 32223415682
+  },
+  "aegs_gladius_pir": {
+   "aliases": [
+    "Gladius Pirate",
+    "Gladius Pirate Edition"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Gladius_PIR",
+   "name": "Aegis Gladius Pirate",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 61224489796
+  },
+  "aegs_gladius_valiant": {
+   "aliases": [
+    "Gladius Valiant"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Gladius_Valiant",
+   "name": "Aegis Gladius Valiant",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 32223415682
+  },
+  "aegs_hammerhead": {
+   "aliases": [
+    "Hammerhead"
+   ],
+   "cargo": 40.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "uex"
+   ],
+   "class": "AEGS_Hammerhead",
+   "name": "Aegis Hammerhead",
+   "qt_fuel": 19.0,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 491718426501
+  },
+  "aegs_hammerhead_gs": {
+   "aliases": [
+    "Hammerhead"
+   ],
+   "cargo": 64.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Hammerhead_GS",
+   "name": "Aegis Hammerhead",
+   "qt_fuel": 19.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 155279503106
+  },
+  "aegs_hammerhead_showdown": {
+   "aliases": [
+    "Hammerhead 2949 Best In Show Edition"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "AEGS_Hammerhead_Showdown",
+   "name": "Aegis Hammerhead 2949 Best In Show Edition",
+   "qt_fuel": 19.0,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 491718426501
+  },
+  "aegs_idris_m": {
+   "aliases": [
+    "Idris-M"
+   ],
+   "cargo": 1326.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "AEGS_Idris_M",
+   "name": "Aegis Idris-M",
+   "qt_fuel": 31.5,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 513866231648
+  },
+  "aegs_idris_p": {
+   "aliases": [
+    "Idris-P"
+   ],
+   "cargo": 1374.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Idris_P",
+   "name": "Aegis Idris-P",
+   "qt_fuel": 31.5,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 513866231648
+  },
+  "aegs_idris_p_collector_military": {
+   "aliases": [
+    "Idris-P Wikelo War Special"
+   ],
+   "cargo": 1374.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "AEGS_Idris_P_Collector_Military",
+   "name": "Aegis Idris-P Wikelo War Special",
+   "qt_fuel": 31.5,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 513866231648
+  },
+  "aegs_idris_p_fw_25": {
+   "aliases": [
+    "Idris-P"
+   ],
+   "cargo": 1374.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "AEGS_Idris_P_FW_25",
+   "name": "Aegis Idris-P",
+   "qt_fuel": 31.5,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 513866231648
+  },
+  "aegs_idris_p_tsg": {
+   "aliases": [
+    "Idris-P"
+   ],
+   "cargo": 1374.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "AEGS_Idris_P_TSG",
+   "name": "Aegis Idris-P",
+   "qt_fuel": 31.5,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 513866231648
+  },
+  "aegs_javelin": {
+   "aliases": [
+    "Javelin"
+   ],
+   "class": "AEGS_Javelin",
+   "name": "Aegis Javelin",
+   "qt_fuel": 62.5,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1019575856444
+  },
+  "aegs_reclaimer": {
+   "aliases": [
+    "Reclaimer"
+   ],
+   "cargo": 420.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "AEGS_Reclaimer",
+   "name": "Aegis Reclaimer",
+   "qt_fuel": 21.8,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 564182194617
+  },
+  "aegs_reclaimer_showdown": {
+   "aliases": [
+    "Reclaimer 2949 Best In Show Edition"
+   ],
+   "cargo": 420.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "AEGS_Reclaimer_Showdown",
+   "name": "Aegis Reclaimer 2949 Best In Show Edition",
+   "qt_fuel": 21.8,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 564182194617
+  },
+  "aegs_redeemer": {
+   "aliases": [
+    "Redeemer"
+   ],
+   "cargo": 2.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "AEGS_Redeemer",
+   "name": "Aegis Redeemer",
+   "qt_fuel": 6.3,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 304200869145
+  },
+  "aegs_retaliator": {
+   "aliases": [
+    "Aegis Retaliator Bomber",
+    "Retaliator"
+   ],
+   "class": "AEGS_Retaliator",
+   "name": "Aegis Retaliator",
+   "qt_fuel": 7.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 338000965717
+  },
+  "aegs_sabre": {
+   "aliases": [
+    "Sabre"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Sabre",
+   "name": "Aegis Sabre",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 54021608643
+  },
+  "aegs_sabre_comet": {
+   "aliases": [
+    "Sabre Comet"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Sabre_Comet",
+   "name": "Aegis Sabre Comet",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 54021608643
+  },
+  "aegs_sabre_firebird": {
+   "aliases": [
+    "Sabre Firebird"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Sabre_Firebird",
+   "name": "Aegis Sabre Firebird",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 54021608643
+  },
+  "aegs_sabre_firebird_collector_milt": {
+   "aliases": [
+    "Sabre Firebird Wikelo War Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "AEGS_Sabre_Firebird_Collector_Milt",
+   "name": "Aegis Sabre Firebird Wikelo War Special",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 41743970315
+  },
+  "aegs_sabre_peregrine": {
+   "aliases": [
+    "Sabre Peregrine"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Sabre_Peregrine",
+   "name": "Aegis Sabre Peregrine",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 54021608643
+  },
+  "aegs_sabre_peregrine_collector_competition": {
+   "aliases": [
+    "Sabre Peregrine Wikelo Speedy Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "AEGS_Sabre_Peregrine_Collector_Competition",
+   "name": "Aegis Sabre Peregrine Wikelo Speedy Special",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 153061224490
+  },
+  "aegs_sabre_raven": {
+   "aliases": [
+    "Sabre Raven"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Sabre_Raven",
+   "name": "Aegis Sabre Raven",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 54021608643
+  },
+  "aegs_sabre_raven_ex": {
+   "aliases": [
+    "Sabre Raven EX"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Sabre_Raven_EX",
+   "name": "Aegis Sabre Raven EX",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 48335123523
+  },
+  "aegs_tiburon": {
+   "aliases": [
+    "Tiburon"
+   ],
+   "cargo": 64.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Tiburon",
+   "name": "Aegis Tiburon",
+   "qt_fuel": 19.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 155279503106
+  },
+  "aegs_vanguard": {
+   "aliases": [
+    "Vanguard Warden"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Vanguard",
+   "name": "Aegis Vanguard Warden",
+   "qt_fuel": 5.5,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 265572187349
+  },
+  "aegs_vanguard_harbinger": {
+   "aliases": [
+    "Vanguard Harbinger"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Vanguard_Harbinger",
+   "name": "Aegis Vanguard Harbinger",
+   "qt_fuel": 5.5,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 240279598078
+  },
+  "aegs_vanguard_hoplite": {
+   "aliases": [
+    "Vanguard Hoplite"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Vanguard_Hoplite",
+   "name": "Aegis Vanguard Hoplite",
+   "qt_fuel": 5.1,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 246257846451
+  },
+  "aegs_vanguard_sentinel": {
+   "aliases": [
+    "Vanguard Sentinel"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "AEGS_Vanguard_Sentinel",
+   "name": "Aegis Vanguard Sentinel",
+   "qt_fuel": 5.5,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 296815974096
+  },
+  "anvl_arrow": {
+   "aliases": [
+    "Arrow"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Arrow",
+   "name": "Anvil Arrow",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 32223415682
+  },
+  "anvl_asgard": {
+   "aliases": [
+    "Asgard"
+   ],
+   "cargo": 180.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ANVL_Asgard",
+   "name": "Anvil Asgard",
+   "qt_fuel": 7.7,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 706422018349
+  },
+  "anvl_asgard_collector_military": {
+   "aliases": [
+    "Asgard Wikelo War Special"
+   ],
+   "cargo": 180.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Asgard_Collector_Military",
+   "name": "Anvil Asgard Wikelo War Special",
+   "qt_fuel": 7.7,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 336391437309
+  },
+  "anvl_ballista": {
+   "aliases": [
+    "Ballista"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Ballista",
+   "name": "Anvil Ballista"
+  },
+  "anvl_ballista_dunestalker": {
+   "aliases": [
+    "Ballista Dunestalker"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Ballista_Dunestalker",
+   "name": "Anvil Ballista Dunestalker"
+  },
+  "anvl_ballista_snowblind": {
+   "aliases": [
+    "Ballista Snowblind"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Ballista_Snowblind",
+   "name": "Anvil Ballista Snowblind"
+  },
+  "anvl_c8_pisces": {
+   "aliases": [
+    "C8 Pisces"
+   ],
+   "cargo": 4.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ANVL_C8_Pisces",
+   "name": "Anvil C8 Pisces",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 91836734694
+  },
+  "anvl_c8r_pisces": {
+   "aliases": [
+    "C8R Pisces",
+    "C8R Pisces Rescue"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_C8R_Pisces",
+   "name": "Anvil C8R Pisces Rescue",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 91836734694
+  },
+  "anvl_c8x_pisces_expedition": {
+   "aliases": [
+    "C8X Pisces Expedition"
+   ],
+   "cargo": 4.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ANVL_C8X_Pisces_Expedition",
+   "name": "Anvil C8X Pisces Expedition",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 91836734694
+  },
+  "anvl_carrack": {
+   "aliases": [
+    "Carrack"
+   ],
+   "cargo": 456.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ANVL_Carrack",
+   "name": "Anvil Carrack",
+   "qt_fuel": 20.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 540890269151
+  },
+  "anvl_carrack_bis2950": {
+   "aliases": [
+    "Carrack"
+   ],
+   "cargo": 456.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Carrack_BIS2950",
+   "name": "Anvil Carrack",
+   "qt_fuel": 20.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 540890269151
+  },
+  "anvl_carrack_expedition": {
+   "aliases": [
+    "Carrack Expedition"
+   ],
+   "cargo": 456.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "uex"
+   ],
+   "class": "ANVL_Carrack_Expedition",
+   "name": "Anvil Carrack Expedition",
+   "qt_fuel": 20.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 540890269151
+  },
+  "anvl_centurion": {
+   "aliases": [
+    "Centurion"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Centurion",
+   "name": "Anvil Centurion"
+  },
+  "anvl_gladiator": {
+   "aliases": [
+    "Gladiator"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Gladiator",
+   "name": "Anvil Gladiator",
+   "qt_fuel": 1.1,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 59076262084
+  },
+  "anvl_hawk": {
+   "aliases": [
+    "Hawk"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Hawk",
+   "name": "Anvil Hawk",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 56169256694
+  },
+  "anvl_hornet_f7_mk2_collector_mod": {
+   "aliases": [
+    "F7 Hornet Mk Wikelo"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Hornet_F7_Mk2_Collector_Mod",
+   "name": "Anvil F7 Hornet Mk Wikelo",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 41743970315
+  },
+  "anvl_hornet_f7a_mk1": {
+   "aliases": [
+    "F7A Hornet Mk I"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Hornet_F7A_Mk1",
+   "name": "Anvil F7A Hornet Mk I",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "anvl_hornet_f7a_mk2": {
+   "aliases": [
+    "F7A Hornet Mk II"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Hornet_F7A_Mk2",
+   "name": "Anvil F7A Hornet Mk II",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "anvl_hornet_f7a_mk2_exec_military": {
+   "aliases": [],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Hornet_F7A_Mk2_Exec_Military",
+   "name": "Hornet F7A Mk II PYAM Exec",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 163994169096
+  },
+  "anvl_hornet_f7a_mk2_exec_stealth": {
+   "aliases": [],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Hornet_F7A_Mk2_Exec_Stealth",
+   "name": "Hornet F7A Mk II PYAM Exec",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 163994169096
+  },
+  "anvl_hornet_f7c": {
+   "aliases": [
+    "F7C Hornet Mk I"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Hornet_F7C",
+   "name": "Anvil F7C Hornet Mk I",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "anvl_hornet_f7c_mk2": {
+   "aliases": [
+    "F7C Hornet Mk II"
+   ],
+   "cargo": 2.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ANVL_Hornet_F7C_Mk2",
+   "name": "Anvil F7C Hornet Mk II",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "anvl_hornet_f7c_wildfire": {
+   "aliases": [
+    "F7C Hornet Wildfire Mk I"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Hornet_F7C_Wildfire",
+   "name": "Anvil F7C Hornet Wildfire Mk I",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "anvl_hornet_f7cm": {
+   "aliases": [
+    "F7C-M Super Hornet Mk I"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Hornet_F7CM",
+   "name": "Anvil F7C-M Super Hornet Mk I",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "anvl_hornet_f7cm_heartseeker": {
+   "aliases": [
+    "F7C-M Hornet Heartseeker Mk I",
+    "F7C-M Super Hornet Heartseeker Mk I"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Hornet_F7CM_Heartseeker",
+   "name": "Anvil F7C-M Hornet Heartseeker Mk I",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "anvl_hornet_f7cm_mk2": {
+   "aliases": [
+    "F7C-M Super Hornet Mk II"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Hornet_F7CM_Mk2",
+   "name": "Anvil F7C-M Super Hornet Mk II",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "anvl_hornet_f7cm_mk2_heartseeker": {
+   "aliases": [
+    "F7C-M Hornet Heartseeker Mk II"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Hornet_F7CM_Mk2_Heartseeker",
+   "name": "Anvil F7C-M Hornet Heartseeker Mk II",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 98749177090
+  },
+  "anvl_hornet_f7cr": {
+   "aliases": [
+    "F7C-R Hornet Tracker Mk I"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Hornet_F7CR",
+   "name": "Anvil F7C-R Hornet Tracker Mk I",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "anvl_hornet_f7cr_mk2": {
+   "aliases": [
+    "F7C-R Hornet Tracker Mk II"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Hornet_F7CR_Mk2",
+   "name": "Anvil F7C-R Hornet Tracker Mk II",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "anvl_hornet_f7cs": {
+   "aliases": [
+    "F7C-S Hornet Ghost Mk I"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Hornet_F7CS",
+   "name": "Anvil F7C-S Hornet Ghost Mk I",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "anvl_hornet_f7cs_mk2": {
+   "aliases": [
+    "F7C-S Hornet Ghost Mk II"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Hornet_F7CS_Mk2",
+   "name": "Anvil F7C-S Hornet Ghost Mk II",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 54021608643
+  },
+  "anvl_hurricane": {
+   "aliases": [
+    "Hurricane"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Hurricane",
+   "name": "Anvil Hurricane",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 91836734694
+  },
+  "anvl_lightning_f8": {
+   "aliases": [
+    "F8A Lightning"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Lightning_F8",
+   "name": "Anvil F8A Lightning",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 91836734694
+  },
+  "anvl_lightning_f8c": {
+   "aliases": [
+    "F8C Lightning"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Lightning_F8C",
+   "name": "Anvil F8C Lightning",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 91836734694
+  },
+  "anvl_lightning_f8c_collector_military": {
+   "aliases": [
+    "F8C Lightning Wikelo War Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Lightning_F8C_Collector_Military",
+   "name": "Anvil F8C Lightning Wikelo War Special",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 163994169096
+  },
+  "anvl_lightning_f8c_collector_stealth": {
+   "aliases": [
+    "F8C Lightning Wikelo Sneak Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Lightning_F8C_Collector_Stealth",
+   "name": "Anvil F8C Lightning Wikelo Sneak Special",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 163994169096
+  },
+  "anvl_lightning_f8c_exec": {
+   "aliases": [
+    "F8C Lightning Executive Edition"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Lightning_F8C_Exec",
+   "name": "Anvil F8C Lightning Executive Edition",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 91836734694
+  },
+  "anvl_lightning_f8c_exec_military": {
+   "aliases": [],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Lightning_F8C_Exec_Military",
+   "name": "F8C Lightning PYAM Exec",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 163994169096
+  },
+  "anvl_lightning_f8c_exec_stealth": {
+   "aliases": [],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Lightning_F8C_Exec_Stealth",
+   "name": "F8C Lightning PYAM Exec",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 163994169096
+  },
+  "anvl_lightning_f8c_plat": {
+   "aliases": [
+    "F8C Lightning"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Lightning_F8C_Plat",
+   "name": "Anvil F8C Lightning",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 91836734694
+  },
+  "anvl_paladin": {
+   "aliases": [
+    "Paladin"
+   ],
+   "cargo": 4.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Paladin",
+   "name": "Anvil Paladin",
+   "qt_fuel": 7.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1284403669725
+  },
+  "anvl_spartan": {
+   "aliases": [
+    "Spartan"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Spartan",
+   "name": "Anvil Spartan"
+  },
+  "anvl_terrapin": {
+   "aliases": [
+    "Terrapin"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Terrapin",
+   "name": "Anvil Terrapin",
+   "qt_fuel": 1.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 175554092605
+  },
+  "anvl_terrapin_medic": {
+   "aliases": [
+    "Terrapin Medic"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ANVL_Terrapin_Medic",
+   "name": "Anvil Terrapin Medic",
+   "qt_fuel": 1.4,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 153609831029
+  },
+  "anvl_terrapin_medic_collector_medic": {
+   "aliases": [
+    "Terrapin Medic Wikelo Savior Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Terrapin_Medic_Collector_Medic",
+   "name": "Anvil Terrapin Medic Wikelo Savior Special",
+   "qt_fuel": 1.4,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 170068027211
+  },
+  "anvl_valkyrie": {
+   "aliases": [
+    "Valkyrie"
+   ],
+   "cargo": 90.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ANVL_Valkyrie",
+   "name": "Anvil Valkyrie",
+   "qt_fuel": 7.7,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 706422018349
+  },
+  "anvl_valkyrie_bis2950": {
+   "aliases": [
+    "Valkyrie"
+   ],
+   "cargo": 90.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ANVL_Valkyrie_BIS2950",
+   "name": "Anvil Valkyrie",
+   "qt_fuel": 7.7,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 706422018349
+  },
+  "argo_atls": {
+   "aliases": [
+    "ATLS"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ARGO_ATLS",
+   "name": "Argo ATLS"
+  },
+  "argo_atls_geo": {
+   "aliases": [
+    "ATLS GEO"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ARGO_ATLS_GEO",
+   "name": "Argo ATLS GEO"
+  },
+  "argo_atls_geo_collector_grad01": {
+   "aliases": [],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ARGO_ATLS_GEO_Collector_Grad01",
+   "name": "ATLS Snowland Color"
+  },
+  "argo_atls_geo_collector_grad02": {
+   "aliases": [],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ARGO_ATLS_GEO_Collector_Grad02",
+   "name": "ATLS Orange Line"
+  },
+  "argo_atls_geo_collector_grad03": {
+   "aliases": [],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ARGO_ATLS_GEO_Collector_Grad03",
+   "name": "ATLS Cool Metal Color"
+  },
+  "argo_atls_geo_ikti": {
+   "aliases": [],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ARGO_ATLS_GEO_IKTI",
+   "name": "Argo ATLS GEO IKTI"
+  },
+  "argo_atls_geo_ikti_ntls": {
+   "aliases": [
+    "ATLS IKTI Akuma"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ARGO_ATLS_GEO_IKTI_NTLS",
+   "name": "Argo ATLS IKTI Akuma"
+  },
+  "argo_atls_ikti": {
+   "aliases": [],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ARGO_ATLS_IKTI",
+   "name": "Argo ATLS IKTI"
+  },
+  "argo_atls_ikti_argos": {
+   "aliases": [],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ARGO_ATLS_IKTI_ARGOS",
+   "name": "Argo ATLS IKTI Rad"
+  },
+  "argo_csv_cargo": {
+   "aliases": [
+    "CSV-SM"
+   ],
+   "cargo": 4.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ARGO_CSV_Cargo",
+   "name": "Argo CSV-SM"
+  },
+  "argo_mole": {
+   "aliases": [
+    "MOLE"
+   ],
+   "cargo": 32.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ARGO_MOLE",
+   "name": "Argo MOLE",
+   "qt_fuel": 6.4,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1048492791612
+  },
+  "argo_mole_btala": {
+   "aliases": [
+    "MOLE Alliance"
+   ],
+   "cargo": 32.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ARGO_MOLE_BTALA",
+   "name": "ARGO MOLE Alliance",
+   "qt_fuel": 6.4,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 1048492791612
+  },
+  "argo_moth": {
+   "aliases": [
+    "MOTH"
+   ],
+   "cargo": 224.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ARGO_MOTH",
+   "name": "Argo MOTH",
+   "qt_fuel": 6.4,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1048492791612
+  },
+  "argo_mpuv": {
+   "aliases": [
+    "MPUV Cargo"
+   ],
+   "cargo": 2.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ARGO_MPUV",
+   "name": "Argo MPUV Cargo"
+  },
+  "argo_mpuv_1t": {
+   "aliases": [
+    "MPUV Tractor"
+   ],
+   "cargo": 16.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ARGO_MPUV_1T",
+   "name": "Argo MPUV Tractor"
+  },
+  "argo_mpuv_transport": {
+   "aliases": [
+    "MPUV Personnel"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ARGO_MPUV_Transport",
+   "name": "Argo MPUV Personnel"
+  },
+  "argo_raft": {
+   "aliases": [
+    "RAFT"
+   ],
+   "cargo": 192.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ARGO_RAFT",
+   "name": "Argo RAFT",
+   "qt_fuel": 7.2,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1100917431193
+  },
+  "argo_raft_collector_indust": {
+   "aliases": [
+    "RAFT Wikelo Work Special"
+   ],
+   "cargo": 192.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ARGO_RAFT_Collector_Indust",
+   "name": "Argo RAFT Wikelo Work Special",
+   "qt_fuel": 7.2,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 1179554390564
+  },
+  "argo_srv": {
+   "aliases": [
+    "SRV"
+   ],
+   "cargo": 12.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ARGO_SRV",
+   "name": "Argo SRV",
+   "qt_fuel": 6.4,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1048492791612
+  },
+  "banu_defender": {
+   "aliases": [
+    "Defender"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "BANU_Defender",
+   "name": "Banu Defender",
+   "qt_fuel": 1.1,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 59076262084
+  },
+  "cnou_hoverquad": {
+   "aliases": [
+    "HoverQuad"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "CNOU_HoverQuad",
+   "name": "C.O. HoverQuad"
+  },
+  "cnou_mustang_alpha": {
+   "aliases": [
+    "Mustang Alpha"
+   ],
+   "cargo": 4.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "CNOU_Mustang_Alpha",
+   "name": "C.O. Mustang Alpha",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 56169256694
+  },
+  "cnou_mustang_alpha_citizencon2018": {
+   "aliases": [
+    "C.O. Mustang Alpha Vindicator",
+    "Mustang CitizenCon 2948 Edition"
+   ],
+   "cargo": 4.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "uex"
+   ],
+   "class": "CNOU_Mustang_Alpha_CitizenCon2018",
+   "name": "C.O. Mustang CitizenCon 2948 Edition",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 56169256694
+  },
+  "cnou_mustang_beta": {
+   "aliases": [
+    "Mustang Beta"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "CNOU_Mustang_Beta",
+   "name": "C.O. Mustang Beta",
+   "qt_fuel": 0.7,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 65530799476
+  },
+  "cnou_mustang_delta": {
+   "aliases": [
+    "Mustang Delta"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "CNOU_Mustang_Delta",
+   "name": "C.O. Mustang Delta",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 56169256694
+  },
+  "cnou_mustang_gamma": {
+   "aliases": [
+    "Mustang Gamma"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "CNOU_Mustang_Gamma",
+   "name": "C.O. Mustang Gamma",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 56169256694
+  },
+  "cnou_mustang_omega": {
+   "aliases": [
+    "Mustang Omega"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "CNOU_Mustang_Omega",
+   "name": "C.O. Mustang Omega",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 56169256694
+  },
+  "cnou_nomad": {
+   "aliases": [
+    "Nomad"
+   ],
+   "cargo": 24.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "CNOU_Nomad",
+   "name": "C.O. Nomad",
+   "qt_fuel": 1.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 102040816327
+  },
+  "crus_intrepid": {
+   "aliases": [
+    "Intrepid"
+   ],
+   "cargo": 8.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "CRUS_Intrepid",
+   "name": "Crusader Intrepid",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 153061224490
+  },
+  "crus_intrepid_collector_indust": {
+   "aliases": [
+    "Intrepid Wikelo Work Special"
+   ],
+   "cargo": 8.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "CRUS_Intrepid_Collector_Indust",
+   "name": "Crusader Intrepid Wikelo Work Special",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 119268486615
+  },
+  "crus_spirit_a1": {
+   "aliases": [
+    "A1 Spirit"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "CRUS_Spirit_A1",
+   "name": "Crusader A1 Spirit",
+   "qt_fuel": 5.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 257754477938
+  },
+  "crus_spirit_c1": {
+   "aliases": [
+    "C1 Spirit"
+   ],
+   "cargo": 64.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "CRUS_Spirit_C1",
+   "name": "Crusader C1 Spirit",
+   "qt_fuel": 5.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 257754477938
+  },
+  "crus_spirit_c1_civilian": {
+   "aliases": [
+    "C1 Spirit Wikelo Special"
+   ],
+   "cargo": 64.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "CRUS_Spirit_C1_Civilian",
+   "name": "Crusader C1 Spirit Wikelo Special",
+   "qt_fuel": 5.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 702966758013
+  },
+  "crus_star_runner": {
+   "aliases": [
+    "Mercury Star Runner"
+   ],
+   "cargo": 114.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "CRUS_Star_Runner",
+   "name": "Crusader Mercury Star Runner",
+   "qt_fuel": 8.1,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1238532110092
+  },
+  "crus_starfighter_inferno": {
+   "aliases": [
+    "Ares Inferno",
+    "Ares Star Fighter Inferno"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "CRUS_Starfighter_Inferno",
+   "name": "Crusader Ares Star Fighter Inferno",
+   "qt_fuel": 5.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 284886528247
+  },
+  "crus_starfighter_inferno_collector_military": {
+   "aliases": [
+    "Ares Star Fighter Inferno Wikelo War Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "CRUS_Starfighter_Inferno_Collector_Military",
+   "name": "Crusader Ares Star Fighter Inferno Wikelo War Special",
+   "qt_fuel": 5.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 257754477938
+  },
+  "crus_starfighter_ion": {
+   "aliases": [
+    "Ares Ion",
+    "Ares Star Fighter Ion"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "CRUS_Starfighter_Ion",
+   "name": "Crusader Ares Star Fighter Ion",
+   "qt_fuel": 5.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 284886528247
+  },
+  "crus_starfighter_ion_collector_stealth": {
+   "aliases": [
+    "Ares Star Fighter Ion Wikelo Sneak Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "CRUS_Starfighter_Ion_Collector_Stealth",
+   "name": "Crusader Ares Star Fighter Ion Wikelo Sneak Special",
+   "qt_fuel": 5.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 300713557594
+  },
+  "crus_starlifter_a2": {
+   "aliases": [
+    "A2 Hercules",
+    "A2 Hercules Starlifter"
+   ],
+   "cargo": 216.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "CRUS_Starlifter_A2",
+   "name": "Crusader A2 Hercules Starlifter",
+   "qt_fuel": 20.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 170807453416
+  },
+  "crus_starlifter_a2_collector_military": {
+   "aliases": [
+    "A2 Hercules Starlifter Wikelo War Special"
+   ],
+   "cargo": 216.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "CRUS_Starlifter_A2_Collector_Military",
+   "name": "Crusader A2 Hercules Starlifter Wikelo War Special",
+   "qt_fuel": 20.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 154540076900
+  },
+  "crus_starlifter_c2": {
+   "aliases": [
+    "C2 Hercules",
+    "C2 Hercules Starlifter"
+   ],
+   "cargo": 696.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "CRUS_Starlifter_C2",
+   "name": "Crusader C2 Hercules Starlifter",
+   "qt_fuel": 20.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 540890269151
+  },
+  "crus_starlifter_m2": {
+   "aliases": [
+    "M2 Hercules",
+    "M2 Hercules Starlifter"
+   ],
+   "cargo": 522.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "CRUS_Starlifter_M2",
+   "name": "Crusader M2 Hercules Starlifter",
+   "qt_fuel": 20.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 170807453416
+  },
+  "drak_buccaneer": {
+   "aliases": [
+    "Buccaneer"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "DRAK_Buccaneer",
+   "name": "Drake Buccaneer",
+   "qt_fuel": 0.7,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 65530799476
+  },
+  "drak_caterpillar": {
+   "aliases": [
+    "Caterpillar"
+   ],
+   "cargo": 576.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "DRAK_Caterpillar",
+   "name": "Drake Caterpillar",
+   "qt_fuel": 18.8,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 153644982020
+  },
+  "drak_caterpillar_pirate": {
+   "aliases": [
+    "Caterpillar Pirate",
+    "Drake Caterpillar Pirate Edition"
+   ],
+   "cargo": 576.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "uex"
+   ],
+   "class": "DRAK_Caterpillar_Pirate",
+   "name": "Drake Caterpillar Pirate",
+   "qt_fuel": 18.8,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 153644982020
+  },
+  "drak_clipper": {
+   "aliases": [
+    "Clipper"
+   ],
+   "cargo": 12.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "DRAK_Clipper",
+   "name": "Drake Clipper",
+   "qt_fuel": 1.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 99068753715
+  },
+  "drak_clipper_collector_military": {
+   "aliases": [
+    "Clipper Wikelo War Special"
+   ],
+   "cargo": 12.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "DRAK_Clipper_Collector_Military",
+   "name": "Drake Clipper Wikelo War Special",
+   "qt_fuel": 1.0,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 48590864917
+  },
+  "drak_command_module": {
+   "aliases": [
+    "Command Module"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "DRAK_Command_Module",
+   "name": "Drake Command Module",
+   "qt_fuel": 1.0,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 172413793103
+  },
+  "drak_corsair": {
+   "aliases": [
+    "Corsair"
+   ],
+   "cargo": 72.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "DRAK_Corsair",
+   "name": "Drake Corsair",
+   "qt_fuel": 8.1,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 681760794546
+  },
+  "drak_corsair_exec_military": {
+   "aliases": [],
+   "cargo": 72.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "DRAK_Corsair_Exec_Military",
+   "name": "Corsair PYAM Exec",
+   "qt_fuel": 8.1,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 1326998689384
+  },
+  "drak_corsair_exec_stealthindustrial": {
+   "aliases": [],
+   "cargo": 72.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "DRAK_Corsair_Exec_StealthIndustrial",
+   "name": "Corsair PYAM Exec",
+   "qt_fuel": 8.1,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 1326998689384
+  },
+  "drak_cutlass_black": {
+   "aliases": [
+    "Cutlass Black"
+   ],
+   "cargo": 46.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "DRAK_Cutlass_Black",
+   "name": "Drake Cutlass Black",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 422018348624
+  },
+  "drak_cutlass_black_bis2950": {
+   "aliases": [
+    "Cutlass Black"
+   ],
+   "cargo": 46.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "DRAK_Cutlass_Black_BIS2950",
+   "name": "Drake Cutlass Black",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 422018348624
+  },
+  "drak_cutlass_black_exec_military": {
+   "aliases": [],
+   "cargo": 46.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "DRAK_Cutlass_Black_Exec_Military",
+   "name": "Cutlass Black PYAM Exec",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 753604193971
+  },
+  "drak_cutlass_black_exec_stealth": {
+   "aliases": [],
+   "cargo": 46.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "DRAK_Cutlass_Black_Exec_Stealth",
+   "name": "Cutlass Black PYAM Exec",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 422018348624
+  },
+  "drak_cutlass_blue": {
+   "aliases": [
+    "Cutlass Blue"
+   ],
+   "cargo": 12.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "DRAK_Cutlass_Blue",
+   "name": "Drake Cutlass Blue",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 703363914373
+  },
+  "drak_cutlass_blue_bis2950": {
+   "aliases": [
+    "Cutlass Blue"
+   ],
+   "cargo": 12.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "DRAK_Cutlass_Blue_BIS2950",
+   "name": "Drake Cutlass Blue",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 703363914373
+  },
+  "drak_cutlass_red": {
+   "aliases": [
+    "Cutlass Red"
+   ],
+   "cargo": 12.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "DRAK_Cutlass_Red",
+   "name": "Drake Cutlass Red",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 703363914373
+  },
+  "drak_cutlass_red_bis2950": {
+   "aliases": [
+    "Cutlass Red"
+   ],
+   "cargo": 12.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "DRAK_Cutlass_Red_BIS2950",
+   "name": "Drake Cutlass Red",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 703363914373
+  },
+  "drak_cutlass_steel": {
+   "aliases": [
+    "Cutlass Steel"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "DRAK_Cutlass_Steel",
+   "name": "Drake Cutlass Steel",
+   "qt_fuel": 7.2,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 347658136166
+  },
+  "drak_cutter": {
+   "aliases": [
+    "Cutter"
+   ],
+   "cargo": 4.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "DRAK_Cutter",
+   "name": "Drake Cutter",
+   "qt_fuel": 0.8,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 136054421769
+  },
+  "drak_cutter_rambler": {
+   "aliases": [
+    "Cutter Rambler"
+   ],
+   "cargo": 2.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "DRAK_Cutter_Rambler",
+   "name": "Drake Cutter Rambler",
+   "qt_fuel": 1.7,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 289115646259
+  },
+  "drak_cutter_scout": {
+   "aliases": [
+    "Cutter Scout"
+   ],
+   "cargo": 2.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "DRAK_Cutter_Scout",
+   "name": "Drake Cutter Scout",
+   "qt_fuel": 0.8,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 136054421769
+  },
+  "drak_dragonfly": {
+   "aliases": [
+    "Dragonfly",
+    "Dragonfly Black",
+    "Drake Dragonfly Black"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "DRAK_Dragonfly",
+   "name": "Drake Dragonfly"
+  },
+  "drak_dragonfly_pink": {
+   "aliases": [
+    "Dragonfly Star Kitten",
+    "Dragonfly Starkitten Edition"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "DRAK_Dragonfly_Pink",
+   "name": "Drake Dragonfly Star Kitten"
+  },
+  "drak_dragonfly_yellow": {
+   "aliases": [
+    "Dragonfly Yellowjacket"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "DRAK_Dragonfly_Yellow",
+   "name": "Drake Dragonfly Yellowjacket"
+  },
+  "drak_golem": {
+   "aliases": [
+    "Golem"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "DRAK_Golem",
+   "name": "Drake Golem",
+   "qt_fuel": 1.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 172413793103
+  },
+  "drak_golem_btala": {
+   "aliases": [
+    "Golem Alliance"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "DRAK_Golem_BTALA",
+   "name": "Drake Golem Alliance",
+   "qt_fuel": 1.0,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 182215743440
+  },
+  "drak_golem_collector_indust": {
+   "aliases": [
+    "Golem Wikelo Work Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "DRAK_Golem_Collector_Indust",
+   "name": "Drake Golem Wikelo Work Special",
+   "qt_fuel": 1.0,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 172413793103
+  },
+  "drak_golem_ox": {
+   "aliases": [
+    "Golem OX"
+   ],
+   "cargo": 64.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "DRAK_Golem_OX",
+   "name": "Drake Golem OX",
+   "qt_fuel": 1.1,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 189655172414
+  },
+  "drak_herald": {
+   "aliases": [
+    "Herald"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "DRAK_Herald",
+   "name": "Drake Herald",
+   "qt_fuel": 1.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 102040816327
+  },
+  "drak_ironclad": {
+   "aliases": [
+    "Ironclad"
+   ],
+   "cargo": 2200.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "DRAK_Ironclad",
+   "name": "Drake Ironclad",
+   "qt_fuel": 20.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 540890269151
+  },
+  "drak_ironclad_assault": {
+   "aliases": [
+    "Ironclad Assault"
+   ],
+   "cargo": 1440.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "DRAK_Ironclad_Assault",
+   "name": "Drake Ironclad Assault",
+   "qt_fuel": 20.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 540890269151
+  },
+  "drak_mule": {
+   "aliases": [
+    "Mule"
+   ],
+   "cargo": 1.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "DRAK_Mule",
+   "name": "Drake Mule"
+  },
+  "drak_pitbull": {
+   "aliases": [
+    "Pitbull"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "DRAK_Pitbull",
+   "name": "Drake Pitbull"
+  },
+  "drak_vulture": {
+   "aliases": [
+    "Vulture"
+   ],
+   "cargo": 12.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "DRAK_Vulture",
+   "name": "Drake Vulture",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 155172413793
+  },
+  "espr_prowler": {
+   "aliases": [
+    "Esperia Prowler Utility",
+    "Prowler"
+   ],
+   "class": "ESPR_Prowler",
+   "name": "Esperia Prowler",
+   "qt_fuel": 7.2,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 388559093362
+  },
+  "espr_prowler_utility": {
+   "aliases": [
+    "Prowler Utility"
+   ],
+   "cargo": 32.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ESPR_Prowler_Utility",
+   "name": "Esperia Prowler Utility",
+   "qt_fuel": 7.5,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 404749055586
+  },
+  "espr_prowler_utility_collector_indust": {
+   "aliases": [
+    "Prowler Utility Wikelo Work Special"
+   ],
+   "cargo": 32.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ESPR_Prowler_Utility_Collector_Indust",
+   "name": "Esperia Prowler Utility Wikelo Work Special",
+   "qt_fuel": 7.5,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 1228702490170
+  },
+  "espr_talon": {
+   "aliases": [
+    "Talon"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ESPR_Talon",
+   "name": "Esperia Talon",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 36014405762
+  },
+  "espr_talon_shrike": {
+   "aliases": [
+    "Talon Shrike"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ESPR_Talon_Shrike",
+   "name": "Esperia Talon Shrike",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 36014405762
+  },
+  "gama_railen": {
+   "aliases": [
+    "Railen"
+   ],
+   "cargo": 640.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "GAMA_Railen",
+   "name": "Gatac Railen",
+   "qt_fuel": 8.8,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1345565749235
+  },
+  "gama_syulen": {
+   "aliases": [
+    "Syulen"
+   ],
+   "cargo": 6.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "GAMA_Syulen",
+   "name": "Gatac Syulen",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 153061224490
+  },
+  "gama_syulen_exec_military": {
+   "aliases": [],
+   "cargo": 6.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "GAMA_Syulen_Exec_Military",
+   "name": "Syulen PYAM Exec",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 163994169096
+  },
+  "gama_syulen_exec_stealth": {
+   "aliases": [],
+   "cargo": 6.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "GAMA_Syulen_Exec_Stealth",
+   "name": "Syulen PYAM Exec",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 163994169096
+  },
+  "gama_tyilui": {
+   "aliases": [
+    "Tyilui"
+   ],
+   "cargo": 96.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "GAMA_Tyilui",
+   "name": "Gatac Tyilui",
+   "qt_fuel": 9.2,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1406727828746
+  },
+  "glsn_basher": {
+   "aliases": [
+    "Basher",
+    "Grey's Market Basher"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "GLSN_Basher",
+   "name": "Grey's Basher",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 65832784727
+  },
+  "glsn_shiv": {
+   "aliases": [
+    "Shiv"
+   ],
+   "cargo": 32.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "GLSN_Shiv",
+   "name": "Grey's Shiv",
+   "qt_fuel": 4.1,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 376146788991
+  },
+  "grin_mdc": {
+   "aliases": [
+    "MDC"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "GRIN_MDC",
+   "name": "Greycat MDC"
+  },
+  "grin_mtc": {
+   "aliases": [
+    "MTC"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "GRIN_MTC",
+   "name": "Greycat MTC"
+  },
+  "grin_ptv": {
+   "aliases": [
+    "PTV"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "GRIN_PTV",
+   "name": "Greycat PTV"
+  },
+  "grin_roc": {
+   "aliases": [
+    "ROC"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "GRIN_ROC",
+   "name": "Greycat ROC"
+  },
+  "grin_roc_ds": {
+   "aliases": [
+    "ROC-DS"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "GRIN_ROC_DS",
+   "name": "Greycat ROC-DS"
+  },
+  "grin_stv": {
+   "aliases": [
+    "STV"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "GRIN_STV",
+   "name": "Greycat STV"
+  },
+  "grin_utv": {
+   "aliases": [
+    "UTV"
+   ],
+   "cargo": 1.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "GRIN_UTV",
+   "name": "Greycat UTV"
+  },
+  "krig_l21_wolf": {
+   "aliases": [
+    "L-21 Wolf"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "KRIG_L21_Wolf",
+   "name": "Kruger L-21 Wolf",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 102040816327
+  },
+  "krig_l21_wolf_collector_military": {
+   "aliases": [
+    "L-21 Wolf Wikelo War Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "KRIG_L21_Wolf_Collector_Military",
+   "name": "Kruger L-21 Wolf Wikelo War Special",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 27829313544
+  },
+  "krig_l21_wolf_collector_stealth": {
+   "aliases": [
+    "L-21 Wolf Wikelo Sneak Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "KRIG_L21_Wolf_Collector_Stealth",
+   "name": "Kruger L-21 Wolf Wikelo Sneak Special",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 34013605442
+  },
+  "krig_l22_alphawolf": {
+   "aliases": [
+    "L-22 Alpha Wolf"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "KRIG_L22_AlphaWolf",
+   "name": "Kruger L-22 Alpha Wolf",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 27829313544
+  },
+  "krig_l22_alphawolf_collector_military": {
+   "aliases": [
+    "L-22 Alpha Wolf Wikelo War Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "KRIG_L22_AlphaWolf_Collector_Military",
+   "name": "Kruger L-22 Alpha Wolf Wikelo War Special",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 27829313544
+  },
+  "krig_p52_merlin": {
+   "aliases": [
+    "P-52 Merlin"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "KRIG_P52_Merlin",
+   "name": "Kruger P-52 Merlin"
+  },
+  "krig_p72_archimedes": {
+   "aliases": [
+    "P-72 Archimedes"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "KRIG_P72_Archimedes",
+   "name": "Kruger P-72 Archimedes"
+  },
+  "krig_p72_archimedes_emerald": {
+   "aliases": [
+    "P-72 Archimedes Emerald"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "KRIG_P72_Archimedes_Emerald",
+   "name": "Kruger P-72 Archimedes Emerald"
+  },
+  "krig_s65_stingray": {
+   "aliases": [
+    "S-65 Stingray"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "KRIG_S65_Stingray",
+   "name": "Kruger S-65 Stingray",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 84253885040
+  },
+  "krig_s65_stingray_ballistic": {
+   "aliases": [
+    "S-65 Stingray"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "KRIG_S65_Stingray_BALLISTIC",
+   "name": "Kruger S-65 Stingray",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 84253885040
+  },
+  "misc_fortune": {
+   "aliases": [
+    "Fortune"
+   ],
+   "cargo": 16.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "MISC_Fortune",
+   "name": "MISC Fortune",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 155172413793
+  },
+  "misc_fortune_collector_industrial": {
+   "aliases": [],
+   "cargo": 16.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "MISC_Fortune_Collector_Industrial",
+   "name": "MISC Fortune Wikelo Special",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 119268486615
+  },
+  "misc_freelancer": {
+   "aliases": [
+    "Freelancer"
+   ],
+   "cargo": 66.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "MISC_Freelancer",
+   "name": "MISC Freelancer",
+   "qt_fuel": 5.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 541284403670
+  },
+  "misc_freelancer_dur": {
+   "aliases": [
+    "Freelancer DUR"
+   ],
+   "cargo": 36.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "MISC_Freelancer_DUR",
+   "name": "MISC Freelancer DUR",
+   "qt_fuel": 6.7,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 614678899083
+  },
+  "misc_freelancer_max": {
+   "aliases": [
+    "Freelancer MAX"
+   ],
+   "cargo": 120.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "MISC_Freelancer_MAX",
+   "name": "MISC Freelancer MAX",
+   "qt_fuel": 6.4,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 587155963303
+  },
+  "misc_freelancer_mis": {
+   "aliases": [
+    "Freelancer MIS"
+   ],
+   "cargo": 36.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "MISC_Freelancer_MIS",
+   "name": "MISC Freelancer MIS",
+   "qt_fuel": 5.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 284886528247
+  },
+  "misc_fury": {
+   "aliases": [
+    "Fury"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MISC_Fury",
+   "name": "Mirai Fury"
+  },
+  "misc_fury_lx": {
+   "aliases": [
+    "Fury LX"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MISC_Fury_LX",
+   "name": "Mirai Fury LX"
+  },
+  "misc_fury_miru": {
+   "aliases": [
+    "Fury MX"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MISC_Fury_Miru",
+   "name": "Mirai Fury MX"
+  },
+  "misc_hull_a": {
+   "aliases": [
+    "Hull A"
+   ],
+   "cargo": 64.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "MISC_Hull_A",
+   "name": "MISC Hull A",
+   "qt_fuel": 1.2,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 206896551724
+  },
+  "misc_hull_b": {
+   "aliases": [
+    "Hull B"
+   ],
+   "cargo": 512.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MISC_Hull_B",
+   "name": "MISC Hull B",
+   "qt_fuel": 8.4,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1541284403670
+  },
+  "misc_hull_c": {
+   "aliases": [
+    "Hull C"
+   ],
+   "cargo": 4608.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "MISC_Hull_C",
+   "name": "MISC Hull C",
+   "qt_fuel": 21.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 566770186335
+  },
+  "misc_prospector": {
+   "aliases": [
+    "Prospector"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MISC_Prospector",
+   "name": "MISC Prospector",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 155172413793
+  },
+  "misc_prospector_btala": {
+   "aliases": [],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "MISC_Prospector_BTALA",
+   "name": "MISC Prospector Alliance",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 163994169096
+  },
+  "misc_prospector_collector_indust": {
+   "aliases": [],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "MISC_Prospector_Collector_Indust",
+   "name": "MISC Prospector Wikelo Work Special",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 163994169096
+  },
+  "misc_razor": {
+   "aliases": [
+    "Razor"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MISC_Razor",
+   "name": "Mirai Razor",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 122448979592
+  },
+  "misc_razor_ex": {
+   "aliases": [
+    "Razor EX"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MISC_Razor_EX",
+   "name": "Mirai Razor EX",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 122448979592
+  },
+  "misc_razor_lx": {
+   "aliases": [
+    "Razor LX"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MISC_Razor_LX",
+   "name": "Mirai Razor LX",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 122448979592
+  },
+  "misc_reliant": {
+   "aliases": [
+    "Reliant Kore"
+   ],
+   "cargo": 6.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "MISC_Reliant",
+   "name": "MISC Reliant Kore",
+   "qt_fuel": 0.7,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 65530799476
+  },
+  "misc_reliant_mako": {
+   "aliases": [
+    "Reliant Mako"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MISC_Reliant_Mako",
+   "name": "MISC Reliant Mako",
+   "qt_fuel": 0.7,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 42016806723
+  },
+  "misc_reliant_sen": {
+   "aliases": [
+    "Reliant Sen"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MISC_Reliant_Sen",
+   "name": "MISC Reliant Sen",
+   "qt_fuel": 0.8,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 137931034483
+  },
+  "misc_reliant_tana": {
+   "aliases": [
+    "Reliant Tana"
+   ],
+   "cargo": 1.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "MISC_Reliant_Tana",
+   "name": "MISC Reliant Tana",
+   "qt_fuel": 0.7,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 37593984962
+  },
+  "misc_starfarer": {
+   "aliases": [
+    "Starfarer"
+   ],
+   "cargo": 291.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "MISC_Starfarer",
+   "name": "MISC Starfarer",
+   "qt_fuel": 19.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 491718426501
+  },
+  "misc_starfarer_gemini": {
+   "aliases": [
+    "Starfarer Gemini"
+   ],
+   "cargo": 291.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "MISC_Starfarer_Gemini",
+   "name": "MISC Starfarer Gemini",
+   "qt_fuel": 19.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 155279503106
+  },
+  "misc_starlancer_max": {
+   "aliases": [
+    "Starlancer MAX"
+   ],
+   "cargo": 224.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "MISC_Starlancer_Max",
+   "name": "MISC Starlancer MAX",
+   "qt_fuel": 8.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1577981651376
+  },
+  "misc_starlancer_max_collector_indust": {
+   "aliases": [],
+   "cargo": 224.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "MISC_Starlancer_Max_Collector_Indust",
+   "name": "MISC Starlancer MAX Wikelo Work Special",
+   "qt_fuel": 8.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 1024663409985
+  },
+  "misc_starlancer_tac": {
+   "aliases": [
+    "Starlancer TAC"
+   ],
+   "cargo": 96.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "MISC_Starlancer_TAC",
+   "name": "MISC Starlancer TAC",
+   "qt_fuel": 8.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1577981651376
+  },
+  "misc_starlancer_tac_collector_military": {
+   "aliases": [],
+   "cargo": 96.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "MISC_Starlancer_TAC_Collector_Military",
+   "name": "MISC Starlancer TAC Wikelo War Special",
+   "qt_fuel": 8.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 375709916994
+  },
+  "misc_starlite": {
+   "aliases": [
+    "Starlite"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MISC_Starlite",
+   "name": "MISC Starlite",
+   "qt_fuel": 1.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 172413793103
+  },
+  "mrai_guardian": {
+   "aliases": [
+    "Guardian"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MRAI_Guardian",
+   "name": "Mirai Guardian",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 222114920328
+  },
+  "mrai_guardian_military": {
+   "aliases": [
+    "Guardian Wikelo War Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "MRAI_Guardian_Military",
+   "name": "Mirai Guardian Wikelo War Special",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 213358070501
+  },
+  "mrai_guardian_mx": {
+   "aliases": [
+    "Guardian MX"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MRAI_Guardian_MX",
+   "name": "Mirai Guardian MX",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 222114920328
+  },
+  "mrai_guardian_mx_collector_military": {
+   "aliases": [
+    "Guardian MX Wikelo War Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "MRAI_Guardian_MX_Collector_Military",
+   "name": "Mirai Guardian MX Wikelo War Special",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 191826522102
+  },
+  "mrai_guardian_qi": {
+   "aliases": [
+    "Guardian QI",
+    "Mirai Guardian MX"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MRAI_Guardian_QI",
+   "name": "Mirai Guardian QI",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 222114920328
+  },
+  "mrai_guardian_qi_collector_indust": {
+   "aliases": [
+    "Guardian QI Wikelo Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "MRAI_Guardian_QI_Collector_Indust",
+   "name": "Mirai Guardian QI Wikelo Special",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 703363914373
+  },
+  "mrai_pulse": {
+   "aliases": [
+    "Pulse"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MRAI_Pulse",
+   "name": "Mirai Pulse"
+  },
+  "mrai_pulse_lx": {
+   "aliases": [
+    "Pulse LX"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "MRAI_Pulse_LX",
+   "name": "Mirai Pulse LX"
+  },
+  "orig_100i": {
+   "aliases": [
+    "100i"
+   ],
+   "cargo": 2.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ORIG_100i",
+   "name": "Origin 100i",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 91836734694
+  },
+  "orig_125a": {
+   "aliases": [
+    "125a"
+   ],
+   "cargo": 2.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ORIG_125a",
+   "name": "Origin 125a",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 91836734694
+  },
+  "orig_135c": {
+   "aliases": [
+    "135c"
+   ],
+   "cargo": 6.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ORIG_135c",
+   "name": "Origin 135c",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 91836734694
+  },
+  "orig_300i": {
+   "aliases": [
+    "300i"
+   ],
+   "cargo": 8.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ORIG_300i",
+   "name": "Origin 300i",
+   "qt_fuel": 0.7,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 71428571429
+  },
+  "orig_315p": {
+   "aliases": [
+    "315p"
+   ],
+   "cargo": 12.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ORIG_315p",
+   "name": "Origin 315p",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 155172413793
+  },
+  "orig_325a": {
+   "aliases": [
+    "325a"
+   ],
+   "cargo": 4.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ORIG_325a",
+   "name": "Origin 325a",
+   "qt_fuel": 0.7,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 37593984962
+  },
+  "orig_350r": {
+   "aliases": [
+    "350r"
+   ],
+   "cargo": 4.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ORIG_350r",
+   "name": "Origin 350r",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 65832784727
+  },
+  "orig_400i": {
+   "aliases": [
+    "400i"
+   ],
+   "cargo": 42.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ORIG_400i",
+   "name": "Origin 400i",
+   "qt_fuel": 8.1,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 681760794546
+  },
+  "orig_600i": {
+   "aliases": [
+    "600i",
+    "600i Explorer",
+    "Origin 600i Explorer"
+   ],
+   "cargo": 44.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ORIG_600i",
+   "name": "Origin 600i",
+   "qt_fuel": 9.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 908256880734
+  },
+  "orig_600i_bis2951": {
+   "aliases": [
+    "600i 2951 BIS"
+   ],
+   "cargo": 44.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "ORIG_600i_BIS2951",
+   "name": "Origin 600i 2951 BIS",
+   "qt_fuel": 9.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 908256880734
+  },
+  "orig_600i_executive_edition": {
+   "aliases": [
+    "600i Executive Edition",
+    "600i Executive-Edition"
+   ],
+   "cargo": 44.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ORIG_600i_Executive_Edition",
+   "name": "Origin 600i Executive Edition",
+   "qt_fuel": 9.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 908256880734
+  },
+  "orig_600i_touring": {
+   "aliases": [
+    "600i Touring"
+   ],
+   "cargo": 20.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ORIG_600i_Touring",
+   "name": "Origin 600i Touring",
+   "qt_fuel": 9.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 908256880734
+  },
+  "orig_85x": {
+   "aliases": [
+    "85X",
+    "85X Limited",
+    "Origin 85X"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ORIG_85X",
+   "name": "Origin 85X Limited",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 32223415682
+  },
+  "orig_890jump": {
+   "aliases": [
+    "890 Jump"
+   ],
+   "cargo": 388.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "ORIG_890Jump",
+   "name": "Origin 890 Jump",
+   "qt_fuel": 33.1,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 539967373573
+  },
+  "orig_m50": {
+   "aliases": [
+    "M50",
+    "M50 Interceptor",
+    "Origin M50"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ORIG_m50",
+   "name": "Origin M50 Interceptor",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 122448979592
+  },
+  "orig_m80": {
+   "aliases": [
+    "M80"
+   ],
+   "cargo": 2.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ORIG_m80",
+   "name": "Origin M80",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 387172796903
+  },
+  "orig_x1": {
+   "aliases": [
+    "X1"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ORIG_X1",
+   "name": "Origin X1"
+  },
+  "orig_x1_force": {
+   "aliases": [
+    "X1 Force"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ORIG_X1_Force",
+   "name": "Origin X1 Force"
+  },
+  "orig_x1_velocity": {
+   "aliases": [
+    "X1 Velocity"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "ORIG_X1_Velocity",
+   "name": "Origin X1 Velocity"
+  },
+  "rsi_apollo_medivac": {
+   "aliases": [
+    "Apollo Medivac"
+   ],
+   "cargo": 32.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Apollo_Medivac",
+   "name": "RSI Apollo Medivac",
+   "qt_fuel": 9.4,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 862385321101
+  },
+  "rsi_apollo_triage": {
+   "aliases": [
+    "Apollo Triage"
+   ],
+   "cargo": 32.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Apollo_Triage",
+   "name": "RSI Apollo Triage",
+   "qt_fuel": 9.4,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 862385321101
+  },
+  "rsi_apollo_triage_collector_stealth": {
+   "aliases": [
+    "Apollo Triage Wikelo Sneak Special"
+   ],
+   "cargo": 32.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "RSI_Apollo_Triage_Collector_Stealth",
+   "name": "RSI Apollo Triage Wikelo Sneak Special",
+   "qt_fuel": 9.4,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 479102956167
+  },
+  "rsi_aurora_gs_cl": {
+   "aliases": [
+    "Aurora Mk I CL"
+   ],
+   "cargo": 6.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Aurora_GS_CL",
+   "name": "RSI Aurora Mk I CL",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "rsi_aurora_gs_es": {
+   "aliases": [
+    "Aurora Mk I ES"
+   ],
+   "cargo": 3.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Aurora_GS_ES",
+   "name": "RSI Aurora Mk I ES",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "rsi_aurora_gs_ln": {
+   "aliases": [
+    "Aurora Mk I LN"
+   ],
+   "cargo": 3.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Aurora_GS_LN",
+   "name": "RSI Aurora Mk I LN",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "rsi_aurora_gs_lx": {
+   "aliases": [
+    "Aurora Mk I LX"
+   ],
+   "cargo": 3.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Aurora_GS_LX",
+   "name": "RSI Aurora Mk I  LX",
+   "qt_fuel": 1.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 109721307878
+  },
+  "rsi_aurora_gs_mr": {
+   "aliases": [
+    "Aurora Mk I MR"
+   ],
+   "cargo": 3.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Aurora_GS_MR",
+   "name": "RSI Aurora Mk I MR",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "rsi_aurora_gs_se": {
+   "aliases": [
+    "Aurora Mk I SE"
+   ],
+   "cargo": 6.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Aurora_GS_SE",
+   "name": "RSI Aurora Mk I SE",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "rsi_aurora_mk2": {
+   "aliases": [
+    "Aurora Mk II"
+   ],
+   "cargo": 2.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Aurora_Mk2",
+   "name": "RSI Aurora Mk II",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "rsi_constellation_andromeda": {
+   "aliases": [
+    "Constellation Mk IV Andromeda"
+   ],
+   "cargo": 96.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "uex"
+   ],
+   "class": "RSI_Constellation_Andromeda",
+   "name": "RSI Constellation Mk IV Andromeda",
+   "qt_fuel": 7.0,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 1070336391437
+  },
+  "rsi_constellation_andromeda_gs": {
+   "aliases": [
+    "Constellation Mk IV Andromeda"
+   ],
+   "cargo": 96.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Constellation_Andromeda_GS",
+   "name": "RSI Constellation Mk IV Andromeda",
+   "qt_fuel": 7.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1070336391437
+  },
+  "rsi_constellation_andromeda_gs_display": {
+   "aliases": [
+    "Constellation Mk IV Andromeda"
+   ],
+   "cargo": 96.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "RSI_Constellation_Andromeda_GS_Display",
+   "name": "RSI Constellation Mk IV Andromeda",
+   "qt_fuel": 7.0,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 1070336391437
+  },
+  "rsi_constellation_aquila": {
+   "aliases": [
+    "Constellation Mk IV Aquila"
+   ],
+   "cargo": 96.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "uex"
+   ],
+   "class": "RSI_Constellation_Aquila",
+   "name": "RSI Constellation Mk IV Aquila",
+   "qt_fuel": 8.1,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 1238532110092
+  },
+  "rsi_constellation_aquila_gs": {
+   "aliases": [
+    "Constellation Mk IV Aquila"
+   ],
+   "cargo": 96.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Constellation_Aquila_GS",
+   "name": "RSI Constellation Mk IV Aquila",
+   "qt_fuel": 8.1,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1238532110092
+  },
+  "rsi_constellation_mk5_centaurus": {
+   "aliases": [
+    "Constellation Mk V Centaurus"
+   ],
+   "cargo": 240.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Constellation_Mk5_Centaurus",
+   "name": "RSI Constellation Mk V Centaurus",
+   "qt_fuel": 8.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 848377231923
+  },
+  "rsi_constellation_mk5_centaurus_display": {
+   "aliases": [
+    "Constellation Mk V Centaurus"
+   ],
+   "cargo": 240.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "RSI_Constellation_Mk5_Centaurus_Display",
+   "name": "RSI Constellation Mk V Centaurus",
+   "qt_fuel": 8.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 848377231923
+  },
+  "rsi_constellation_phoenix": {
+   "aliases": [
+    "Constellation Mk IV Phoenix"
+   ],
+   "cargo": 80.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "uex"
+   ],
+   "class": "RSI_Constellation_Phoenix",
+   "name": "RSI Constellation Mk IV Phoenix",
+   "qt_fuel": 7.0,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 1070336391437
+  },
+  "rsi_constellation_phoenix_emerald": {
+   "aliases": [
+    "Constellation Mk IV Phoenix Emerald"
+   ],
+   "cargo": 80.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "uex"
+   ],
+   "class": "RSI_Constellation_Phoenix_Emerald",
+   "name": "RSI Constellation Mk IV Phoenix Emerald",
+   "qt_fuel": 7.0,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 1070336391437
+  },
+  "rsi_constellation_phoenix_gs": {
+   "aliases": [
+    "Constellation Mk IV Phoenix"
+   ],
+   "cargo": 80.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Constellation_Phoenix_GS",
+   "name": "RSI Constellation Mk IV Phoenix",
+   "qt_fuel": 7.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1070336391437
+  },
+  "rsi_constellation_taurus": {
+   "aliases": [
+    "Constellation Mk IV Taurus"
+   ],
+   "cargo": 174.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "uex"
+   ],
+   "class": "RSI_Constellation_Taurus",
+   "name": "RSI Constellation Mk IV Taurus",
+   "qt_fuel": 7.7,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 1177370030581
+  },
+  "rsi_constellation_taurus_gs": {
+   "aliases": [
+    "Constellation Mk IV Taurus"
+   ],
+   "cargo": 174.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Constellation_Taurus_GS",
+   "name": "RSI Constellation Mk IV Taurus",
+   "qt_fuel": 7.7,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 1177370030581
+  },
+  "rsi_constellation_taurus_gs_military": {
+   "aliases": [
+    "Constellation Mk IV Taurus Wikelo War Special"
+   ],
+   "cargo": 174.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "RSI_Constellation_Taurus_GS_Military",
+   "name": "RSI Constellation Mk IV Taurus Wikelo War Special",
+   "qt_fuel": 7.7,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 321100917431
+  },
+  "rsi_constellation_taurus_military": {
+   "aliases": [
+    "Constellation Mk IV Taurus Wikelo War Special"
+   ],
+   "cargo": 174.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "RSI_Constellation_Taurus_Military",
+   "name": "RSI Constellation Mk IV Taurus Wikelo War Special",
+   "qt_fuel": 7.7,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 321100917431
+  },
+  "rsi_hermes": {
+   "aliases": [
+    "Hermes"
+   ],
+   "cargo": 288.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Hermes",
+   "name": "RSI Hermes",
+   "qt_fuel": 9.4,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 862385321101
+  },
+  "rsi_lynx": {
+   "aliases": [
+    "Lynx"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Lynx",
+   "name": "RSI Lynx"
+  },
+  "rsi_mantis": {
+   "aliases": [
+    "Mantis"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Mantis",
+   "name": "RSI Mantis",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 48335123523
+  },
+  "rsi_meteor": {
+   "aliases": [
+    "Meteor"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Meteor",
+   "name": "RSI Meteor",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 48335123523
+  },
+  "rsi_meteor_collector_military": {
+   "aliases": [
+    "Meteor PYAM Exec"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "RSI_Meteor_Collector_Military",
+   "name": "RSI Meteor PYAM Exec",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 43731778426
+  },
+  "rsi_meteor_collector_stealth": {
+   "aliases": [
+    "Meteor Wikelo Sneak Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "RSI_Meteor_Collector_Stealth",
+   "name": "RSI Meteor Wikelo Sneak Special",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 51020408163
+  },
+  "rsi_perseus": {
+   "aliases": [
+    "Perseus"
+   ],
+   "cargo": 96.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Perseus",
+   "name": "RSI Perseus",
+   "qt_fuel": 19.8,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 161817587447
+  },
+  "rsi_polaris": {
+   "aliases": [
+    "Polaris"
+   ],
+   "cargo": 576.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Polaris",
+   "name": "RSI Polaris",
+   "qt_fuel": 21.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 435589255465
+  },
+  "rsi_polaris_collector_military": {
+   "aliases": [
+    "Polaris"
+   ],
+   "cargo": 576.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "RSI_Polaris_Collector_Military",
+   "name": "RSI Polaris",
+   "qt_fuel": 21.6,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 435589255465
+  },
+  "rsi_salvation": {
+   "aliases": [
+    "Salvation"
+   ],
+   "cargo": 6.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Salvation",
+   "name": "RSI Salvation",
+   "qt_fuel": 0.8,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 145772594752
+  },
+  "rsi_scorpius": {
+   "aliases": [
+    "Scorpius"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Scorpius",
+   "name": "RSI Scorpius",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "rsi_scorpius_antares": {
+   "aliases": [
+    "Scorpius Antares"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Scorpius_Antares",
+   "name": "RSI Scorpius Antares",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 98749177090
+  },
+  "rsi_scorpius_stealth": {
+   "aliases": [
+    "Scorpius Wikelo Sneak Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "RSI_Scorpius_Stealth",
+   "name": "RSI Scorpius Wikelo Sneak Special",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 48335123523
+  },
+  "rsi_skylark": {
+   "aliases": [
+    "Skylark"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Skylark",
+   "name": "RSI Skylark"
+  },
+  "rsi_skylark_display": {
+   "aliases": [
+    "Skylark"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "RSI_Skylark_Display",
+   "name": "RSI Skylark"
+  },
+  "rsi_ursa_medivac": {
+   "aliases": [
+    "Ursa Medivac"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Ursa_Medivac",
+   "name": "RSI Ursa Medivac"
+  },
+  "rsi_ursa_medivac_stealth": {
+   "aliases": [
+    "Ursa Medivac Wikelo Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "RSI_Ursa_Medivac_Stealth",
+   "name": "RSI Ursa Medivac Wikelo Special"
+  },
+  "rsi_ursa_rover": {
+   "aliases": [
+    "Ursa"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Ursa_Rover",
+   "name": "RSI Ursa"
+  },
+  "rsi_ursa_rover_emerald": {
+   "aliases": [
+    "Ursa Fortuna"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "RSI_Ursa_Rover_Emerald",
+   "name": "RSI Ursa Fortuna"
+  },
+  "rsi_zeus_cl": {
+   "aliases": [
+    "Zeus Mk II CL"
+   ],
+   "cargo": 128.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "RSI_Zeus_CL",
+   "name": "RSI Zeus Mk II CL",
+   "qt_fuel": 6.4,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 631350498175
+  },
+  "rsi_zeus_cl_collector_indust": {
+   "aliases": [
+    "Zeus Mk II CL"
+   ],
+   "cargo": 128.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "RSI_Zeus_CL_Collector_Indust",
+   "name": "RSI Zeus Mk II CL",
+   "qt_fuel": 6.4,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 762540212081
+  },
+  "rsi_zeus_es": {
+   "aliases": [
+    "Zeus Mk II ES"
+   ],
+   "cargo": 32.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards",
+    "uex"
+   ],
+   "class": "RSI_Zeus_ES",
+   "name": "RSI Zeus Mk II ES",
+   "qt_fuel": 6.7,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 660945052777
+  },
+  "rsi_zeus_es_collector_indust": {
+   "aliases": [
+    "Zeus Mk II ES Wikelo Work Special"
+   ],
+   "cargo": 32.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "RSI_Zeus_ES_Collector_Indust",
+   "name": "RSI Zeus Mk II ES Wikelo Work Special",
+   "qt_fuel": 6.7,
+   "qt_fuel_confirmed": false,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "qt_range": 798284284523
+  },
+  "tmbl_cyclone": {
+   "aliases": [
+    "Cyclone"
+   ],
+   "cargo": 1.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "uex"
+   ],
+   "class": "TMBL_Cyclone",
+   "name": "Tumbril Cyclone"
+  },
+  "tmbl_cyclone_aa": {
+   "aliases": [
+    "Cyclone AA"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "TMBL_Cyclone_AA",
+   "name": "Tumbril Cyclone AA"
+  },
+  "tmbl_cyclone_mt": {
+   "aliases": [
+    "Cyclone MT"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "TMBL_Cyclone_MT",
+   "name": "Tumbril Cyclone MT"
+  },
+  "tmbl_cyclone_rc": {
+   "aliases": [
+    "Cyclone RC"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "TMBL_Cyclone_RC",
+   "name": "Tumbril Cyclone RC"
+  },
+  "tmbl_cyclone_rn": {
+   "aliases": [
+    "Cyclone RN"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "TMBL_Cyclone_RN",
+   "name": "Tumbril Cyclone RN"
+  },
+  "tmbl_cyclone_tr": {
+   "aliases": [
+    "Cyclone TR"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "TMBL_Cyclone_TR",
+   "name": "Tumbril Cyclone TR"
+  },
+  "tmbl_nova": {
+   "aliases": [
+    "Nova"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "TMBL_Nova",
+   "name": "Tumbril Nova"
+  },
+  "tmbl_storm": {
+   "aliases": [
+    "Storm"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "TMBL_Storm",
+   "name": "Tumbril Storm"
+  },
+  "tmbl_storm_aa": {
+   "aliases": [
+    "Storm AA"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "TMBL_Storm_AA",
+   "name": "Tumbril Storm AA"
+  },
+  "vncl_blade": {
+   "aliases": [
+    "Blade"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "VNCL_Blade",
+   "name": "Esperia Blade",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 56169256694
+  },
+  "vncl_glaive": {
+   "aliases": [
+    "Glaive"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "VNCL_Glaive",
+   "name": "Esperia Glaive",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 48335123523
+  },
+  "vncl_mauler": {
+   "aliases": [
+    "Mauler Destroyer"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "VNCL_Mauler",
+   "name": "Vanduul Mauler Destroyer",
+   "qt_fuel": 60.0,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 978792822186
+  },
+  "vncl_scythe": {
+   "aliases": [
+    "Scythe"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "VNCL_Scythe",
+   "name": "Vanduul Scythe",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 48335123523
+  },
+  "vncl_stinger": {
+   "aliases": [
+    "Stinger"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "VNCL_Stinger",
+   "name": "Esperia Stinger",
+   "qt_fuel": 4.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 703363914373
+  },
+  "xian_nox": {
+   "aliases": [
+    "Nox"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "XIAN_Nox",
+   "name": "Aopoa Nox"
+  },
+  "xian_nox_collector_mod": {
+   "aliases": [
+    "Nox Wikelo Special"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": false,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki"
+   ],
+   "class": "XIAN_Nox_Collector_Mod",
+   "name": "Aopoa Nox Wikelo Special"
+  },
+  "xian_nox_kue": {
+   "aliases": [
+    "Nox Kue"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "XIAN_Nox_Kue",
+   "name": "Aopoa Nox Kue"
+  },
+  "xian_scout": {
+   "aliases": [
+    "Khartu-al"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "XIAN_Scout",
+   "name": "Aopoa Khartu-al",
+   "qt_fuel": 0.6,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 65832784727
+  },
+  "xnaa_santokyai": {
+   "aliases": [
+    "San'tok.yāi"
+   ],
+   "cargo": 0.0,
+   "cargo_confirmed": true,
+   "cargo_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "class": "XNAA_SanTokYai",
+   "name": "Aopoa San'tok.yāi",
+   "qt_fuel": 0.9,
+   "qt_fuel_confirmed": true,
+   "qt_fuel_sources": [
+    "scunpacked",
+    "wiki",
+    "fleetyards"
+   ],
+   "qt_range": 48335123523
+  }
+ }
+}

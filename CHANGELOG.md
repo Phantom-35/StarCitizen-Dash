@@ -5,6 +5,29 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+## [0.8.0] – 2026-11-11
+
+### Hinzugefügt
+- **Schiffsdatenbank** (`scdash/data/ships.json`, 310 Fahrzeuge, Spielstand 4.10.2) mit Frachtraum und
+  Quantum-Tank. Erzeugt von `tools/build_ship_data.py` aus den Spieldateien, abgeglichen mit Wiki-API,
+  FleetYards und UEX. Nur Werte mit mindestens zwei übereinstimmenden Quellen; Widersprüche werden
+  nicht übernommen; nicht unabhängig bestätigte Werte erscheinen mit „ca.“. Abgleich in
+  `docs/ship-data-report.md`.
+- **Quantum-Sprung in Prozent des Tanks** („braucht 42 % Tank“), Warnung „reicht nicht!“ bei über
+  100 %, Hinweis „Tankstand prüfen“, wenn Bedarf plus Session-Verbrauch 100 % übersteigen; Verbrauch
+  der Session in Prozent
+- **Frachtraum** am Schiff und Abgleich mit Mengen-Zielen („12 Flüge nötig“ / „passt in einen Flug“)
+- **Log-Check** (`--analyze`, optional `--compare`): Bericht über eine Game.log mit unkenntlich
+  gemachten persönlichen Daten; wertet auch den Versuch „ausführlichere Log“ (`log_verbosity`) aus
+
+### Geprüft
+- Einheit der Treibstoffschätzung in der Log: **Millionstel SCU**. Nachgerechnet an zwei Sprüngen
+  einer echten Session mit bekannten Koordinaten (1.995 km bei 1.750 km Luftlinie / 2.131 km
+  Oberflächenweg) und am Referenzwert der Wiki; als Test festgehalten.
+
+### Geändert
+- Die rohe Treibstoffzahl wird nur noch gezeigt, wenn das Schiff unbekannt ist
+
 ## [0.7.0] – 2026-11-10
 
 Schwerpunkt: Mehrwert beim Spielen – beide Modi zeigen mehr von dem, was man wirklich braucht.

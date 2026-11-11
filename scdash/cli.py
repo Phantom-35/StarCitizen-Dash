@@ -34,6 +34,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--gpu", action="store_true",
                    help="Dashboard-Fenster mit Hardwarebeschleunigung (flüssiger, belegt aber etwas VRAM)")
     p.add_argument("--no-status", action="store_true", help="RSI-Serverstatus nicht abrufen (keine Internetzugriffe)")
+    p.add_argument("--analyze", metavar="LOG",
+                   help="Log-Check: Bericht über eine Game.log ausgeben (was erkannt wird, unbekannte Meldungen) "
+                        "und beenden")
+    p.add_argument("--compare", metavar="ALTE_LOG",
+                   help="mit --analyze: zweite Log zum Vergleich, z. B. vor/nach einer Änderung der user.cfg")
     p.add_argument("--demo", action="store_true", help="Demo-Modus mit simulierten Ereignissen (ohne Spiel)")
     p.add_argument("-v", "--verbose", action="store_true", help="Ausführliche Ausgabe")
     p.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
@@ -77,6 +82,21 @@ def main(argv=None) -> int:
         format="%(asctime)s %(levelname)-7s %(message)s",
         datefmt="%H:%M:%S",
     )
+
+    if args.analyze:
+        from scdash.analyze import run
+
+        try:
+            text = run(args.analyze, args.compare)
+        except OSError as exc:
+            log.error("Log nicht lesbar: %s", exc)
+            return 1
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")  # Windows consoles default to a legacy code page
+        except (AttributeError, ValueError):
+            pass
+        print(text)
+        return 0
 
     state = DashboardState()
     threads = []

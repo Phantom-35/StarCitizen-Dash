@@ -443,3 +443,8 @@ body[data-mode="mission"] [data-only="combat"] { display: none !important; }
 #ms-earn.neg { color: var(--death); }
 .pills .crew { --c: var(--ink); border-color: rgba(244, 234, 217, .35); }
 #sound-toggle.off { color: var(--dim); border-color: var(--faint); }
+
+/* ship database hints */
+.objectives .cargo-hint { display: block; margin-top: 3px; font-size: 0.875rem; font-weight: 500; color: var(--dim); letter-spacing: .04em; }
+.pills .qt.warn { --c: var(--amber); border-style: solid; }
+.pills .qt.bad { --c: var(--death); border-style: solid; background: rgba(255, 61, 90, .08); }
