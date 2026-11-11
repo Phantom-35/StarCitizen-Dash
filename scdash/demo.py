@@ -74,7 +74,7 @@ def mission_script(c: int) -> list:
         _N % ("Hangar Request Completed", _ZERO, ""),
         _N % ("Leaving Armistice Zone - Caution Advised", _ZERO, ""),
         _QT_SET % "EverusHarbor_LOC",
-        "<{ts}> [Notice] <Calculate Route> [ItemNavigation][CL][1] | NOT AUTH | DRAK_Cutlass_Black_{n}[{n}]|CSCItemNavigation::CalculateRoute|Successfully calculated route to EverusHarbor_LOC fuel estimate 23.417050 [Team_CGP4][QuantumTravel]",
+        "<{ts}> [Notice] <Calculate Route> [ItemNavigation][CL][1] | NOT AUTH | DRAK_Cutlass_Black_{n}[{n}]|CSCItemNavigation::CalculateRoute|Successfully calculated route to EverusHarbor_LOC fuel estimate 451872.250000 [Team_CGP4][QuantumTravel]",
         _N % ("Entered Monitored Space", _ZERO, ""),
         _QT_DONE,
         _LOC % "RR_HUR_LEO",

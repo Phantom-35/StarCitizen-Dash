@@ -400,21 +400,22 @@ def parse_line(line: str) -> Optional[LogEvent]:
 
     ship = _QT_SHIP.search(line)
     qt_ship = ship_name(ship.group("ship")) if ship else None
+    qt_class = ship.group("ship") if ship else None
     m = _QT_ROUTE.search(line)
     if m:
-        return LogEvent("quantum", ts, {"phase": "route", "fuel": float(m.group("fuel")), "ship": qt_ship,
+        return LogEvent("quantum", ts, {"phase": "route", "fuel": float(m.group("fuel")), "ship": qt_ship, "ship_class": qt_class,
                                         **quantum_destination(m.group("target"))})
     m = _QT_TARGET.search(line)
     if m:
-        return LogEvent("quantum", ts, {"phase": "target", "ship": qt_ship, **quantum_destination(m.group("target"))})
+        return LogEvent("quantum", ts, {"phase": "target", "ship": qt_ship, "ship_class": qt_class, **quantum_destination(m.group("target"))})
     m = _QT_ROUTE_START.search(line)
     if m:
         return LogEvent("route_start", ts, {"start": m.group("start").strip()})
     m = _QT_FUEL.search(line)
     if m:
-        return LogEvent("quantum", ts, {"phase": "fuel", "ship": qt_ship, **quantum_destination(m.group("target"))})
+        return LogEvent("quantum", ts, {"phase": "fuel", "ship": qt_ship, "ship_class": qt_class, **quantum_destination(m.group("target"))})
     if _QT_ARRIVED.search(line):
-        return LogEvent("quantum", ts, {"phase": "arrived", "name": None, "kind": None, "ship": qt_ship})
+        return LogEvent("quantum", ts, {"phase": "arrived", "name": None, "kind": None, "ship": qt_ship, "ship_class": qt_class})
 
     m = _VEHICLE_CONTROL.search(line)
     if m:

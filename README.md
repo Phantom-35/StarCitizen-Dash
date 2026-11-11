@@ -67,10 +67,13 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
 - **Quantum-Ziel**, solange ein Sprung geplant ist – lesbar statt interner IDs: Städte, Raststationen
   (*CRU-L4*), *Markierter Navpunkt*, *Partymitglied* und bei Auftragsmarkern der Ort aus dem aktiven
   Auftragsziel (*Auftragsziel · Clear View Emergency Shelter*)
-- **Aktuelles Schiff mit Zeit an Bord** und **Crew an Bord** (wer zu dir ins Schiff gekommen ist).
-  Der Schiffsname kommt notfalls auch aus den Quantum-Zeilen, falls die Einsteige-Meldung fehlt.
-- **Treibstoffbedarf der geplanten Quantum-Route** (Schätzung des Spiels) direkt am Quantum-Ziel,
-  dazu die Summe der geflogenen Sprünge in der Session
+- **Aktuelles Schiff mit Zeit an Bord und Frachtraum** (z. B. *RSI Aurora Mk II · an Bord 12:34 · 2 SCU*)
+  und **Crew an Bord**. Der Schiffsname kommt notfalls auch aus den Quantum-Zeilen.
+- **Wie viel Tank der geplante Quantum-Sprung braucht**, in Prozent des Quantum-Tanks deines Schiffs
+  (z. B. *⟶ ArcCorp · braucht 42 % Tank*). Rot mit „reicht nicht!“, wenn die Route mehr als einen
+  vollen Tank braucht; gelber Hinweis „Tankstand prüfen“, wenn Bedarf plus der Verbrauch dieser
+  Session über 100 % liegen. Dazu der Verbrauch der Session („x % QT-Tank verflogen“).
+  Wie das gerechnet wird, steht unter [Schiffsdaten und Treibstoff-Rechnung](#schiffsdaten-und-treibstoff-rechnung).
 - **Server-Nummer** neben der Region – praktisch, um mit Freunden auf denselben Server zu kommen
 - **Signaltöne** (Taste `T` oder Knopf „Ton an/aus“): kurzer Ton bei Tod, K.O., erledigtem/gescheitertem
   Auftrag, Verbindungsfehler und fertigem Timer – damit du es merkst, während du ins Spiel schaust
@@ -86,7 +89,8 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
   Im Fokus steht immer der Auftrag, an dem du zuletzt etwas gemacht hast.
 - **Nächstes Ziel:** der Ort aus dem ersten offenen Ziel (Abholen vor Abliefern) – mit Markierung
   **„du bist hier“**, sobald du dort angekommen bist
-- **Fortschrittsbalken** bei Mengen-Zielen (*Deliver 8/24 SCU …*)
+- **Fortschrittsbalken** bei Mengen-Zielen (*Deliver 8/24 SCU …*) und der Abgleich mit deinem
+  Frachtraum: *„passt in einen Flug“* oder *„12 Flüge nötig (Frachtraum 2 SCU, offen 24 SCU)“*
 - **Fracht verladen / abgegeben:** jede Kiste, die du ins Schiff stellst oder am Ziel abgibst
 - **Weitere laufende Aufträge** und die zuletzt erledigten / gescheiterten mit Dauer
 - **Ring „Im Auftrag“:** wie lange du schon am aktuellen Auftrag sitzt
@@ -205,7 +209,7 @@ als Testfall in `tests/fixtures/`).
 | Zonen | Meldungen *Armistice Zone*, *Monitored Space*, *… Jurisdiction* | ✅ |
 | Schiff (ein-/aussteigen) | Meldung `You have joined channel '<Schiff> : <Pilot>'` | ✅ |
 | Quantum-Ziele & Sprünge | `<Player Selected Quantum Target …>`, `<Player Requested Fuel to Quantum Target …>`, `<Quantum Drive Arrived …>` | ✅ |
-| Treibstoffbedarf der Route | `…CalculateRoute|Successfully calculated route to … fuel estimate 16.858223` | ✅ |
+| Treibstoffbedarf der Route | `…CalculateRoute\|Successfully calculated route to … fuel estimate 16.858223` | ✅ |
 | Quantum blockiert | Meldung *Quantum Travel: Your destination is obstructed …* | ✅ |
 | Spiel beendet | `<SystemQuit>` | ✅ |
 | Session-Start | Zeitstempel der ersten Log-Zeile | ✅ |
@@ -285,6 +289,84 @@ Ob das Spiel läuft, wird zusätzlich alle 15 s über die Prozessliste geprüft.
 
 ---
 
+## Schiffsdaten und Treibstoff-Rechnung
+
+Frachtraum und Größe des Quantum-Tanks stehen nicht in der `Game.log`. SC-Dash bringt dafür eine
+kleine Schiffsdatenbank mit (`scdash/data/ships.json`, 310 Fahrzeuge, Stand siehe Datei). Sie wird
+mit `tools/build_ship_data.py` erzeugt – das Dashboard selbst geht dafür nie online.
+
+**Woher die Werte kommen.** Aus den Spieldateien ([scunpacked-data](https://github.com/StarCitizenWiki/scunpacked-data)),
+abgeglichen mit der [Wiki-API](https://api.star-citizen.wiki), [FleetYards](https://fleetyards.net/)
+und [UEX](https://uexcorp.space/). Regeln:
+
+- Ein Wert wird nur übernommen, wenn **mindestens zwei Quellen übereinstimmen**.
+- Spieldateien und Wiki-API haben dieselbe Herkunft. „Unabhängig bestätigt“ ist ein Wert erst, wenn
+  auch FleetYards oder UEX ihn nennt (Quantum-Tank: 171 Schiffe, Frachtraum: 226). Alle anderen zeigt
+  SC-Dash mit **„ca.“** an.
+- **Widersprüche werden nicht geglättet:** Nennt die Mehrheit 0 SCU und eine Quelle mehr (modulare
+  Schiffe wie die Retaliator), zeigt SC-Dash gar keinen Wert.
+- Die offizielle RSI-Schiffsliste wird nur verglichen, nicht verwendet – sie weicht bei 13 Schiffen
+  vom Spiel ab (Aurora Mk II: 5 SCU laut Liste, 2 SCU im Spiel).
+
+Der vollständige Abgleich steht in [docs/ship-data-report.md](docs/ship-data-report.md).
+
+**Wie der Treibstoff gerechnet wird.** Bei jeder Routenplanung schreibt das Spiel
+`fuel estimate 18.180450` in die Log. Die Einheit ist nirgends dokumentiert – sie wurde deshalb an
+einer echten Session nachgerechnet:
+
+| | |
+|---|---|
+| Quantum-Tank Aurora Mk II | 0,9 SCU (Spieldateien: 900 Einheiten zu je 1/1000 SCU) |
+| Reichweite mit Standard-Antrieb | 98,75 Gm → 9,11 Einheiten pro Gm |
+| Sprung zwischen zwei Auftragsorten auf microTech | Luftlinie 1.750 km, über die Oberfläche 2.131 km (Koordinaten aus der Log) |
+| Schätzung des Spiels dafür | 18,18 |
+| als **Millionstel SCU** gelesen | **1.995 km** – liegt genau dazwischen ✔ |
+| als Tausendstel SCU gelesen | 1.994.783 km – auf einem Planeten mit 2.000 km Durchmesser unmöglich ✘ |
+
+Ein zweiter Sprung (17,70 → 1.942 km bei 1.783 / 2.202 km) bestätigt das, ebenso der Referenzwert der
+Wiki (Port Olisar → ArcCorp: 382 Einheiten für ~42 Gm). Also gilt:
+
+> **Anteil am Tank = Schätzung × 0,000001 SCU ÷ Tankgröße des Schiffs**
+
+Der Anteil hängt nicht vom eingebauten Quantum-Antrieb ab: Dessen Verbrauch steckt bereits in der
+Schätzung des Spiels. Diese Rechnung ist als Test im Projekt festgehalten (`tests/test_ships.py`).
+
+**Was das nicht ist:** kein Tankinhalt. SC-Dash weiß nicht, wie voll dein Tank ist und wann du
+getankt hast – es kennt nur den Bedarf der geplanten Route und die Summe der geflogenen Sprünge.
+Kurze Sprünge auf einem Planeten brauchen weit unter 0,1 % und werden als „< 0,1 %“ angezeigt.
+
+## Log-Check und der Versuch „ausführlichere Log“
+
+```bat
+python -m scdash --analyze "C:\…\StarCitizen\LIVE\Game.log"
+python -m scdash --analyze neu.log --compare alt.log
+```
+
+Der Bericht zeigt, was SC-Dash in einer Log erkennt, welche HUD-Meldungen noch keine eigene Regel
+haben und welche Zeilenarten vorkommen. Spielername, IDs und Adressen sind unkenntlich gemacht – du
+kannst ihn bedenkenlos weitergeben (z. B. in einem Issue).
+
+**Versuch: schreibt das Spiel auf Wunsch mehr in die Log?** Die Engine kennt die Einstellungen
+`log_verbosity` und `log_WriteToFileVerbosity`
+([Liste im Star Citizen Wiki](https://starcitizen.tools/User:Astrid/sandbox/cvars/extended)). Ob die
+normale Spielversion sie zulässt, ist nicht dokumentiert – aber gefahrlos prüfbar, denn das Spiel
+schreibt bei jeder nicht erlaubten Einstellung selbst `is marked [Not Whitelisted] … - IGNORING` in
+die Log:
+
+1. Alte Log sichern: `Game.log` aus dem Ordner `…\StarCitizen\LIVE` kopieren, z. B. als `alt.log`.
+2. Im selben Ordner die Datei `user.cfg` öffnen (oder neu anlegen) und zwei Zeilen ergänzen:
+   ```
+   log_verbosity = 4
+   log_WriteToFileVerbosity = 4
+   ```
+3. Spiel starten, ein paar Minuten spielen, beenden.
+4. `python -m scdash --analyze "…\LIVE\Game.log" --compare alt.log`
+
+Im Abschnitt „Ausführlichere Log“ steht dann **ABGELEHNT** (dann die zwei Zeilen wieder entfernen –
+mehr geht nicht) oder **NICHT abgelehnt** mit dem Vergleich, wie viel mehr geschrieben wurde. Im
+zweiten Fall bitte den Bericht als Issue schicken: Dann lässt sich prüfen, ob neue nützliche Daten
+dabei sind.
+
 ## Was nicht geht – und warum
 
 Star Citizen hat **keine Schnittstelle** für Live-Daten. Schilde, Hüllenschaden, Tankinhalt,
@@ -312,6 +394,9 @@ Optional als Befehl installieren: `pip install .` → danach einfach `scdash --o
 scdash/
 ├── cli.py        Kommandozeile, Start der Threads, Browserfenster
 ├── locations.py  Lesbare Namen für Orte, Server-Regionen, Schiffe und Waffen
+├── ships.py      Schiffsdatenbank (Frachtraum, Quantum-Tank) und Treibstoff-Rechnung
+├── analyze.py    Log-Check (--analyze): Bericht über eine Game.log
+├── data/         ships.json – erzeugt von tools/build_ship_data.py
 ├── paths.py      Game.log finden (Launcher-Log, übliche Ordner), Browser für --open
 ├── parser.py     Erkennung der Log-Zeilen (reine Funktionen, gut testbar)
 ├── state.py      Thread-sicherer Zustand + Auswertung (Kills/Tode/…)

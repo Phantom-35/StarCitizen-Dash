@@ -134,7 +134,7 @@ class RealLogTests(unittest.TestCase):
         state = DashboardState()
         LogWatcher(lambda: self.path, state).poll()
         nav = state.snapshot()["nav"]
-        self.assertEqual(nav["ship"], "RSI Aurora Mk2")
+        self.assertEqual(nav["ship"], "RSI Aurora Mk II")  # proper name from the ship database
         self.assertEqual(nav["ship_since"], "2026-11-10T16:30:54.148Z")
         self.assertAlmostEqual(nav["quantum_fuel"], 16.858, places=2)
 

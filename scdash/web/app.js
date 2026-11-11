@@ -263,13 +263,37 @@
     setClass(e, cls || "");
   }
   const fuelFmt = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const scuFmt = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
+  /** Percent of the quantum tank: honest about tiny values instead of showing "0 %". */
+  function pctFmt(p) {
+    if (p < 0.1) return "< 0,1 %";
+    if (p < 10) return fuelFmt.format(p) + " %";
+    return Math.round(p) + " %";
+  }
+  /** "Deliver 8/24 SCU" vs. the ship's cargo hold -> how many trips are left. */
+  function cargoHint(text) {
+    const info = st.nav.ship_info;
+    const m = text.match(/(\d+)\s*\/\s*(\d+)\s*SCU/i);
+    if (!m || !info || info.cargo == null) return "";
+    const left = +m[2] - +m[1];
+    if (left <= 0) return "";
+    const about = info.cargo_confirmed ? "" : "ca. ";
+    if (info.cargo <= 0) return `${info.name} hat keinen Frachtraum`;
+    const trips = Math.ceil(left / info.cargo);
+    return trips <= 1
+      ? `passt in einen Flug (Frachtraum ${about}${scuFmt.format(info.cargo)} SCU)`
+      : `${trips} Flüge nötig (Frachtraum ${about}${scuFmt.format(info.cargo)} SCU, offen ${left} SCU)`;
+  }
 
   /** Ship name plus how long we have been aboard (updated by the 1 s tick). */
   function shipPill(now) {
     const nav = st.nav;
     const since = parseTs(nav.ship_since);
     const aboard = isFinite(since) ? " · an Bord " + short(sessionNow(now) - since) : "";
-    pill("p-ship", nav.ship ? "◈ " + nav.ship + aboard : "", "ship");
+    const info = nav.ship_info;
+    // cargo capacity from the ship database ("ca." when no independent source confirmed it)
+    const cargo = info && info.cargo != null ? ` · ${info.cargo_confirmed ? "" : "ca. "}${scuFmt.format(info.cargo)} SCU` : "";
+    pill("p-ship", nav.ship ? "◈ " + nav.ship + aboard + cargo : "", "ship");
   }
 
   function renderPills(nav) {
@@ -282,8 +306,25 @@
     pill("p-jur", nav.jurisdiction || "", nav.jurisdiction && nav.jurisdiction.toLowerCase() === "ungoverned" ? "bad" : "");
     pill("p-restricted", nav.restricted ? "Sperrgebiet" : "", "bad");
     pill("p-private", nav.private ? "Privatgelände" : "", "warn");
-    const need = nav.quantum_fuel ? ` · Bedarf ${fuelFmt.format(nav.quantum_fuel)}` : "";
-    pill("p-qt", nav.quantum_target ? "⟶ " + nav.quantum_target + need : "", "qt");
+    // What the planned jump takes out of the quantum tank. Falls back to the game's raw
+    // estimate when the ship (or its tank size) is unknown.
+    const approx = nav.ship_info && !nav.ship_info.qt_fuel_confirmed ? "ca. " : "";
+    let need = "";
+    let qtClass = "qt";
+    if (nav.quantum_need_pct != null) {
+      need = ` · braucht ${approx}${pctFmt(nav.quantum_need_pct)} Tank`;
+      const total = nav.quantum_need_pct + (nav.quantum_used_pct || 0);
+      if (nav.quantum_need_pct > 100) {
+        need += " – reicht nicht!";
+        qtClass = "qt bad";
+      } else if (total > 100) {
+        need += " – Tankstand prüfen";   // more than one full tank since the session started
+        qtClass = "qt warn";
+      }
+    } else if (nav.quantum_fuel) {
+      need = ` · Bedarf ${fuelFmt.format(nav.quantum_fuel)}`;
+    }
+    pill("p-qt", nav.quantum_target ? "⟶ " + nav.quantum_target + need : "", qtClass);
   }
 
   // ---------------------------------------------------------------- missions
@@ -326,6 +367,8 @@
           bar.appendChild(fill);
           li.appendChild(bar);
         }
+        const hint = o.state === "open" ? cargoHint(o.text) : "";
+        if (hint) li.appendChild(el("span", "cargo-hint", hint));
         if (o.state === "open" && here && o.text.toLowerCase().includes(here)) li.classList.add("here");
         frag.appendChild(li);
       }
@@ -366,7 +409,8 @@
     const avg = durs.length ? ` · Ø ${mins(durs.reduce((a, b) => a + b, 0) / durs.length)}` : "";
     setText($("ms-rate"), total ? `${Math.round((k.missions_completed / total) * 100)} % Quote${avg}` : "–");
     setText($("ms-places"), String(k.places));
-    const burned = k.quantum_fuel_used ? ` · ${fuelFmt.format(k.quantum_fuel_used)} QT-Treibstoff` : "";
+    const used = st.nav.quantum_used_pct;
+    const burned = used != null ? ` · ${pctFmt(used)} QT-Tank verflogen` : "";
     setText($("ms-jumps"), `besucht · ${k.quantum_jumps} QT-Sprünge${burned}`);
     renderEarnings();
   }
