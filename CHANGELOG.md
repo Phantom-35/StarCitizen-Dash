@@ -5,6 +5,31 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+## [0.8.3] – 2026-11-11
+
+Systematische Fehlersuche: Layout in 9 Bildschirmgrößen mit Stress-Daten gemessen, Code nach denselben
+Fehlerarten wie in 0.8.1/0.8.2 durchgesehen.
+
+### Behoben
+- **Überlappungen auf kleineren Bildschirmen (z. B. 1280 × 720):** Die Timer-Leiste wuchs bei vielen Timern
+  auf zwei Zeilen und schob sich über Statistik und Chronometer; der obere Bereich war mit vielen
+  Statusanzeigen zu hoch. Jetzt:
+  - Timer-Leiste immer einzeilig; was nicht passt, steht als „+N weitere“ da; das Eingabefeld öffnet
+    sich erst mit „+ Timer“ (Esc schließt)
+  - der obere Bereich verdichtet sich selbst in bis zu drei Stufen, bis sein Inhalt passt (kleinere
+    Schrift, weniger Ziele, Nebensächliches ausgeblendet)
+- **1024 × 768 (einspaltige Ansicht):** Bereiche wurden in die Bildschirmhöhe gequetscht, das
+  Ereignis-Log lag über dem Chronometer. Jetzt wächst die Seite und scrollt.
+- **Bilanz wurde abgeschnitten** bei großen Beträgen (z. B. „1.235.000“)
+- **Einblendungen gingen verloren:** Bei zwei wichtigen Ereignissen kurz nacheinander (Tod, dann CrimeStat)
+  war nur das letzte zu sehen. Jetzt werden alle nacheinander gezeigt (bei Wartenden je 3 s statt 7 s).
+- **Bilanz-Eingabe:** „2,5k“ wurde als 25.000 gelesen. Jetzt korrekt (2.500), ebenso „1,2m“, „12.500“,
+  „12,500“; Mehrdeutiges wie „1,5“ wird abgelehnt (rote Linie) statt falsch gerechnet.
+- Lange Crew-Liste füllte eine ganze Zeile – jetzt höchstens zwei Namen plus „+N“
+
+### Hinzugefügt
+- `tools/ui_audit.js` und `tools/make_stress_log.py`: Layout-Prüfung mit Stress-Daten (siehe CONTRIBUTING)
+
 ## [0.8.2] – 2026-11-11
 
 ### Geändert (Wartung)
