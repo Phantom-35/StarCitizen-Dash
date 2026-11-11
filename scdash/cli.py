@@ -98,7 +98,14 @@ def main(argv=None) -> int:
         print(text)
         return 0
 
-    state = DashboardState()
+    places = None
+    if not args.demo:
+        from scdash.memory import PlaceMemory
+        from scdash.paths import data_dir
+
+        places = PlaceMemory(os.path.join(data_dir(), "places.json"))
+        log.info("Ortsgedächtnis: %d bekannte Auftragsorte", len(places))
+    state = DashboardState(places)
     threads = []
 
     if args.demo:

@@ -91,7 +91,8 @@ const AUDIT = () => {
   for (const [w, h] of [[1280, 720], [1920, 1080], [1080, 1920]]) {
     const p = await b.newPage({ viewport: { width: w, height: h } });
     await p.goto('http://127.0.0.1:8777/?mode=mission'); await p.waitForTimeout(800);
-    fs.appendFileSync(LOG, `<2026-11-11T16:00:0${w % 7}.000Z> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Accepted: Banner Test With A Really Quite Long Contract Name For Layout ${w}: " [9] to queue. MissionId: [b${w}], ObjectiveId: []\r\n`);
+    // current time: the dashboard (rightly) shows no banner for events older than a minute
+    fs.appendFileSync(LOG, `<${new Date().toISOString()}> [Notice] <SHUDEvent_OnNotification> Added notification "Contract Accepted: Banner Test With A Really Quite Long Contract Name For Layout ${w}: " [9] to queue. MissionId: [b${w}], ObjectiveId: []\r\n`);
     await p.waitForFunction(() => !document.getElementById('banner').hidden, null, { timeout: 8000 });
     await p.waitForTimeout(500);
     const res = await p.evaluate(AUDIT);

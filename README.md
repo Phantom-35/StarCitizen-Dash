@@ -89,6 +89,12 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
   Im Fokus steht immer der Auftrag, an dem du zuletzt etwas gemacht hast.
 - **Nächstes Ziel:** der Ort aus dem ersten offenen Ziel (Abholen vor Abliefern) – mit Markierung
   **„du bist hier“**, sobald du dort angekommen bist
+- **Ortsgedächtnis:** Viele Ziele nennen nur einen Raum („Deliver Hydrogen To **Lobby**“). Das Spiel
+  schreibt aber die Koordinaten jedes Zielpunkts in die Log. Wenn du ein Ziel erledigst, merkt sich
+  SC-Dash, welcher Ort zu diesen Koordinaten gehört. Beim nächsten Auftrag mit einem Zielpunkt in der
+  Nähe (≤ 10 km) steht dann der echte Ort da: *„Covalex Distribution Centre S4DC05 – Lobby · Ort von
+  früherem Auftrag“*. Gespeichert in `%LOCALAPPDATA%\scdash\places.json`; geprüft mit zwei echten
+  Sessions (die beiden Ablieferpunkte lagen 3,6 km auseinander, beide Male am selben Verteilzentrum).
 - **Fortschrittsbalken** bei Mengen-Zielen (*Deliver 8/24 SCU …*) und der Abgleich mit deinem
   Frachtraum: *„passt in einen Flug“* oder *„12 Flüge nötig (Frachtraum 2 SCU, offen 24 SCU)“*
 - **Fracht verladen / abgegeben:** jede Kiste, die du ins Schiff stellst oder am Ziel abgibst
@@ -214,6 +220,9 @@ als Testfall in `tests/fixtures/`).
 | Spiel beendet | `<SystemQuit>` | ✅ |
 | Session-Start | Zeitstempel der ersten Log-Zeile | ✅ |
 | Hangar, Kanäle, Blueprints | HUD-Meldungen | ✅ |
+| Zielpunkt-Koordinaten (Ortsgedächtnis) | `<CLocalMissionPhaseMarker::CreateMarker> … missionId […] … objectiveId […] … position [x: …, y: …, z: …]` | ✅ |
+| Med-Bed (4.10) | Meldung *Medical Bed: The bed has restored your health …* | ✅ |
+| Tutorial-Tipps (ausgeblendet) | Meldungen *Medical Device: …*, *Optic Attachments …*, *Air Traffic Control (ATC): …* | ✅ |
 | Fracht verladen / abgegeben | `<[ActorState] Place> … DoPlace] '…' placed '…Commodity_…' in lootable container '…'` | ✅ |
 | Verbindungsabbrüche | `<Channel Disconnected> cause=N reason="…"` (30010/30016/30028 sind normale Abmeldungen) | ✅ / 📚 |
 | Einkäufe | `…BuyRequest> Sending … shopName[…] client_price[…] itemName[…] quantity[…]` bzw. `price[…]` bei Fracht | 📚 |
@@ -270,8 +279,9 @@ SC-Dash liest sie deshalb so vorsichtig und robust wie möglich:
 - Das Dashboard hält eine Anfrage offen, und der Server antwortet **sofort, wenn etwas passiert**
   (Long-Polling). Ein Ereignis ist so nach höchstens einer halben Sekunde auf dem Bildschirm – ohne
   dass im Leerlauf ständig abgefragt wird.
-- Bei sehr langen Logs (> 8 MB) wird nur das Ende ausgewertet; Pilot, Shard und Version holt
-  SC-Dash trotzdem vom Anfang der Datei.
+- Große Logs werden in 4-MB-Stücken gelesen (bis 256 MB beim Start, ~60 MB/s). Eine echte Session
+  schrieb 13 MB pro Stunde, davon 20.000 Zeilen Netzwerkfehler in einer einzigen Sekunde – das ist kein
+  Problem. Bei noch größeren Logs holt SC-Dash Pilot, Shard und Version trotzdem vom Dateianfang.
 - Läuft das Dashboard auf einem Tablet mit falsch gehender Uhr, werden alle Zeiten mit der Uhr des
   Gaming-PCs abgeglichen.
 
@@ -346,26 +356,14 @@ Der Bericht zeigt, was SC-Dash in einer Log erkennt, welche HUD-Meldungen noch k
 haben und welche Zeilenarten vorkommen. Spielername, IDs und Adressen sind unkenntlich gemacht – du
 kannst ihn bedenkenlos weitergeben (z. B. in einem Issue).
 
-**Versuch: schreibt das Spiel auf Wunsch mehr in die Log?** Die Engine kennt die Einstellungen
+**Geprüft: Eine ausführlichere Log ist nicht möglich.** Die Engine kennt die Einstellungen
 `log_verbosity` und `log_WriteToFileVerbosity`
-([Liste im Star Citizen Wiki](https://starcitizen.tools/User:Astrid/sandbox/cvars/extended)). Ob die
-normale Spielversion sie zulässt, ist nicht dokumentiert – aber gefahrlos prüfbar, denn das Spiel
-schreibt bei jeder nicht erlaubten Einstellung selbst `is marked [Not Whitelisted] … - IGNORING` in
-die Log:
-
-1. Alte Log sichern: `Game.log` aus dem Ordner `…\StarCitizen\LIVE` kopieren, z. B. als `alt.log`.
-2. Im selben Ordner die Datei `user.cfg` öffnen (oder neu anlegen) und zwei Zeilen ergänzen:
-   ```
-   log_verbosity = 4
-   log_WriteToFileVerbosity = 4
-   ```
-3. Spiel starten, ein paar Minuten spielen, beenden.
-4. `python -m scdash --analyze "…\LIVE\Game.log" --compare alt.log`
-
-Im Abschnitt „Ausführlichere Log“ steht dann **ABGELEHNT** (dann die zwei Zeilen wieder entfernen –
-mehr geht nicht) oder **NICHT abgelehnt** mit dem Vergleich, wie viel mehr geschrieben wurde. Im
-zweiten Fall bitte den Bericht als Issue schicken: Dann lässt sich prüfen, ob neue nützliche Daten
-dabei sind.
+([Liste im Star Citizen Wiki](https://starcitizen.tools/User:Astrid/sandbox/cvars/extended)). In der
+normalen Spielversion 4.10 lehnt das Spiel beide ab – es schreibt selbst
+`variable [log_Verbosity] is marked [Not Whitelisted] … - IGNORING` in die Log (getestet am
+11.11.2026). Der Log-Check erkennt das und sagt im Fazit, dass die Zeilen in der `user.cfg` wieder
+weg können. Nach einem großen Patch lässt sich der Versuch mit `--analyze … --compare alte.log`
+jederzeit wiederholen.
 
 ## Was nicht geht – und warum
 
@@ -396,6 +394,7 @@ scdash/
 ├── locations.py  Lesbare Namen für Orte, Server-Regionen, Schiffe und Waffen
 ├── ships.py      Schiffsdatenbank (Frachtraum, Quantum-Tank) und Treibstoff-Rechnung
 ├── analyze.py    Log-Check (--analyze): Bericht über eine Game.log
+├── memory.py     Ortsgedächtnis: Zielpunkt-Koordinaten → Ortsname
 ├── data/         ships.json – erzeugt von tools/build_ship_data.py
 ├── paths.py      Game.log finden (Launcher-Log, übliche Ordner), Browser für --open
 ├── parser.py     Erkennung der Log-Zeilen (reine Funktionen, gut testbar)

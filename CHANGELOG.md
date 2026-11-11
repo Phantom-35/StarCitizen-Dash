@@ -5,6 +5,30 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+## [0.9.0] – 2026-11-11
+
+Auswertung einer zweiten echten Session (4.10, Kurierauftrag) und des Versuchs „ausführlichere Log“.
+
+### Ergebnis des Versuchs
+- `log_verbosity` / `log_WriteToFileVerbosity` werden vom Spiel abgelehnt („Not Whitelisted … IGNORING“).
+  Eine ausführlichere Log ist nicht möglich. README entsprechend aktualisiert.
+
+### Hinzugefügt
+- **Ortsgedächtnis:** Zielpunkt-Koordinaten aus `CreateMarker` + Ort beim Erledigen des Ziels werden
+  gespeichert. Ziele, die nur „Lobby“ o. ä. nennen, zeigen beim nächsten Mal den echten Ort
+  („Covalex Distribution Centre S4DC05 – Lobby · Ort von früherem Auftrag“). Geprüft mit beiden
+  echten Sessions.
+- Med-Bed-Besuche aus der HUD-Meldung „Medical Bed: The bed has restored your health …“ (so in 4.10)
+- Log-Check: Fazit beim Verbosity-Versuch, Hinweis bei Ausreißern (eine Zeilenart > 50 % der Log) und bei
+  einer zu kurzen Vergleichs-Log; Tutorial-Tipps getrennt gezählt
+- `tools/make_fixture.py`: echte Log → anonymisierter Testfall; zweiter echter Testfall im Projekt
+
+### Geändert
+- Tutorial-Tipps (Medical Device, Optic Attachments, ATC-Hinweise) erscheinen nicht mehr im Komm-Log
+- Logs werden in 4-MB-Stücken gelesen; beim Start bis 256 MB statt 8 MB (eine echte Session wuchs mit
+  13 MB/h – bei spätem Dashboard-Start hätten frühe Aufträge gefehlt)
+- Layout-Prüfung schreibt die Test-Einblendung mit aktueller Uhrzeit
+
 ## [0.8.3] – 2026-11-11
 
 Systematische Fehlersuche: Layout in 9 Bildschirmgrößen mit Stress-Daten gemessen, Code nach denselben

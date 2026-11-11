@@ -24,7 +24,11 @@ from scdash.state import DashboardState
 log = logging.getLogger(__name__)
 
 # Do not parse more than this on startup if the log is huge.
-INITIAL_READ_LIMIT = 8 * 1024 * 1024
+# A real 4.10 session wrote 13 MB per hour (one network hiccup alone: 20,000 lines in a
+# second). Read up to 256 MB on start, in 4 MB pieces so memory stays small; parsing runs at
+# roughly 60 MB per second, so even a long evening is replayed in a few seconds.
+INITIAL_READ_LIMIT = 256 * 1024 * 1024
+READ_CHUNK = 4 * 1024 * 1024
 
 
 def open_log(path: str):
@@ -165,9 +169,14 @@ class LogWatcher(threading.Thread):
             if size == self._offset:
                 return
             fh.seek(self._offset)
-            chunk = fh.read()  # everything up to the real end of file
-        self._offset += len(chunk)
+            while True:  # up to the real end of file, piece by piece
+                chunk = fh.read(READ_CHUNK)
+                if not chunk:
+                    break
+                self._offset += len(chunk)
+                self._process(chunk)
 
+    def _process(self, chunk: bytes) -> None:
         if self._remainder is None:
             nl = chunk.find(b"\n")
             if nl < 0:

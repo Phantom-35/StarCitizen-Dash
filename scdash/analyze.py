@@ -51,6 +51,7 @@ class LogSummary:
         self.kinds: Counter = Counter()          # parser event kinds
         self.categories: Counter = Counter()     # HUD notification categories
         self.unknown_hud: Counter = Counter()    # HUD texts SC-Dash has no rule for
+        self.tips: Counter = Counter()           # tutorial hints (hidden on the dashboard)
         self.cvars: List[Tuple[str, str, str, str]] = []
         self.verbosity_mentions: List[str] = []
         self.handle: Optional[str] = None
@@ -104,6 +105,8 @@ def summarize(path: str) -> LogSummary:
                 s.version = ev.data["version"]
             if ev.kind == "notify":
                 s.categories[ev.data["category"]] += 1
+                if ev.data["category"] == "tip":
+                    s.tips[ev.data["text"].split(":")[0][:60]] += 1
                 if ev.data["category"] == "comms":
                     # collapse numbers so "Fined 500 UEC" and "Fined 900 UEC" count as one kind
                     s.unknown_hud[re.sub(r"\d+", "#", ev.data["text"])[:110]] += 1
@@ -121,6 +124,17 @@ def _duration(s: LogSummary) -> str:
     if secs is None:
         return "?"
     return f"{int(secs // 3600)}:{int(secs % 3600 // 60):02d} h"
+
+
+def _outlier(s: LogSummary) -> str:
+    """One line type making up most of the log (e.g. a burst of network errors) distorts the rate."""
+    if not s.tags:
+        return ""
+    tag, n = s.tags.most_common(1)[0]
+    if n < 0.5 * s.lines:
+        return ""
+    return (f"Ausreißer: {n:,}× <{tag}> = {100 * n / s.lines:.0f} % der Log – verfälscht die Zeilen pro Stunde"
+            .replace(",", "."))
 
 
 def _verbosity_verdict(s: LogSummary) -> List[str]:
@@ -141,6 +155,11 @@ def _verbosity_verdict(s: LogSummary) -> List[str]:
                        f"(dann müssten unten deutlich mehr Zeilen pro Stunde stehen)")
     for line in s.verbosity_mentions[:6]:
         out.append("    > " + s.mask(line)[:200])
+    rejected = [c for c in VERBOSITY_CVARS if c.lower() in names and
+                ("not whitelisted" in names[c.lower()][0].lower() or "ignoring" in names[c.lower()][0].lower())]
+    if len(rejected) == len(VERBOSITY_CVARS):
+        out.append("  FAZIT: Das Spiel lässt keine ausführlichere Log zu. Die Zeilen in der user.cfg können")
+        out.append("         wieder gelöscht werden (bzw. die ganze user.cfg, wenn sie nur dafür angelegt wurde).")
     return out
 
 
@@ -158,6 +177,7 @@ def report(new: LogSummary, old: Optional[LogSummary] = None) -> str:
     if secs:
         hours = secs / 3600
         add(f"Zeilen pro Stunde: {new.lines / hours:,.0f}".replace(",", "."))
+        add(_outlier(new))
     add("")
 
     add("Ausführlichere Log (user.cfg)")
@@ -184,6 +204,9 @@ def report(new: LogSummary, old: Optional[LogSummary] = None) -> str:
         add("  keine")
     for text, n in new.unknown_hud.most_common(25):
         add(f"  {n:4d}×  {new.mask(text)}")
+    if new.tips:
+        add(f"  (dazu {sum(new.tips.values())} Tutorial-Tipps, im Dashboard ausgeblendet: "
+            + ", ".join(f"{k} {v}×" for k, v in new.tips.most_common(6)) + ")")
     add("")
 
     add("Häufigste Zeilenarten")
@@ -196,6 +219,9 @@ def report(new: LogSummary, old: Optional[LogSummary] = None) -> str:
         add(f"Vergleich mit {old.path}")
         add("-" * (15 + len(old.path)))
         o_secs = _secs_between(old.first_ts, old.last_ts)
+        if old.lines < 1000 or (o_secs or 0) < 600:
+            add(f"  ACHTUNG: Die Vergleichs-Log ist sehr kurz ({old.lines} Zeilen, {int((o_secs or 0) // 60)} min) –")
+            add("  der Vergleich sagt deshalb wenig aus.")
         if secs and o_secs:
             a, b = new.lines / (secs / 3600), old.lines / (o_secs / 3600)
             add(f"  Zeilen pro Stunde: neu {a:,.0f} – alt {b:,.0f}  ({(a / b - 1) * 100:+.0f} %)".replace(",", "."))

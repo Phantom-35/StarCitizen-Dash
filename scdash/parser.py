@@ -67,6 +67,12 @@ _COMMODITY = re.compile(r"Commodity_(?P<name>[A-Za-z_]+?)(?:_[a-z])?$")
 _BUY_ITEM = re.compile(r"client_price\[(?P<price>[\d.]+)\].*?itemName\[(?P<item>[^\]]+)\] quantity\[(?P<qty>\d+)\]")
 _BUY_COMMODITY = re.compile(r"\bprice\[(?P<price>[\d.]+)\]")
 _SHOP = re.compile(r"shopName\[(?P<shop>[^\]]+)\]")
+# Real 4.10 line: <CLocalMissionPhaseMarker::CreateMarker> Creating objective marker: missionId [..],
+#   generator name [FTL_Courier], contract [..], ..., objectiveId [dropoff_.._0], ..., position [x: .., y: .., z: ..]
+_MARKER = re.compile(
+    r"<CLocalMissionPhaseMarker::CreateMarker>.*?missionId \[(?P<mid>[^\]]+)\].*?objectiveId \[(?P<oid>[^\]]+)\]"
+    r".*?position \[x: (?P<x>[-\d.]+), y: (?P<y>[-\d.]+), z: (?P<z>[-\d.]+)\]"
+)
 _DISCONNECT = re.compile(r'cause=(?P<code>\d+) reason="(?P<reason>[^"]*)"')
 _CREW = re.compile(r"^(?:New Member Joined|Member Left) (?P<who>\S+) has (?P<act>joined|left) (?:the )?channel '(?P<name>[^']*)'", re.I)
 
@@ -94,7 +100,7 @@ _INTERESTING = re.compile(
     r"AccountLoginCharacterStatus_Character|SHUDEvent_OnNotification|<EndMission>|<MissionEnded>|"
     r"<ObjectiveUpserted>|Vehicle Control Flow|Quantum Target|Quantum Drive|Projected Start Location|Successfully calculated route|"
     r"ActorState\] (?:Dead|Corpse)|<Corpse>|Logged an incap|MED BED HEAL|Fatal ?Collision|"
-    r"StatePlace::DoPlace|BuyRequest|cause=\d+ reason=\"|"
+    r"StatePlace::DoPlace|BuyRequest|cause=\d+ reason=\"|CreateMarker>|"
     r"SystemQuit|CSystem::Quit|ProductVersion"
 )
 _MISSION_ID = re.compile(r"MissionId:?\s*\[(?P<mid>[^\]]*)\]")
@@ -141,6 +147,8 @@ NOTIFICATION_KINDS = (
     ("hangar request completed", "hangar"),
     ("quantum travel: your destination is obstructed", "qt_blocked"),
     ("received blueprint", "blueprint"),
+    # real 4.10: "Medical Bed: The bed has restored your health and reset your BDL. Use the Treatment tab ..."
+    ("medical bed: the bed has restored your health", "medbed_restored"),
 )
 
 # notifications that need a regex (checked when no prefix above matched)
@@ -153,6 +161,15 @@ _NOTIFICATION_PATTERNS = (
     (re.compile(r"^a refinery work order has been completed at (?P<where>[^:]+)", re.I), "refinery"),
     (re.compile(r"^you've earned:\s*(?P<amount>\d+)\s+rewards", re.I), "rewards"),
     (re.compile(r"^journal entry added: jurisdiction: (?P<name>.+)$", re.I), "jurisdiction"),
+)
+
+
+# Tutorial hints the game shows as HUD notifications (seen in a real 4.10 log). They do not
+# tell anything about the session, so they stay out of the dashboard's feed.
+TIP_PREFIXES = (
+    "air traffic control (atc):",
+    "medical device",
+    "optic attachments",
 )
 
 
@@ -203,6 +220,8 @@ def classify_notification(text: str) -> dict:
             break
     subject = text.split(":", 1)[1].strip().rstrip(":").strip() if ":" in text else text
     extra: dict = {}
+    if category == "comms" and (low.startswith(TIP_PREFIXES) or "~action(" in low):
+        category = "tip"
     if category == "comms":
         m = _JURISDICTION.search(text)
         if m:
@@ -235,7 +254,7 @@ class LogEvent:
     """A single interesting thing that happened in the log."""
 
     # login | join | death | vehicle | location | notify | mission_end | objective_state | ship | quantum |
-    # dead | corpse | incap | medbed | collision | version | quit
+    # dead | corpse | incap | medbed | collision | marker | cargo | purchase | disconnect | version | quit
     kind: str
     ts: Optional[str] = None
     data: dict = field(default_factory=dict)
@@ -361,6 +380,10 @@ def parse_line(line: str) -> Optional[LogEvent]:
             "where": describe_location(zone.strip())["place"] if zone else None,
         })
 
+    m = _MARKER.search(line)
+    if m:
+        return LogEvent("marker", ts, {"mission_id": _id(m.group("mid")), "objective_id": m.group("oid"),
+                                       "pos": (float(m.group("x")), float(m.group("y")), float(m.group("z")))})
     m = _PLACE.search(line)
     if m:
         c = _COMMODITY.search(m.group("item"))

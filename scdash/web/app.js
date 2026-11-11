@@ -463,8 +463,11 @@
     const next = focus && focus.next;
     $("c-next").hidden = !next;
     if (next) {
-      setText($("c-next-place"), next);
-      $("c-next-here").hidden = !(here && next.toLowerCase().includes(here));
+      setText($("c-next-place"), next.place);
+      // where the name comes from: the objective's text, or the place memory (the objective only
+      // said e.g. "Lobby", but its marker lies where an earlier contract was completed)
+      setText($("c-next-sub"), next.learned ? (next.detail ? `${next.detail} · ` : "") + "Ort von früherem Auftrag" : "");
+      $("c-next-here").hidden = !(here && next.place.toLowerCase().includes(here));
     }
 
     const others = $("c-others");

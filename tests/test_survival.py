@@ -237,7 +237,7 @@ class UsefulnessTests(unittest.TestCase):
             f'{ts(1)} [Notice] <SHUDEvent_OnNotification> Added notification "New Objective: Collect Agricium From HDMS-Edmond on Hurston: " [3] to queue. MissionId: [h1], ObjectiveId: [pickup_1]',
         )
         m = s["missions"]["active"][0]
-        self.assertEqual(m["next"], "HDMS-Edmond")  # pick-up first
+        self.assertEqual(m["next"], {"place": "HDMS-Edmond", "detail": None, "learned": False})  # pick-up first
 
 
 class QuantumTargetTests(unittest.TestCase):

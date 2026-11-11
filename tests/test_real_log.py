@@ -170,6 +170,20 @@ class RealLogTests(unittest.TestCase):
                 watcher.poll()
             self.assertEqual(comparable(state.snapshot()), expected)
 
+    def test_reading_in_small_pieces_gives_same_result(self):
+        """The watcher reads big logs in pieces; piece borders inside lines must not matter."""
+        from scdash import watcher as watcher_mod
+
+        expected = comparable(self.read_all_at_once())
+        old = watcher_mod.READ_CHUNK
+        try:
+            for size in (1, 7, 333):
+                watcher_mod.READ_CHUNK = size
+                os.remove(self.path)
+                self.assertEqual(comparable(self.read_all_at_once()), expected, size)
+        finally:
+            watcher_mod.READ_CHUNK = old
+
     def test_game_restart_starts_new_session(self):
         state = DashboardState()
         watcher = LogWatcher(lambda: self.path, state)
