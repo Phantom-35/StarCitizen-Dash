@@ -192,6 +192,9 @@
     renderMissions();
     renderFeed();
     renderRsi(st.rsi_status);
+    renderUpdate(st.update);
+    sessionEndCheck();
+    if (drawer.classList.contains("open") && drawer.dataset.pane === "history") loadHistory(false);
     setText($("log-path"), st.log.path ? "Log: " + st.log.path : "Keine Game.log gefunden – siehe README (--log)");
     tick();
     fitLayout();
@@ -524,6 +527,18 @@
     if (minus) parts.push(`−${numFmt.format(minus)} ausgegeben`);
     if (k.money_in) parts.push(`+${numFmt.format(k.money_in)} erhalten`);
     setText($("ms-earn-sub"), parts.join(" · "));
+    syncPay(e);
+  }
+  // The server keeps the entered pay too, so it ends up in the session history.
+  let payInFlight = false;
+  function syncPay(e) {
+    if (!st || payInFlight || !st.history_enabled || e.session !== st.session.start) return;
+    if ((st.stats.pay || 0) === e.total) return;
+    payInFlight = true;
+    fetch("/api/pay", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session: e.session, total: e.total }),
+    }).catch(() => {}).finally(() => { payInFlight = false; });
   }
   /**
    * "25k" -> 25000, "2,5k" / "2.5k" -> 2500, "1,2m" -> 1200000, "12.500" / "12,500" -> 12500,
@@ -837,12 +852,14 @@
 
   // ---------------------------------------------------------------- drawer (notes / links)
   const drawer = $("drawer");
+  const DRAWER_TITLES = { notes: "Notizen", links: "Links", history: "Session-Bilanz" };
   function openDrawer(name) {
     const isOpen = drawer.classList.contains("open") && drawer.dataset.pane === name;
     if (isOpen) return closeDrawer();
     drawer.dataset.pane = name;
     drawer.querySelectorAll("[data-pane]").forEach((p) => (p.hidden = p.dataset.pane !== name));
-    setText($("drawer-title"), name === "notes" ? "Notizen" : "Links");
+    setText($("drawer-title"), DRAWER_TITLES[name] || name);
+    if (name === "history") loadHistory(true);
     drawer.classList.add("open");
     drawer.setAttribute("aria-hidden", "false");
     document.querySelectorAll(".tools button[data-drawer]").forEach((b) => b.classList.toggle("active", b.dataset.drawer === name));
@@ -860,6 +877,7 @@
     if (/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName) || e.ctrlKey || e.altKey || e.metaKey) return;
     if (e.key === "n" || e.key === "N") { e.preventDefault(); openDrawer("notes"); }
     if (e.key === "l" || e.key === "L") { e.preventDefault(); openDrawer("links"); }
+    if (e.key === "v" || e.key === "V") { e.preventDefault(); openDrawer("history"); }
     if (e.key === "t" || e.key === "T") { e.preventDefault(); toggleSound(); }
     if (e.key === "m" || e.key === "M") { e.preventDefault(); setMode(mode === "combat" ? "mission" : "combat"); }
   });
@@ -889,6 +907,113 @@
       }
     })
     .catch(() => {});
+
+  // ---------------------------------------------------------------- session history
+  const fmtNum = (n) => numFmt.format(Math.round(n || 0));
+  const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "") + fmtNum(Math.abs(n));
+  const histTime = new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit" });
+  function dur(sec) {
+    const m = Math.round((sec || 0) / 60);
+    return m < 60 ? `${m} min` : `${Math.floor(m / 60)}:${pad(m % 60)} h`;
+  }
+  function when(s) {
+    const a = new Date(s.start), b = new Date(s.end || s.start);
+    if (isNaN(a)) return "–";
+    const end = a.toDateString() === b.toDateString() ? histTime.format(b) : `${dateFmt.format(b)} ${histTime.format(b)}`;
+    return `${dateFmt.format(a)} · ${histTime.format(a)}–${end} · ${dur(s.seconds)}`;
+  }
+  function grid(dl, rows) {
+    dl.replaceChildren();
+    for (const [label, value, cls] of rows) {
+      const d = el("div", cls || "");
+      d.append(el("dt", "", label), el("dd", "", value));
+      dl.appendChild(d);
+    }
+  }
+  const balCls = (n) => (n > 0 ? "pos" : n < 0 ? "neg" : "");
+  function missionText(s) {
+    const parts = [`${s.missions_completed} erledigt`];
+    if (s.missions_failed) parts.push(`${s.missions_failed} gescheitert`);
+    return parts.join(" · ");
+  }
+  function renderHistory(h) {
+    if (!h) return;
+    const items = h.sessions || [];
+    const curStart = st && st.session.start;
+    const now = items.find((x) => x.start === curStart) || items[0];
+    const live = now && now.start === curStart && st.game_running !== false && !st.session.ended;
+    setText($("hist-now-title"), !now ? "Noch keine Session" : live ? "Diese Session" : "Letzte Session");
+    setText($("hist-now-when"), now ? when(now) : st && st.history_enabled === false
+      ? "Im Demo-Modus wird nichts gespeichert." : "Sobald du spielst, steht hier die Bilanz.");
+    grid($("hist-now"), now ? [
+      ["Bilanz", signed(now.balance) + " aUEC", balCls(now.balance)],
+      ["Aufträge", missionText(now), "wide"],
+      ["Tode · K.O.", `${now.deaths} · ${now.incaps}`, now.deaths ? "neg" : ""],
+      ["Längstes Überleben", now.best_alive ? dur(now.best_alive) : "–"],
+      ["QT-Sprünge", String(now.quantum_jumps)],
+      ["Orte", String(now.places)],
+    ] : []);
+    const w = h.week || {};
+    grid($("hist-week"), w.sessions ? [
+      ["Spielzeit", `${dur(w.seconds)} · ${w.sessions} ${w.sessions === 1 ? "Session" : "Sessions"}`],
+      ["Bilanz", signed(w.balance) + " aUEC", balCls(w.balance)],
+      ["Tode", String(w.deaths), w.deaths ? "neg" : ""],
+      ["QT-Sprünge", String(w.quantum_jumps)],
+      ["Aufträge", missionText(w), "wide"],
+    ] : [["Spielzeit", "–"]]);
+    const older = items.filter((x) => x !== now);
+    const olderCount = (h.count || 0) - (now ? 1 : 0);
+    setText($("hist-count"), olderCount > 0 ? String(olderCount) : "");
+    const ol = $("hist-list");
+    ol.replaceChildren();
+    for (const x of older.slice(0, 20)) {
+      const li = el("li");
+      li.append(el("span", "hl-when", when(x)));
+      const facts = [missionText(x)];
+      if (x.deaths) facts.push(`${x.deaths} ${x.deaths === 1 ? "Tod" : "Tode"}`);
+      li.append(el("span", "hl-facts", facts.join(" · ")));
+      li.append(el("b", "hl-bal " + balCls(x.balance), signed(x.balance)));
+      ol.appendChild(li);
+    }
+    if (!older.length) ol.appendChild(el("li", "hl-empty", "Noch keine früheren Sessions gespeichert."));
+  }
+  let histAt = 0;
+  function loadHistory(force) {
+    if (!force && Date.now() - histAt < 10000) return;
+    histAt = Date.now();
+    fetch("/api/history", { cache: "no-store" }).then((r) => r.json()).then(renderHistory).catch(() => {});
+  }
+  // When the game is closed, show the session's balance once (unless another drawer is open).
+  let sessionOpen = null;
+  function sessionEndCheck() {
+    const open = st.game_running !== false && !st.session.ended && !!st.session.start;
+    if (sessionOpen === true && !open && st.history_enabled && !drawer.classList.contains("open")) openDrawer("history");
+    sessionOpen = open;
+  }
+
+  // ---------------------------------------------------------------- update notice
+  function renderUpdate(u) {
+    const a = $("update");
+    a.hidden = !u;
+    if (!u) return;
+    setText(a, `Update ${u.version}`);
+    if (/^https:\/\/github\.com\//.test(u.url)) a.href = u.url;
+    a.title = `Neue Version ${u.version} (installiert: ${u.current}). Zum Installieren update.bat im SC-Dash-Ordner ausführen – Klick zeigt, was neu ist.`;
+  }
+
+  // ---------------------------------------------------------------- window placement
+  // Tell the local server where this window is, so it opens on the same monitor next time.
+  let lastPlace = "";
+  function reportWindow() {
+    if (!/^(127\.0\.0\.1|localhost)$/.test(location.hostname)) return;
+    if (document.hidden || document.fullscreenElement || (window.innerWidth >= screen.width && window.innerHeight >= screen.height)) return;
+    const p = { x: window.screenX, y: window.screenY, w: window.outerWidth, h: window.outerHeight };
+    const key = JSON.stringify(p);
+    if (key === lastPlace) return;
+    lastPlace = key;
+    fetch("/api/window", { method: "POST", headers: { "Content-Type": "application/json" }, body: key }).catch(() => {});
+  }
+  setInterval(reportWindow, 3000);
 
   // ---------------------------------------------------------------- start
   setMode(mode);

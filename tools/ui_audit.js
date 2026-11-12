@@ -5,7 +5,7 @@ const fs = require('fs');
 //   python -m scdash --log stress.log --no-status --port 8777
 //   node tools/ui_audit.js out-dir stress.log
 // Checks every visible text/graphic element in 9 screen sizes x 2 modes x (normal, timer form open,
-// drawer open) plus a live banner: does it run into another area, is it cut off, off-screen,
+// drawer open, history drawer open; update notice shown) plus a live banner: does it run into another area, is it cut off, off-screen,
 // or overlapping inside the headline / timer bar? Exit code 1 if anything is found.
 const [,, OUT = 'ui-audit', LOG = 'stress.log'] = process.argv;
 fs.mkdirSync(OUT, { recursive: true });
@@ -59,6 +59,13 @@ const AUDIT = () => {
   pair('.core .chrono', '.core .readout, .core .contract');
   pair('.top .brand, .top .modes, .top .sys li', '.top .clock');
   pair('#timers li:not([hidden]), #timer-add, .timers .more, #timer-form', '.dock .rsi, .dock .tools');
+  // drawer content (history): nothing may stick out of the drawer or be cut without "…"
+  if (drawer) for (const leaf of leaves.filter((e) => drawer.contains(e))) {
+    const r = R(leaf), d = R(drawer), cs = getComputedStyle(leaf);
+    if (r.right > d.right + 1 || r.left < d.left - 1) issues.push(`OUT-OF-DRAWER ${nm(leaf)}`);
+    if (cs.textOverflow !== 'ellipsis' && leaf.scrollWidth > leaf.clientWidth + 2 && leaf.clientWidth > 0 && cs.whiteSpace === 'nowrap')
+      issues.push(`DRAWER-TEXT-CUT ${nm(leaf)}`);
+  }
   return { issues: [...new Set(issues)], density: [...document.body.classList].filter((c) => c.startsWith('dense')).pop() || '-', scroll: document.documentElement.scrollHeight > innerHeight + 1 };
 };
 
@@ -68,6 +75,16 @@ const AUDIT = () => {
   for (const [w, h] of VIEWS) for (const mode of ['combat', 'mission']) {
     const p = await b.newPage({ viewport: { width: w, height: h } });
     const errs = []; p.on('pageerror', (e) => errs.push(String(e)));
+    // pretend a new version is out, so the update notice takes its room in the tool bar
+    await p.route('**/api/state*', async (route) => {
+      try {
+        const res = await route.fetch();
+        if (res.status() !== 200) return await route.fulfill({ response: res });
+        const data = await res.json();
+        data.update = { version: '0.99.0', current: '0.10.0', url: 'https://github.com/Phantom-35/StarCitizen-Dash/releases/latest' };
+        await route.fulfill({ response: res, json: data });
+      } catch { /* page already closed while a long poll was open */ }
+    });
     await p.goto('http://127.0.0.1:8777/');
     await p.evaluate(([m, t]) => { localStorage.setItem('scdash.mode', m); localStorage.setItem('scdash.timers', JSON.stringify(t)); }, [mode, TIMERS(6)]);
     await p.reload();
@@ -84,7 +101,12 @@ const AUDIT = () => {
     await p.keyboard.press('n'); await p.waitForTimeout(350);
     states.drawer = await p.evaluate(AUDIT);
     await p.keyboard.press('Escape'); await p.waitForTimeout(350);
+    await p.keyboard.press('v'); await p.waitForTimeout(600);
+    states.history = await p.evaluate(AUDIT);
+    if (w === 1920 && mode === 'mission') await p.screenshot({ path: `${OUT}/${tag}-history.png` });
+    await p.keyboard.press('Escape'); await p.waitForTimeout(350);
     all.push({ tag, states, errs });
+    await p.unrouteAll({ behavior: 'ignoreErrors' });
     await p.close();
   }
   // banner: trigger one real event and audit while it is shown

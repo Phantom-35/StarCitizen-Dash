@@ -80,8 +80,14 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
 - **Verbindungsfehler** (z. B. 30000 Zeitüberschreitung) mit Klartext-Bedeutung
 - **Timer** mit Fortschrittsbalken (Raffinerie, Miete, Cooldowns – laufen auch nach Neustart weiter)
 - **RSI-Serverstatus**, **Notizen & Links** (Tasten `N` / `L`)
-- **Lokal & privat:** Alles läuft auf deinem PC (`127.0.0.1`). Die einzige Internetanfrage ist der
-  RSI-Serverstatus – abschaltbar mit `--no-status`.
+- **Session-Bilanz und Verlauf** (Knopf „Verlauf“ oder Taste `V`): Bilanz, Aufträge, Tode, K.O.,
+  längstes Überleben, QT-Sprünge und Orte dieser Session, Summen der letzten 7 Tage und die Liste
+  früherer Sessions. Wenn du das Spiel beendest, klappt die Bilanz von selbst auf.
+- **Update-Hinweis:** Gibt es eine neue SC-Dash-Version, steht unten grün „Update x.y“ –
+  dann `update.bat` doppelklicken.
+- **Lokal & privat:** Alles läuft auf deinem PC (`127.0.0.1`). Verlauf, Ortsgedächtnis und Fensterposition
+  liegen in `%LOCALAPPDATA%\scdash`. Ins Internet gehen nur zwei Abfragen: der RSI-Serverstatus und
+  ein paarmal am Tag die Frage an GitHub, ob es eine neue Version gibt – beides abschaltbar mit `--no-status`.
 
 ### Modus „Aufträge“ (`M`)
 
@@ -137,8 +143,28 @@ Spiel ohnehin schreibt. Damit gibt es keinen Konflikt mit Easy Anti-Cheat.
 3. **`start.bat`** doppelklicken.
 
 Das war's. Ein Konsolenfenster zeigt Statusmeldungen, und das Dashboard öffnet sich als eigenes
-Fenster (Edge oder Chrome im App-Modus). Zieh es auf den zweiten Monitor und drück ggf. `F11` für
-Vollbild. Edge ist auf jedem Windows vorhanden, es muss also nichts weiter installiert werden.
+Fenster (Edge oder Chrome im App-Modus). Zieh es auf den zweiten Monitor – **beim nächsten Start
+öffnet es sich wieder genau dort** in derselben Größe. Vollbild mit `F11` oder `start.bat --fullscreen`.
+Edge ist auf jedem Windows vorhanden, es muss also nichts weiter installiert werden.
+
+### Mit dem Spiel starten (Autostart)
+
+```bat
+start.bat --autostart on
+```
+
+Ab dem nächsten Windows-Start läuft SC-Dash unsichtbar im Hintergrund (kaum Speicher, keine
+Grafikkarte) und **öffnet das Dashboard-Fenster von selbst, sobald Star Citizen startet**. Schließt
+du das Fenster, geht es beim nächsten Spielstart wieder auf. Wieder abschalten:
+`start.bat --autostart off`. Weitere Optionen (z. B. `--log`, `--gpu`, `--fullscreen`) einfach mit
+angeben, sie werden übernommen. Ein zusätzlicher Doppelklick auf `start.bat` öffnet dann nur das
+Fenster. Meldungen stehen in `%LOCALAPPDATA%\scdash\scdash.log`.
+
+### Aktualisieren
+
+**`update.bat`** doppelklicken. Bei einem mit git geholten Ordner macht es `git pull`, sonst lädt es
+die neueste Version von GitHub und entpackt sie über den alten Ordner. Notizen, Timer, Verlauf und
+Ortsgedächtnis bleiben erhalten. Danach SC-Dash einmal neu starten.
 
 Erst mal ohne Spiel ausprobieren? → **`demo.bat`** starten, das simuliert Ereignisse.
 
@@ -174,7 +200,11 @@ python -m scdash [Optionen]
   --host ADRESSE Standard 127.0.0.1 (nur dieser PC). Mit 0.0.0.0 z. B. vom Tablet/Handy
                  im WLAN erreichbar – dann auf http://<PC-IP>:8777 öffnen.
   --gpu          Dashboard-Fenster mit Hardwarebeschleunigung (etwas flüssiger, belegt aber VRAM)
-  --no-status    RSI-Serverstatus nicht abrufen (keine Internetzugriffe)
+  --fullscreen   Dashboard-Fenster im Vollbild öffnen
+  --with-game    Fenster automatisch öffnen, sobald Star Citizen startet
+  --autostart on|off   SC-Dash mit Windows unsichtbar starten (mit --with-game) bzw. entfernen
+  --no-status    Keine Internetzugriffe (kein RSI-Serverstatus, keine Update-Prüfung)
+  --no-update-check    Nur die Update-Prüfung abschalten
   --demo         Demo-Modus mit simulierten Ereignissen
   -v             Ausführliche Ausgabe
 ```
@@ -395,13 +425,16 @@ scdash/
 ├── ships.py      Schiffsdatenbank (Frachtraum, Quantum-Tank) und Treibstoff-Rechnung
 ├── analyze.py    Log-Check (--analyze): Bericht über eine Game.log
 ├── memory.py     Ortsgedächtnis: Zielpunkt-Koordinaten → Ortsname
+├── history.py    Session-Verlauf (sessions.json), Speichern alle 30 s
+├── updates.py    Update-Prüfung gegen die GitHub-Releases
+├── window.py     Fensterposition merken (zweiter Monitor)
 ├── data/         ships.json – erzeugt von tools/build_ship_data.py
 ├── paths.py      Game.log finden (Launcher-Log, übliche Ordner), Browser für --open
 ├── parser.py     Erkennung der Log-Zeilen (reine Funktionen, gut testbar)
 ├── state.py      Thread-sicherer Zustand + Auswertung (Kills/Tode/…)
 ├── watcher.py    Game.log mitlesen, Spielprozess erkennen
 ├── status.py     RSI-Serverstatus (cState-JSON)
-├── server.py     Mini-HTTP-Server: statische Dateien + /api/state
+├── server.py     Mini-HTTP-Server: statische Dateien, /api/state, /api/history, /api/pay, /api/window
 ├── demo.py       Simulierte Game.log für den Demo-Modus
 └── web/          index.html, style.css, app.js, links.json, fonts/
 ```
@@ -412,7 +445,6 @@ Beiträge sind willkommen – siehe [CONTRIBUTING.md](CONTRIBUTING.md). Änderun
 ### Ideen für später
 
 - Quantum-Travel- und Missions-Ereignisse, sobald stabile Log-Muster bekannt sind
-- Session-Historie (Statistik über mehrere Abende)
 - Kompakter Terminal-Modus (komplett ohne Browser)
 
 ---

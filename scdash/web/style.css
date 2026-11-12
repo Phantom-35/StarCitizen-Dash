@@ -561,3 +561,45 @@ body.dense-3 .n b { font-size: clamp(32px, min(3.6vw, 7vh), 120px); }
 
 .next .next-sub { font-size: 0.8125rem; color: var(--dim); letter-spacing: .06em; }
 .next .next-sub:empty { display: none; }
+
+/* ================================================================== session history (drawer) */
+.drawer [data-pane="history"] { overflow-y: auto; }
+/* opaque: the glowing feed and clock behind must not shine through the figures */
+.drawer { background: linear-gradient(180deg, #140e08, #080606); }
+.hist-grid .wide { grid-column: 1 / -1; }
+.hist { display: flex; flex-direction: column; gap: 22px; }
+.hist section { display: flex; flex-direction: column; gap: 8px; }
+.hist .count { color: var(--dim); margin-left: .4em; }
+.hist-when { font: 0.8125rem var(--mono); color: var(--dim); }
+.hist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; margin: 0; }
+.hist-grid div { min-width: 0; border-left: 2px solid var(--faint); padding-left: 10px; }
+.hist-grid dt { font-size: 0.6875rem; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+.hist-grid dd { margin: 2px 0 0; font-size: 1.25rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hist-now .hist-grid div:first-child { grid-column: 1 / -1; border-left-color: var(--amber); }
+.hist-now .hist-grid div:first-child dd { font-size: 2rem; }
+.hist-grid .pos dd, .hist-list .pos { color: var(--kill); }
+.hist-grid .neg dd, .hist-list .neg { color: var(--death); }
+.hist-list { list-style: none; margin: 0; padding: 0; }
+.hist-list li {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 9px 0;
+  border-bottom: 1px solid var(--faint);
+}
+.hist-list .hl-when { font: 0.8125rem var(--mono); color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hist-list .hl-facts { grid-column: 1; font-size: 0.875rem; color: var(--dim); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hist-list .hl-bal { grid-column: 2; grid-row: 1 / 3; align-self: center; font-size: 1.125rem; white-space: nowrap; }
+.hist-list .hl-empty { display: block; color: var(--dim); font-size: 0.875rem; }
+
+/* update notice in the tool bar */
+.tools .update {
+  align-self: center; white-space: nowrap; text-decoration: none;
+  font-weight: 700; letter-spacing: .2em; text-transform: uppercase; font-size: 0.75rem;
+  padding: 6px 12px; color: var(--void); background: var(--kill);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+.tools .update[hidden] { display: none; }
+.tools .update:hover { filter: brightness(1.15); }
+
+/* narrow screens: the timers get their own row, server status and buttons go below */
+@media (max-width: 1100px), (max-aspect-ratio: 1/1) {
+  .dock .timers { flex: 1 1 100%; }
+}

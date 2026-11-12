@@ -161,7 +161,9 @@
       <ul id="rsi"></ul>
     </div>
     <nav class="tools">
+      <a id="update" class="update" hidden target="_blank" rel="noopener noreferrer"></a>
       <button id="sound-toggle" title="Signaltöne bei Tod, K.O., fertigen Aufträgen und Timern (T)">Ton an</button>
+      <button data-drawer="history" id="history-btn" title="Session-Bilanz und Verlauf (V)">Verlauf</button>
       <button data-drawer="notes" title="Notizen (N)">Notizen</button>
       <button data-drawer="links" title="Links (L)">Links</button>
     </nav>
@@ -175,6 +177,24 @@
     </div>
     <div data-pane="notes">
       <textarea id="notes" spellcheck="false" placeholder="Handelsrouten, Missionen, Koordinaten …"></textarea>
+    </div>
+    <div data-pane="history" hidden>
+      <div class="hist" id="hist">
+        <section class="hist-now">
+          <div class="tag" id="hist-now-title">Diese Session</div>
+          <div class="hist-when" id="hist-now-when">–</div>
+          <dl class="hist-grid" id="hist-now"></dl>
+        </section>
+        <section>
+          <div class="tag">Letzte 7 Tage</div>
+          <dl class="hist-grid" id="hist-week"></dl>
+        </section>
+        <section>
+          <div class="tag">Frühere Sessions <span class="count" id="hist-count"></span></div>
+          <ol class="hist-list" id="hist-list"></ol>
+        </section>
+        <p class="fine" id="hist-note">Bilanz = eingetragener Auftragslohn + Überweisungen − Einkäufe − Strafen. Gespeichert nur auf diesem PC.</p>
+      </div>
     </div>
     <div data-pane="links" hidden>
       <ul id="links" class="links"></ul>
