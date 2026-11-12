@@ -21,3 +21,18 @@ jobs:
         run: python -m unittest discover -s tests -t . -v
       - name: CLI smoke test
         run: python -m scdash --version
+      - name: Updater test (Windows PowerShell 5.1, local archive)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tmp = Join-Path $env:RUNNER_TEMP "upd"
+          $inst = Join-Path $tmp "inst"
+          New-Item -ItemType Directory -Force "$inst\scdash" | Out-Null
+          Set-Content "$inst\scdash\__init__.py" '__version__ = "0.0.1"'
+          git archive --prefix=StarCitizen-Dash-test/ -o "$tmp\new.zip" HEAD
+          powershell -NoProfile -ExecutionPolicy Bypass -File tools\update.ps1 -Dir $inst -Zip "$tmp\new.zip"
+          if ($LASTEXITCODE -ne 0) { throw "update.ps1 failed" }
+          if (-not (Test-Path "$inst\scdash\cli.py")) { throw "files were not installed" }
+          Push-Location $inst
+          python -m scdash --version
+          Pop-Location

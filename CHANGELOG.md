@@ -5,6 +5,37 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+## [0.10.0] – 2026-11-12
+
+Komfort rund ums Spielen: Bilanz und Verlauf über alle Sessions, das Fenster merkt sich den Monitor,
+Updates mit einem Klick, Start zusammen mit dem Spiel.
+
+### Hinzugefügt
+- **Session-Bilanz und Verlauf** (Knopf „Verlauf“, Taste V): Bilanz, Aufträge, Tode, K.O., längstes
+  Überleben, QT-Sprünge und Orte jeder Session; Summen der letzten 7 Tage; Liste früherer Sessions.
+  Wird beim Beenden des Spiels automatisch eingeblendet. Gespeichert alle 30 s und beim Beenden in
+  `sessions.json` (nur lokal); dieselbe Session wird beim erneuten Einlesen aktualisiert, nicht doppelt
+  gezählt. Der eingetragene Auftragslohn fließt mit ein.
+- **Fenster merkt sich Position und Größe** (z. B. zweiter Monitor) und öffnet beim nächsten Start dort.
+  Liegt die Stelle auf keinem Bildschirm mehr (Monitor abgesteckt), gilt die Standardposition.
+  Neu: `--fullscreen`.
+- **Update-Hinweis:** SC-Dash sieht ein paarmal am Tag auf GitHub nach einer neuen Version und zeigt dann
+  unten „Update x.y“. `update.bat` installiert sie (per `git pull` bei einem git-Ordner, sonst per ZIP
+  der neuesten Version). Notizen, Timer, Verlauf und Ortsgedächtnis bleiben erhalten. Abschaltbar mit
+  `--no-update-check` oder `--no-status`.
+- GitHub-Releases werden automatisch erstellt, sobald eine neue Versionsnummer auf `main` landet
+  (`.github/workflows/release.yml`, Text aus diesem Changelog).
+- **Start mit dem Spiel:** `start.bat --autostart on` lässt SC-Dash unsichtbar mit Windows starten; das
+  Fenster öffnet sich von selbst, sobald Star Citizen läuft (`--with-game`). `--autostart off` entfernt es.
+  Ohne Konsole schreibt SC-Dash seine Meldungen nach `scdash.log` im Datenordner.
+
+### Geändert
+- Läuft SC-Dash schon (z. B. über den Autostart), öffnet ein zweiter Start nur das Fenster, statt mit
+  „Port belegt“ abzubrechen.
+- `start.bat` schließt sein Fenster ohne Tastendruck, wenn alles gut ging; bei Fehlern bleibt es offen.
+- Der Webserver startet vor den Hintergrund-Threads (ein belegter Port fällt sofort auf).
+- CI prüft `update.ps1` mit Windows PowerShell 5.1.
+
 ## [0.9.0] – 2026-11-11
 
 Auswertung einer zweiten echten Session (4.10, Kurierauftrag) und des Versuchs „ausführlichere Log“.

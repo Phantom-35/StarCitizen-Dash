@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Any, Dict, Iterable, Optional
 
 from scdash.locations import locate_place, objective_place, shard_region
+from scdash.history import SessionHistory
 from scdash.memory import PlaceMemory, is_planet_frame
 from scdash import ships
 from scdash.parser import LogEvent
@@ -59,9 +60,15 @@ def _secs_between(a: Optional[str], b: Optional[str]) -> Optional[float]:
 
 
 class DashboardState:
-    def __init__(self, places: Optional[PlaceMemory] = None) -> None:
+    def __init__(self, places: Optional[PlaceMemory] = None, history: Optional[SessionHistory] = None) -> None:
         #: remembers which place a mission marker belongs to (None = off, e.g. for log checks)
         self.place_memory = places
+        #: one summary per game session, kept between dashboard starts (None = off)
+        self.history = history
+        #: newest release on GitHub if it is newer than this version (set by the update check)
+        self.update: Optional[Dict[str, Any]] = None
+        #: time.monotonic() of the last request of a dashboard window (0 = none yet)
+        self.last_client = 0.0
         # A Condition (it is also a lock): HTTP long-polls sleep on it until the state changes.
         self._lock = threading.Condition()
         self._version = 0
@@ -140,6 +147,7 @@ class DashboardState:
         self.ship_class: Optional[str] = None       # game class name, known from quantum lines
         self._fuel_by_ship: Dict[str, float] = {}   # estimates of flown jumps per ship (log units)
         self.game_version: Optional[str] = None
+        self.pay = 0                                # contract pay entered on the dashboard
 
     def _touch(self) -> None:
         self._version += 1
@@ -154,6 +162,7 @@ class DashboardState:
     def new_session(self) -> None:
         """Called when Game.log was recreated (game restarted)."""
         with self._lock:
+            self._record_history()
             self._reset_session()
             self._touch()
 
@@ -179,6 +188,77 @@ class DashboardState:
             if running != self.game_running:
                 self.game_running = running
                 self._touch()
+
+    def set_update(self, update: Optional[Dict[str, Any]]) -> None:
+        with self._lock:
+            if update != self.update:
+                self.update = update
+                self._touch()
+
+    def set_pay(self, session: Optional[str], total: Any) -> bool:
+        """Contract pay entered on the dashboard - only for the session it was entered in."""
+        try:
+            total = int(total)
+        except (TypeError, ValueError):
+            return False
+        if abs(total) > 10**11:
+            return False
+        with self._lock:
+            if not session or session != self.session_start:
+                return False
+            if total != self.pay:
+                self.pay = total
+                self._touch()
+            return True
+
+    def session_summary(self) -> Optional[Dict[str, Any]]:
+        with self._lock:
+            return self._summary()
+
+    def _summary(self) -> Optional[Dict[str, Any]]:
+        if not self.session_start:
+            return None
+        return {
+            "start": self.session_start,
+            "end": self.last_log_ts,
+            "seconds": round(_secs_between(self.session_start, self.last_log_ts) or 0),
+            "ended": self.ended,
+            "game_version": self.game_version,
+            "region": shard_region(self.shard),
+            "missions_completed": self.missions_completed,
+            "missions_failed": self.missions_failed,
+            "missions_abandoned": self.missions_abandoned,
+            "deaths": self.deaths,
+            "incaps": self.incaps,
+            "best_alive": round(self.best_alive),
+            "quantum_jumps": self.quantum_jumps,
+            "places": len(self.places),
+            "pay": self.pay,
+            "spend": round(self.spend),
+            "fines": self.fines,
+            "money_in": self.money_in,
+            "money_out": self.money_out,
+            "crimestat": self.crimestat,
+            "cargo_delivered": self.cargo_delivered,
+            "ship": self.ship,
+        }
+
+    def _record_history(self) -> None:
+        if self.history is not None:
+            self.history.record(self._summary())
+
+    def save_history(self) -> None:
+        with self._lock:
+            self._record_history()
+
+    def history_view(self) -> Dict[str, Any]:
+        """Saved sessions plus the running one (which may not be saved yet)."""
+        now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        with self._lock:
+            self._record_history()
+        if self.history is None:
+            return {"sessions": [], "count": 0, "week": {}, "all": {}}
+        return self.history.view(now)
 
     def set_rsi_status(self, status: Optional[Dict[str, Any]]) -> None:
         with self._lock:
@@ -308,6 +388,7 @@ class DashboardState:
         elif ev.kind == "quit":
             self.ended = True
             self._push(ev, "info", "Spiel beendet", feeds=BOTH)
+            self._record_history()
         elif ev.kind == "ship":
             # Control tokens only tell us about the pilot seat. If the ship channel already told
             # us which ship we are in, leaving the seat does not mean leaving the ship.
@@ -785,6 +866,7 @@ class DashboardState:
                     "cargo_loaded": self.cargo_loaded,
                     "cargo_delivered": self.cargo_delivered,
                     "disconnects": self.disconnects,
+                    "pay": self.pay,
                 },
                 "health": {"injuries": list(self.open_injuries)},
                 "nav": {
@@ -818,4 +900,6 @@ class DashboardState:
                 },
                 "feeds": {k: list(v) for k, v in self.feeds.items()},
                 "rsi_status": self.rsi_status,
+                "update": self.update,
+                "history_enabled": self.history is not None,
             }

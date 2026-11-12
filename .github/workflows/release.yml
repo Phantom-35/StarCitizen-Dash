@@ -1,0 +1,28 @@
+name: Release
+
+# Creates a GitHub release (tag vX.Y.Z) whenever a new version number reaches main.
+# The dashboard's update check and update.bat use the newest release.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create release for a new version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(python3 -c "import re; print(re.search(r'__version__\s*=\s*\"([0-9.]+)\"', open('scdash/__init__.py').read()).group(1))")
+          tag="v$version"
+          if gh release view "$tag" > /dev/null 2>&1; then
+            echo "Release $tag gibt es schon."
+            exit 0
+          fi
+          python3 tools/release_notes.py "$version" > notes.md
+          gh release create "$tag" --target "$GITHUB_SHA" --title "SC-Dash $version" --notes-file notes.md
